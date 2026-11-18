@@ -1304,9 +1304,11 @@ function needsReview(r){return !!(r&&r.p&&(r.act||'board')!=='ignore'&&!(r.rv&&r
 const ROPT=Object.assign({},null,{
  typ:[['radweg','Radweg'],['feldweg','Feldweg'],['strasse','Straße'],['schotter','Schotter/Wald'],['pfad','Pfad']],
  zugang:[['offen','öffentlich'],['erlaubnis','mit Erlaubnis'],['privat','privat']],
- board:[['ja','ja'],['nein','nein']]});
-const RQN={belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',zugang:'Zugang',board:'Boardbar?'};
-const UCOL={radweg:'#1f6fd1',feldweg:'#1a9e4a',strasse:'#8a8a8a',schotter:'#9b6b3d',pfad:'#9b6b3d'};
+ board:[['ja','ja'],['nein','nein']],
+ wo:[['fahrbahn','Fahrbahn'],['begleit','Radweg daneben'],['gehweg','Gehweg']]});
+const WOSET={fahrbahn:1,begleit:1,gehweg:1};
+const RQN={wo:'Wo?',belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',zugang:'Zugang',board:'Boardbar?'};
+const UCOL={fahrbahn:'#d23c3c',begleit:'#1f6fd1',gehweg:'#5b8fd6',radweg:'#1f6fd1',feldweg:'#1a9e4a',strasse:'#8a8a8a',schotter:'#9b6b3d',pfad:'#9b6b3d'};
 let WMAP=null,SIDX=null;
 LIS.uways.push(()=>{SIDX=null;redrawSoon()});LIS.spots.push(()=>redrawSoon());
 function wmap(){if(!WMAP){WMAP={};for(const w of W)WMAP[w[0]]=w}return WMAP}
@@ -1325,7 +1327,7 @@ function matchPt(q){const S=buildIdx();const x=Math.floor(q[0]/S.cell),y=Math.fl
  for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){let A,B;
   if(it[0]===0){const p=P[it[1]];A=p.pts[it[2]];B=p.pts[it[2]+1]}else if(it[0]===1){const pts=S.RDS[it[1]];A=pts[it[2]];B=pts[it[2]+1]}else{const pts=S.U[it[1]];A=pts[it[2]];B=pts[it[2]+1]}
   const d=segDist(q,A,B)+(it[0]===1?6:0);if(d<bd){bd=d;best=it}}
- if(!best)return {t:'x'};if(best[0]===0)return {t:'w',id:W[P[best[1]].w][0],pi:best[1],si:best[2]};if(best[0]===1)return {t:'r'};return {t:'u',id:best[1]}}
+ if(!best)return {t:'x'};if(best[0]===0)return {t:'w',id:W[P[best[1]].w][0],pi:best[1],si:best[2]};if(best[0]===1)return {t:'r',ri:best[1]};return {t:'u',id:best[1]}}
 
 // ---- Fahrt zerlegen ----
 function rideArrays(r){const pts=dec(r.p),n=pts.length,v=[];for(let i=0;i<n;i++){const c=r.v&&r.v[i];v.push(!c||c==='~'?null:c.charCodeAt(0)-48)}
@@ -1360,22 +1362,23 @@ function placeNear(q){let b=null,bd=1e9;for(const p of D.ctx.places){const dd=di
 const KIND_LBL={1:'Radweg',2:'Feldweg mit Kfz-Verbot',3:'Feldweg',4:'Weg mit Kfz-Freigabe'};
 function secInfo(r,A,sec){const [kind,i0,i1,uid]=sec;const {pts,v,T,d}=A;const ids=new Set(),cods=[];
  if(kind==='way')for(let i=i0;i<=i1;i++){const mm=matchPt(pts[i]);if(mm.t==='w'){ids.add(mm.id);cods.push(P[mm.pi].k[mm.si])}}
+ let rname=null;if(kind==='road'){const nc=(D.ctx.conn||[]).length;for(let i=i0;i<=i1&&!rname;i+=2){const mm=matchPt(pts[i]);if(mm.t==='r'&&mm.ri<nc)rname=D.ctx.conn[mm.ri][2]||null}}
  const L=d[i1]-d[i0];let vs=0,vn=0;for(let i=i0;i<=i1;i++)if(v[i]!=null&&v[i]>=2){vs+=v[i];vn++}
  const tm=T?(T[i0]+T[i1])/2:null;let w=null;if(r.wx&&r.wx.h&&tm){let b=null,bd=1e12;for(const x of r.wx.h){const dd=Math.abs(Date.parse(x[0])/1000-tm);if(dd<bd&&x[1]!=null){bd=dd;b=x}}if(b)w={ws:b[1],dir:b[3]}}
  let twa=null;if(w){let s=0,c=0;for(let i=i0;i<i1;i+=3){const hd=bearing(pts[i],pts[Math.min(i1,i+3)]);let off=Math.abs(hd-w.dir)%360;if(off>180)off=360-off;s+=off;c++}if(c)twa=s/c}
  let windSec=w?Math.round(w.dir/45)%8:null,shel=null;if(windSec!=null&&cods.length){let sh=0;for(const k of cods)if((k>>windSec)&1)sh++;shel=sh/cods.length}
  const wm=wmap();const w0=ids.size?wm[[...ids][0]]:null;const nm=[...ids].map(id=>wm[id]&&wm[id][4]).find(x=>x);
  const a=placeNear(pts[i0]),b=placeNear(pts[i1]);const where=a&&b&&a!==b?'zwischen '+a+' und '+b:a?'bei '+a:'';
- let title=kind==='way'?(nm||KIND_LBL[w0&&w0[1]]||'Weg'):kind==='uway'?((STORE.uways[uid]&&STORE.uways[uid].data&&lbl2('typ',STORE.uways[uid].data.typ))||'Eigener Weg'):kind==='road'?'Straße mit Autoverkehr':kind==='spot'?'Spot?':'Neuer Weg?';
+ let title=kind==='way'?(nm||KIND_LBL[w0&&w0[1]]||'Weg'):kind==='uway'?((STORE.uways[uid]&&STORE.uways[uid].data&&lbl2('typ',STORE.uways[uid].data.typ))||'Eigener Weg'):kind==='road'?(rname?rname+' (Straße)':'Straße mit Autoverkehr'):kind==='spot'?'Spot?':'Neuer Weg?';
  return {kind,i0,i1,uid,ids,L,vavg:vn?vs/vn:null,w,twa,windSec,shel,title,where,t0:T&&T[i0],t1:T&&T[i1],km0:d[i0]/1000,km1:d[i1]/1000,w0}}
-function lbl2(k,v){const o=(OPT[k]||ROPT[k]||[]).find(x=>x[0]===v);return o?o[1]:v}
+function lbl2(k,v){let o=(OPT[k]||ROPT[k]||[]).find(x=>x[0]===v);if(!o&&k==='typ')o=ROPT.wo.find(x=>x[0]===v);return o?o[1]:v}
 function twaTxt(t){return t==null?'':t<45?'Gegenwind':t<90?'am Wind':t<135?'Halbwind':'Rückenwind'}
 function prefill(r,I){const o={},src={};
  if(I.kind==='way'){const rt=[...I.ids].map(id=>RAT['w'+id]).find(x=>x)||{};for(const k of ['belag','autos','wind','leute'])if(rt[k]!=null){o[k]=rt[k];src[k]='du'}
   const w=I.w0;if(o.belag==null&&w&&w[3]>=1&&w[3]<=4){o.belag=w[3];src.belag='OSM'}
   if(o.autos==null&&w&&(w[1]===1||w[1]===2)){o.autos='schild';src.autos='OSM'}
   if(o.wind==null&&I.shel!=null){o.wind=I.shel>.7?'windschatten':I.shel<.25?'frei':'teilweise';src.wind='berechnet'}}
- else if(I.kind==='uway'){const u=STORE.uways[I.uid]&&STORE.uways[I.uid].data||{};for(const k of ['typ','belag','autos','wind','leute'])if(u[k]!=null){o[k]=u[k];src[k]='du'}}
+ else if(I.kind==='uway'){const u=STORE.uways[I.uid]&&STORE.uways[I.uid].data||{};for(const k of ['typ','belag','autos','wind','leute'])if(u[k]!=null){o[k]=u[k];src[k]='du'}if(WOSET[o.typ]){o.wo=o.typ;src.wo='du';delete o.typ}}
  return {o,src}}
 
 // ---- Prüf-Ansicht ----
@@ -1412,22 +1415,22 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  const real=rv.sec.map((s,i)=>i).filter(i=>rv.sec[i][0]!=='road');const done=real.filter(i=>rv.res[i]).length;
  document.getElementById('rvprog').textContent=(I.kind==='road'?'Straßenstück':'Abschnitt '+(real.indexOf(REV.cur)+1)+' von '+real.length)+' · '+done+' erledigt';
  const pf=prefill(r,I);REV.sel=Object.assign({},pf.o);REV.src=pf.src;const st=rv.res[REV.cur];
- let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='way'||I.kind==='uway')qs=['belag','autos','wind','leute'];
+ let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='uway')qs=WOSET[REV.sel.wo]?['wo','belag','autos','wind','leute']:['typ','belag','autos','wind','leute'];else if(I.kind==='way')qs=['belag','autos','wind','leute'];else if(I.kind==='road')qs=['wo','belag','autos','wind','leute'];
  if((r.act||'board')==='fuss'&&I.kind!=='road'&&I.kind!=='spot')qs.push('board');
  let h=tlSvg()+'<div class="tlx"><span>'+hm2(REV.A.T&&REV.A.T[0])+'</span><span class="acc">'+(I.t0?hm2(I.t0)+'–'+hm2(I.t1)+' · ':'')+'km '+I.km0.toFixed(1)+'–'+I.km1.toFixed(1)+'</span><span>'+hm2(REV.A.T&&REV.A.T[REV.A.n-1])+'</span></div>';
- h+='<div class="rvt">'+esc(I.title)+(st?' <span class="stb">'+(st==='del'?'verworfen':st==='skip'?'übersprungen':'erledigt')+'</span>':'')+'</div><div class="muted small">'+(I.where?esc(I.where)+' · ':'')+(I.L/1000).toFixed(1)+' km'+(I.vavg?' · Ø '+Math.round(I.vavg)+' km/h':'')+(I.w?' · '+Math.round(I.w.ws)+' kt '+DIR16(I.w.dir)+(I.twa!=null?', '+twaTxt(I.twa):''):'')+'</div>';
- if(I.kind==='road')h+='<div class="card small" style="margin-top:10px">Hier warst du auf einer Straße, die für Autos freigegeben ist. Dazu gibt es nichts zu bewerten.</div>';
+ h+='<div class="rvt">'+esc(I.title)+(st&&!(I.kind==='road'&&st==='ok')?' <span class="stb">'+(st==='del'?'verworfen':st==='skip'?'übersprungen':'erledigt')+'</span>':'')+'</div><div class="muted small">'+(I.where?esc(I.where)+' · ':'')+(I.L/1000).toFixed(1)+' km'+(I.vavg?' · Ø '+Math.round(I.vavg)+' km/h':'')+(I.w?' · '+Math.round(I.w.ws)+' kt '+DIR16(I.w.dir)+(I.twa!=null?', '+twaTxt(I.twa):''):'')+'</div>';
+ if(I.kind==='road')h+='<div class="hint" style="margin-top:6px">Straße mit Autoverkehr. Warst du hier auf einem Radweg, Gehweg oder der Fahrbahn unterwegs, trag es ein – dann merkt sich die Karte dieses Stück als deinen Weg. Sonst einfach weiter.</div>';
  if(I.kind==='new')h+='<div class="hint" style="margin-top:6px">Dieses Stück liegt auf keinem Weg, den die Karte kennt. Wenn es ein echter Weg ist, wird er in deine Karte übernommen.</div>';
  if(I.kind==='spot')h+='<div class="hint" style="margin-top:6px">Du warst hier auf kleiner Fläche viel unterwegs – sieht nach einem Spot aus (Platz, Gelände).</div><label class="small" style="display:block;margin-top:8px">Name<input id="rvname" placeholder="z. B. Parkplatz Sportplatz" style="width:100%;box-sizing:border-box;padding:8px;border-radius:9px;border:1px solid #d8dad2;margin-top:3px"></label>';
  for(const q of qs)h+='<div class="qrow"><span class="ql">'+RQN[q]+(REV.src[q]&&REV.src[q]!=='du'?'<i>'+REV.src[q]+'</i>':'')+'</span>'+chips(q,REV.sel[q])+'</div>';
- if(I.kind!=='road')h+='<details class="small" style="margin-top:8px"><summary>Notiz</summary><textarea id="rvnote" maxlength="500" style="margin-top:4px"></textarea></details>';
- h+='<div class="rvbtns"><button class="btn sec" id="rvprev" aria-label="Zurück">‹</button><button class="btn" id="rvok">'+(I.kind==='road'?'Weiter':I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter')+'</button><button class="btn sec" id="rvskip" aria-label="Überspringen">›</button></div>';
+ h+='<details class="small" style="margin-top:8px"><summary>Notiz</summary><textarea id="rvnote" maxlength="500" style="margin-top:4px"></textarea></details>';
+ h+='<div class="rvbtns"><button class="btn sec" id="rvprev" aria-label="Zurück">‹</button><button class="btn" id="rvok">'+(I.kind==='road'?(Object.keys(REV.sel).length?'Übernehmen':'Weiter'):I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter')+'</button><button class="btn sec" id="rvskip" aria-label="Überspringen">›</button></div>';
  if(I.kind==='new')h+='<div class="btnrow"><button class="btn sec sm" id="rvdel">Kein Weg (GPS-Ungenauigkeit)</button><button class="btn sec sm" id="rvtospot">War ein Spot</button></div>';
  if(I.kind==='spot')h+='<div class="btnrow"><button class="btn sec sm" id="rvtonew">Kein Spot, war ein Weg</button><button class="btn sec sm" id="rvdel">Verwerfen</button></div>';
  h+='<div style="display:flex;justify-content:center;gap:14px;margin-top:12px">'+(LASTSEL&&(I.kind==='way'||I.kind==='uway')?'<button class="lnkbtn" id="rvsame">Wie der vorige</button>':'')+'<button class="lnkbtn" id="rvrest">Restliche Wege passen auch</button></div>';
  const body=document.getElementById('rvbody');body.innerHTML=h;
  body.querySelectorAll('.chips2').forEach(c=>c.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const q=c.dataset.k;let v=b.dataset.v;if(q==='belag')v=+v;
-   if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}}));
+   if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}if(I.kind==='road')document.getElementById('rvok').textContent=Object.keys(REV.sel).length?'Übernehmen':'Weiter'}));
  const $=id=>document.getElementById(id);
  $('rvprev').onclick=()=>showSec(navIdx(REV.cur,-1));$('rvskip').onclick=()=>{if(I.kind==='road'||rv.res[REV.cur]){showSec(navIdx(REV.cur,1))}else markSec('skip')};$('rvok').onclick=()=>acceptSec();
  if($('rvdel'))$('rvdel').onclick=()=>markSec('del');
@@ -1448,12 +1451,15 @@ function hull(pts){const P_=pts.map(p=>[p[1],p[0]]).sort((a,b)=>a[0]-b[0]||a[1]-
  return lo.slice(0,-1).concat(up.slice(0,-1)).map(p=>[p[1],p[0]])}
 async function applySec(R_,k,sel,note){const I=R_.infos[k];const day=R_.r.start?new Date(R_.r.start).toLocaleDateString('sv-SE'):R_.r.date;const act=R_.r.act||'board';
  const addA=o=>{const A=Object.assign({},o.act||{});A[act]=(A[act]||[]).filter(x=>x!==day).concat(day).slice(-50);o.act=A;if(act==='board'){o.ridden=true;const rs=(o.rides||[]).filter(x=>x!==day);rs.push(day);o.rides=rs.slice(-50)}return o};
- if(I.kind==='road')return 'ok';
+ if(I.kind==='road'){if(!Object.keys(sel).filter(k=>k!=='name').length&&!note)return 'ok';const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);
+   const o={p:encPl(seg),len:Math.round(I.L),typ:sel.wo||'fahrbahn',road:true,created:today(),from:R_.id};
+   for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);
+   await DB.collection('uways').doc('u'+R_.id.slice(1)+'_'+I.i0).set(o);return 'new'}
  if(I.kind==='way'){for(const id of I.ids){const o=Object.assign({},RAT['w'+id]||{});o.way=id;
    for(const kk of ['belag','autos','wind','leute'])if(sel[kk]!=null)o[kk]=sel[kk];else delete o[kk];
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;else delete o.windDir;if(sel.board)o.board=sel.board;if(note)o.notiz=note;
    o.confirmed=day;o.updated=today();addA(o);await DB.collection('ratings').doc('w'+id).set(o)}return 'ok'}
- if(I.kind==='uway'){const e=STORE.uways[I.uid];const o=Object.assign({},e&&e.data||{});for(const kk of ['typ','belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(note)o.notiz=note;
+ if(I.kind==='uway'){const e=STORE.uways[I.uid];const o=Object.assign({},e&&e.data||{});for(const kk of ['typ','belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wo)o.typ=sel.wo;if(note)o.notiz=note;
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;addA(o);o.updated=today();await DB.collection('uways').doc(I.uid).set(o);return 'ok'}
  if(I.kind==='new'){const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);const o={p:encPl(seg),len:Math.round(I.L),typ:sel.typ||null,created:today(),from:R_.id};
    for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);
@@ -1486,7 +1492,7 @@ function drawExtras(R,fog){for(const [id,e] of Object.entries(STORE.uways)){cons
 function seenOk(o){const f=(document.getElementById('seenBy')||{}).value||'alle';if(f==='alle')return true;return !!(o&&o.act&&o.act[f]&&o.act[f].length)||(f==='board'&&o&&o.ridden)}
 function actLine(o){if(!o)return '';const p=[];const A=o.act||{};if(!A.board&&o.ridden&&o.rides)A.board=o.rides;for(const k in A)if(A[k]&&A[k].length)p.push((ACT_LBL[k]||k)+' '+A[k].length+'× (zuletzt '+A[k][A[k].length-1].split('-').reverse().join('.')+')');return p.join(', ')}
 function vals(o,keys){return keys.filter(k=>o[k]!=null).map(k=>RQN[k]+': '+lbl2(k,o[k])).join('<br>')}
-function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;L.popup().setLatLng(ll).setContent('<b>Eigener Weg'+(u.typ?' · '+lbl2('typ',u.typ):'')+'</b><br>'+(u.len?(u.len/1000).toFixed(2)+' km · ':'')+'eingetragen '+String(u.created||'').split('-').reverse().join('.')+'<br>'+vals(u,['belag','autos','wind','leute','board'])+(u.notiz?'<br>„'+esc(u.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(u)+'</span><br><button class="pbtn" onclick="delExtra(\'uways\',\''+id+'\')">Weg löschen</button>').openOn(map)}
+function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;L.popup().setLatLng(ll).setContent('<b>'+(u.road?'Straße':'Eigener Weg')+(u.typ?' · '+lbl2('typ',u.typ):'')+'</b><br>'+(u.len?(u.len/1000).toFixed(2)+' km · ':'')+'eingetragen '+String(u.created||'').split('-').reverse().join('.')+'<br>'+vals(u,['belag','autos','wind','leute','board'])+(u.notiz?'<br>„'+esc(u.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(u)+'</span><br><button class="pbtn" onclick="delExtra(\'uways\',\''+id+'\')">Weg löschen</button>').openOn(map)}
 function popS(id,ll){const s=STORE.spots[id]&&STORE.spots[id].data;if(!s)return;L.popup().setLatLng(ll).setContent('<b>Spot · '+esc(s.name||'')+'</b><br>'+vals(s,['belag','wind','zugang'])+(s.notiz?'<br>„'+esc(s.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(s)+'</span><br><button class="pbtn" onclick="delExtra(\'spots\',\''+id+'\')">Spot löschen</button>').openOn(map)}
 async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return;e.data=null;e.t=Date.now();e.dirty=true;await IDB.put(c+'/'+id,e);notify(c);GH.schedule()}
 

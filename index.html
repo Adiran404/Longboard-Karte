@@ -809,6 +809,8 @@ html.dark .lbl{color:#d6d8d2;text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000}
 html.dark .leaflet-control-attribution{background:rgba(29,32,35,.8)!important;color:#9da198}html.dark .leaflet-control-attribution a{color:#6aa5ff}
 html.dark textarea{background:#16191b;color:#eceee8;border-color:#33373a}html.dark .chips button{background:#25282a;color:#eceee8;border-color:#3a3e41}
 html.dark #busy{background:#1d2023;color:#eceee8}html.dark .wnow{background:#1f2a38}
+
+#chval{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;font-variant-numeric:tabular-nums;line-height:1.45;margin:4px 0}#chval span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 </style></head><body>
 <div id="map"></div>
 <div id="legbox" class="legbox" style="display:none"><div class="legh"><b>Legende</b><button id="legclose" aria-label="Legende schließen">✕</button></div>
@@ -1470,8 +1472,10 @@ function setCursor(i){if(!RD)return;i=Math.max(0,Math.min(RD.pts.length-1,i));RD
  c.save();c.setTransform(dpr,0,0,dpr,0,0);const x=RD.X(RD.d[i]);c.strokeStyle=THEME.cur;c.lineWidth=1;c.beginPath();c.moveTo(x,0);c.lineTo(x,cv.clientHeight-12);c.stroke();
  for(const r of RD.rows||[]){const v=r.arr[i];if(v==null)continue;c.fillStyle=THEME.cur;c.beginPath();c.arc(x,r.Y(v),3,0,7);c.fill()}c.restore();
  const t=RD.r.start?new Date(Date.parse(RD.r.start)):null;
- const W_=RD.wind&&RD.wind[i];const twaTxt=W_&&W_.twa!=null?(W_.twa<45?'gegen den Wind':W_.twa<90?'am Wind':W_.twa<135?'halber Wind/raum':'Rückenwind'):'';
- document.getElementById('chval').textContent=(RD.T?new Date(RD.T[i]*1000).toLocaleTimeString('de-DE')+' · ':'')+(RD.d[i]/1000).toFixed(2)+' km'+(RD.e[i]!=null?' · '+Math.round(RD.e[i])+' m':'')+(RD.v[i]!=null?' · '+RD.v[i]+' km/h':'')+(RD.h[i]!=null?' · ♥ '+RD.h[i]:'')+(W_?' · Wind '+Math.round(W_.ws)+' kt'+(twaTxt?' ('+twaTxt+')':''):'')}
+ const W_=RD.wind&&RD.wind[i];const twaTxt=W_&&W_.twa!=null?(W_.twa<45?'Gegenwind':W_.twa<90?'am Wind':W_.twa<135?'Halbwind':'Rückenwind'):'';
+ const cell=(v,l)=>'<span><b>'+(v==null||v===''?'–':v)+'</b>'+(l?' '+l:'')+'</span>';
+ document.getElementById('chval').innerHTML=cell(RD.T?new Date(RD.T[i]*1000).toLocaleTimeString('de-DE'):null,'')+cell((RD.d[i]/1000).toFixed(2),'km')+cell(RD.e[i]!=null?Math.round(RD.e[i]):null,'m')
+  +cell(RD.v[i],'km/h')+cell(RD.h[i],'♥')+cell(W_?Math.round(W_.ws)+' kt':null,twaTxt||'Wind')}
 function chartPos(ev){const cv=document.getElementById('chart');const rc=cv.getBoundingClientRect();const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-rc.left;
  const dd=(cx-RD.L0)/(rc.width-RD.L0-RD.R0)*RD.D;let lo=0,hi=RD.d.length-1;while(lo<hi){const m=(lo+hi)>>1;if(RD.d[m]<dd)lo=m+1;else hi=m}setCursor(lo)}
 window.addEventListener('resize',()=>{if(RD){drawCharts();setCursor(RD.ci||0)}});

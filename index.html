@@ -1386,7 +1386,7 @@ async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)
  const A=rideArrays(r);let rv=r.rv&&r.rv.sec&&(r.rv.v===REV_VER||r.rv.fin)?r.rv:null;
  if(!rv){const sec=segmentRide(r,A);const res={};sec.forEach((s,i)=>{if(s[0]==='road')res[i]='ok'});rv={v:REV_VER,sec,res,fin:!sec.some(s=>s[0]!=='road')};await DB.collection('rides').doc(r.id).set(Object.assign({},r,{rv}))}
  REV={id,r,A,rv,infos:rv.sec.map(s=>secInfo(r,A,s)),cur:0,sel:null};if(rv.fin&&!r.rv)rv.fin=false;REVIEWING=true;
- const first=rv.sec.findIndex((s,i)=>!rv.res[i]);REV.cur=first<0?rv.sec.findIndex(s=>s[0]!=='road'):first;if(REV.cur<0)REV.cur=0;
+ const started=rv.sec.some((s,i)=>s[0]!=='road'&&rv.res[i]);const first=rv.sec.findIndex((s,i)=>!rv.res[i]);REV.cur=!started||first<0?0:first;
  if(!revLayer)revLayer=L.layerGroup().addTo(map);draw();showSec(REV.cur)}
 function revDraw(){if(!REV)return;revLayer.clearLayers();const R=L.canvas({padding:.5,tolerance:8,pane:ridePane()});const {pts}=REV.A;
  L.polyline(pts,{renderer:R,color:THEME.dark?'#cfd3cc':'#7d8178',weight:3,opacity:.5,interactive:false}).addTo(revLayer);
@@ -1406,11 +1406,11 @@ function tlSvg(){const {v,d,n}=REV.A;const D_=d[n-1]||1;let p='';const step=Math
  return '<svg viewBox="0 0 300 36" preserveAspectRatio="none" class="tl" id="rvtl"><rect x="'+x0.toFixed(1)+'" y="0" width="'+Math.max(2,x1-x0).toFixed(1)+'" height="36" fill="#1f6fd1" opacity=".18"/><path d="'+p+'" stroke="#1f6fd1" stroke-width="1.3" fill="none" vector-effect="non-scaling-stroke"/>'+marks+'</svg>'}
 function chips(k,cur){const opts=OPT[k]||ROPT[k];return '<div class="chips2" data-k="'+k+'">'+opts.map(([v,t])=>'<button class="chip'+(cur==v?' on':'')+'" data-v="'+v+'">'+t+'</button>').join('')+'</div>'}
 function hm2(t){return t?new Date(t*1000).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):''}
-function navIdx(from,dir){const s=REV.rv.sec;for(let k=from+dir;k>=0&&k<s.length;k+=dir)if(s[k][0]!=='road')return k;return from}
+function navIdx(from,dir){return Math.max(0,Math.min(REV.rv.sec.length-1,from+dir))}
 let LASTSEL=null;
 function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-1,k));const I=REV.infos[REV.cur],r=REV.r,rv=REV.rv;
  const real=rv.sec.map((s,i)=>i).filter(i=>rv.sec[i][0]!=='road');const done=real.filter(i=>rv.res[i]).length;
- document.getElementById('rvprog').textContent='Abschnitt '+(real.indexOf(REV.cur)+1)+' von '+real.length+' · '+done+' erledigt';
+ document.getElementById('rvprog').textContent=(I.kind==='road'?'Straßenstück':'Abschnitt '+(real.indexOf(REV.cur)+1)+' von '+real.length)+' · '+done+' erledigt';
  const pf=prefill(r,I);REV.sel=Object.assign({},pf.o);REV.src=pf.src;const st=rv.res[REV.cur];
  let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='way'||I.kind==='uway')qs=['belag','autos','wind','leute'];
  if((r.act||'board')==='fuss'&&I.kind!=='road'&&I.kind!=='spot')qs.push('board');
@@ -1429,7 +1429,7 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  body.querySelectorAll('.chips2').forEach(c=>c.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const q=c.dataset.k;let v=b.dataset.v;if(q==='belag')v=+v;
    if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}}));
  const $=id=>document.getElementById(id);
- $('rvprev').onclick=()=>showSec(navIdx(REV.cur,-1));$('rvskip').onclick=()=>markSec('skip');$('rvok').onclick=()=>acceptSec();
+ $('rvprev').onclick=()=>showSec(navIdx(REV.cur,-1));$('rvskip').onclick=()=>{if(I.kind==='road'||rv.res[REV.cur]){showSec(navIdx(REV.cur,1))}else markSec('skip')};$('rvok').onclick=()=>acceptSec();
  if($('rvdel'))$('rvdel').onclick=()=>markSec('del');
  if($('rvtospot'))$('rvtospot').onclick=()=>{REV.rv.sec[REV.cur][0]='spot';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  if($('rvtonew'))$('rvtonew').onclick=()=>{REV.rv.sec[REV.cur][0]='new';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};

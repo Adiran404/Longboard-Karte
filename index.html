@@ -717,6 +717,11 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 .dlgin{background:#fff;border-radius:10px;padding:14px;width:min(420px,92vw);max-height:90vh;overflow:auto;font-size:14px}
 .dlgin label{display:block;margin-top:10px}.dlgin input{width:100%;box-sizing:border-box;padding:6px;font-size:14px;margin-top:3px}
 .leaflet-top.leaflet-right{top:52px}
+.lctl{position:relative;z-index:850!important}.lbtn{width:38px;height:38px;display:flex;align-items:center;justify-content:center;background:#fff;color:#333;cursor:pointer;border:2px solid rgba(0,0,0,.2);border-radius:6px;padding:0}
+.lbtn.on{background:#1f6fd1!important;color:#fff!important}
+.lpop{position:absolute;right:46px;top:0;background:rgba(255,255,255,.98);border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.25);padding:8px;display:grid;grid-template-columns:repeat(2,72px);gap:8px}
+.lopt{border:0;background:none;padding:4px;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 12px system-ui,sans-serif;color:#1d1f1a}
+.lopt svg{width:56px;height:56px;border-radius:9px;box-shadow:0 0 0 1px rgba(0,0,0,.12)}.lopt.on svg{box-shadow:0 0 0 3px #1f6fd1}.lopt.on{color:#1f6fd1}
 .dlgin .hint{font-size:12px;color:#666;margin-top:2px}
 
 .cal{margin:4px 0 6px}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:14px}
@@ -798,7 +803,7 @@ html.dark .mb{background:#25282a;border-color:#3a3e41;color:#eceee8}html.dark .m
 html.dark #toggle,html.dark .pbtn,html.dark .btnp{background:#eceee8;color:#121416}
 html.dark .wchip,html.dark .locbtn,html.dark .legbtn,html.dark .leaflet-bar a,html.dark .leaflet-control-layers{background:#1d2023;color:#eceee8;border-color:#3a3e41}
 html.dark .legbtn.on,html.dark .locbtn.on{background:#6aa5ff;color:#121416}
-html.dark .leaflet-control-layers-toggle{filter:invert(1)}
+html.dark .lbtn{background:#1d2023;color:#eceee8;border-color:#3a3e41}html.dark .lpop{background:rgba(29,32,35,.97);color:#eceee8}html.dark .lopt{color:#eceee8}
 html.dark .leaflet-popup-content-wrapper,html.dark .leaflet-popup-tip{background:#1d2023;color:#eceee8}
 html.dark .leaflet-popup-content a{color:#6aa5ff}
 html.darkmap .leaflet-container,html.darkmap #map{background:#1a1c1e}
@@ -1153,15 +1158,33 @@ async function windNow(lat,lon,label){const el=document.getElementById('wnow');
  catch(e){if(el)el.innerHTML='<div class="card">Windvorhersage gerade nicht erreichbar. <button class="btn sm" onclick="windNow()">Nochmal</button></div>'}}
 
 // ---------- Kartenhintergründe ----------
+const PICTO={
+ 'Eigene Karte':'<svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#eef0e8"/><path d="M0 40h56v16H0z" fill="#cfe0c4"/><path d="M6 50 22 30l12 6 16-24" stroke="#1f6fd1" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M4 20 24 22 30 8" stroke="#1a9e4a" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M34 52 44 40 54 44" stroke="#d89614" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M22 30l12 6" stroke="#ff3fd2" stroke-width="9" opacity=".35" stroke-linecap="round"/></svg>',
+ 'Satellit':'<svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#5d6b3f"/><path d="M0 0h30l-6 22H0z" fill="#7d8a52"/><path d="M30 0h26v20L34 26z" fill="#3f4f2c"/><path d="M0 34l26-6 4 28H0z" fill="#8f8a5c"/><path d="M34 30l22-6v32H32z" fill="#6f7d47"/><path d="M0 26 56 18" stroke="#c9c2ad" stroke-width="2.5"/><path d="M28 0v56" stroke="#b9b2a0" stroke-width="1.5"/></svg>',
+ 'Relief/Topo':'<svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#f2efe4"/><g fill="none" stroke="#b58c5a" stroke-width="1.6"><path d="M8 46c6-14 30-20 40-8"/><path d="M14 40c6-10 22-14 28-6"/><path d="M20 34c4-6 12-8 16-3"/><path d="M4 18c10-6 22-4 30 2s16 4 20-2"/></g><path d="M0 52 56 44" stroke="#e07b39" stroke-width="2.5"/><path d="M26 31a2 2 0 1 0 0.1 0" fill="#555"/></svg>',
+ 'OpenStreetMap':'<svg viewBox="0 0 56 56"><rect width="56" height="56" fill="#f2efe9"/><path d="M0 36h22v20H0z" fill="#d7e8c9"/><path d="M34 0h22v22H34z" fill="#e0dcd4"/><path d="M0 22 56 30" stroke="#f6c97a" stroke-width="5"/><path d="M0 22 56 30" stroke="#e5a95b" stroke-width="1" fill="none"/><path d="M28 0v56" stroke="#fff" stroke-width="4"/><path d="M28 0v56" stroke="#ccc" stroke-width="1"/><path d="M40 56 56 40" stroke="#aac9ee" stroke-width="5"/></svg>'};
+const LAYERS_ICO='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 2 8l10 5 10-5-10-5z"/><path d="m2 12.5 10 5 10-5"/><path d="m2 17 10 5 10-5"/></svg>';
+let BASES=null,CURBASE=null;
+function setBase(name){if(!BASES[name])name='Eigene Karte';if(CURBASE)map.removeLayer(BASES[CURBASE]);BASES[name].addTo(map);if(BASES[name].bringToBack)BASES[name].bringToBack();CURBASE=name;
+ if(name==='Eigene Karte')ctxFill.addTo(map);else ctxFill.remove();map.getContainer().classList.toggle('sat',name==='Satellit');setCfg({base:name});
+ document.querySelectorAll('.lpop .lopt').forEach(o=>o.classList.toggle('on',o.dataset.n===name))}
 function addBaseLayers(){
  const own=L.layerGroup();
  const osm=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap-Mitwirkende'});
  const sat=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,maxNativeZoom:18,attribution:'Luftbild © Esri, Maxar, Earthstar Geographics'});
  const topo=L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',{maxZoom:18,maxNativeZoom:17,subdomains:'abc',attribution:'© OpenTopoMap (CC-BY-SA)'});
- const bases={'Eigene Karte':own,'Satellit':sat,'Relief/Topo':topo,'OpenStreetMap':osm};
- const pick=cfg().base;const first=bases[pick]?pick:'Eigene Karte';bases[first].addTo(map);if(first!=='Eigene Karte')ctxFill.remove();
- L.control.layers(bases,null,{position:'topright',collapsed:true}).addTo(map);
- map.getContainer().classList.toggle('sat',first==='Satellit');map.on('baselayerchange',e=>{if(e.layer===own)ctxFill.addTo(map);else ctxFill.remove();map.getContainer().classList.toggle('sat',e.name==='Satellit');setCfg({base:e.name})})}
+ BASES={'Eigene Karte':own,'Satellit':sat,'Relief/Topo':topo,'OpenStreetMap':osm};
+ const LBL={'Eigene Karte':'Eigene','Satellit':'Satellit','Relief/Topo':'Relief','OpenStreetMap':'Straßen'};
+ const C=L.Control.extend({onAdd(){const box=L.DomUtil.create('div','lctl');
+   box.innerHTML='<button class="lbtn leaflet-bar" title="Kartenansicht">'+LAYERS_ICO+'</button><div class="lpop" style="display:none">'+Object.keys(BASES).map(n=>'<button class="lopt" data-n="'+n+'">'+PICTO[n]+'<span>'+LBL[n]+'</span></button>').join('')+'</div>';
+   L.DomEvent.disableClickPropagation(box);L.DomEvent.disableScrollPropagation(box);
+   const pop=box.querySelector('.lpop'),btn=box.querySelector('.lbtn');
+   btn.onclick=()=>{const on=pop.style.display==='none';pop.style.display=on?'grid':'none';btn.classList.toggle('on',on)};
+   box.querySelectorAll('.lopt').forEach(o=>o.onclick=()=>{setBase(o.dataset.n);pop.style.display='none';btn.classList.remove('on')});
+   return box}});
+ new C({position:'topright'}).addTo(map);
+ map.on('click',()=>{const p=document.querySelector('.lpop');if(p&&p.style.display!=='none'){p.style.display='none';document.querySelector('.lbtn').classList.remove('on')}});
+ setBase(cfg().base||'Eigene Karte')}
 
 // ---------- Live-Standort ----------
 let locWatch=null,locMk=null,locAcc=null,locFirst=true;

@@ -801,11 +801,11 @@ html.dark .legbtn.on,html.dark .locbtn.on{background:#6aa5ff;color:#121416}
 html.dark .leaflet-control-layers-toggle{filter:invert(1)}
 html.dark .leaflet-popup-content-wrapper,html.dark .leaflet-popup-tip{background:#1d2023;color:#eceee8}
 html.dark .leaflet-popup-content a{color:#6aa5ff}
-html.dark .leaflet-container,html.dark #map{background:#1a1c1e}
+html.darkmap .leaflet-container,html.darkmap #map{background:#1a1c1e}
 html.dark #gpxlbl{background:#2c3033;color:#eceee8}
-html.dark .leaflet-fill-pane canvas{filter:invert(1) hue-rotate(180deg) brightness(1.15) saturate(.7)}
-html.dark .leaflet-container:not(.sat) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
-html.dark .lbl{color:#d6d8d2;text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000}html.dark .lbl.st{color:#d9a6e4}
+html.darkmap .leaflet-fill-pane canvas{filter:invert(1) hue-rotate(180deg) brightness(1.15) saturate(.7)}
+html.darkmap .leaflet-container:not(.sat) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
+html.darkmap .lbl{color:#d6d8d2;text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000}html.darkmap .lbl.st{color:#d9a6e4}
 html.dark .leaflet-control-attribution{background:rgba(29,32,35,.8)!important;color:#9da198}html.dark .leaflet-control-attribution a{color:#6aa5ff}
 html.dark textarea{background:#16191b;color:#eceee8;border-color:#33373a}html.dark .chips button{background:#25282a;color:#eceee8;border-color:#3a3e41}
 html.dark #busy{background:#1d2023;color:#eceee8}html.dark .wnow{background:#1f2a38}
@@ -1185,7 +1185,7 @@ function addLegendBtn(){const C=L.Control.extend({onAdd(){const b=L.DomUtil.crea
 // ---------- Einstellungen (Seite „Mehr“) ----------
 function fillSettings(){const c=cfg();document.getElementById('s_icuId').value=c.icuId||'';document.getElementById('s_icuKey').value=c.icuKey||'';document.getElementById('s_gh').value=c.ghToken||''}
 function openSettings(msg){location.hash='#mehr';setTimeout(()=>{fillSettings();document.getElementById('s_msg').textContent=msg||''},30)}
-function initSettings(){fillSettings();applyTheme();document.querySelectorAll('#themeSel button').forEach(b=>b.onclick=()=>{setCfg({theme:b.dataset.t});applyTheme()});
+function initSettings(){fillSettings();applyTheme();document.querySelectorAll('#themeSel button').forEach(b=>b.onclick=()=>{setCfg({theme:b.dataset.t});applyTheme()});document.querySelectorAll('#mapThemeSel button').forEach(b=>b.onclick=()=>{setCfg({mapTheme:b.dataset.m});applyTheme()});setInterval(applyTheme,5*60000);
  document.getElementById('s_save').onclick=()=>{const v=id=>document.getElementById(id).value.trim();
   setCfg({icuId:v('s_icuId'),icuKey:v('s_icuKey'),ghToken:v('s_gh')});document.getElementById('s_msg').textContent='Gespeichert.';
   GH.sync().then(()=>ICU.pull(true))};
@@ -1226,10 +1226,15 @@ function renderDetail(id){const el=document.getElementById('detail'),hd=document
 
 // ---------- Hell / Dunkel ----------
 const THEME={chartBg:'#f4f5f0',chartTx:'#555',cur:'#1d1f1a',dark:false};const MQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
+function sunElev(lat,lon,ms){const r=Math.PI/180,n=ms/864e5+2440587.5-2451545,L=(280.46+0.9856474*n)%360,g=((357.528+0.9856003*n)%360)*r;
+ const lam=(L+1.915*Math.sin(g)+0.02*Math.sin(2*g))*r,eps=(23.439-0.0000004*n)*r,ra=Math.atan2(Math.cos(eps)*Math.sin(lam),Math.cos(lam)),dec=Math.asin(Math.sin(eps)*Math.sin(lam));
+ const ha=(((18.697374558+24.06570982441908*n)%24)*15+lon)*r-ra;return Math.asin(Math.sin(lat*r)*Math.sin(dec)+Math.cos(lat*r)*Math.cos(dec)*Math.cos(ha))/r}
 function applyTheme(){const t=cfg().theme||'auto';const d=t==='dark'||(t==='auto'&&MQ&&MQ.matches);THEME.dark=d;
+ const mt=cfg().mapTheme||'sun';let dm=false;if(mt==='app')dm=d;else if(mt==='sun'){let la=48.84,lo=10.09;try{if(map){const c=map.getCenter();la=c.lat;lo=c.lng}}catch(e){}dm=sunElev(la,lo,Date.now())<-4}
+ document.documentElement.classList.toggle('darkmap',dm);document.querySelectorAll('#mapThemeSel button').forEach(b=>b.classList.toggle('on',b.dataset.m===mt));
  document.documentElement.classList.toggle('dark',d);Object.assign(THEME,d?{chartBg:'#25282a',chartTx:'#a9ada4',cur:'#f2f3ee'}:{chartBg:'#f4f5f0',chartTx:'#555',cur:'#1d1f1a'});
  const DK={'#a3a3a3':'#4b4f53','#c4c4c4':'#44484c','#808080':'#62666a','#5f5f5f':'#7d8186','#777':'#5a5d60'};
- if(window.CTXL)CTXL.eachLayer(l=>{if(!l.options)return;if(l.options._c==null)l.options._c=l.options.color;const c=d?(DK[l.options._c]||l.options._c):l.options._c;if(l.options.color!==c)l.setStyle({color:c})});
+ if(window.CTXL)CTXL.eachLayer(l=>{if(!l.options)return;if(l.options._c==null)l.options._c=l.options.color;const c=dm?(DK[l.options._c]||l.options._c):l.options._c;if(l.options.color!==c)l.setStyle({color:c})});
  const mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=d?'#16181a':'#1f6fd1';
  document.querySelectorAll('#themeSel button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));try{if(RD){drawCharts();setCursor(RD.ci||0)}}catch(e){}}
 if(MQ&&MQ.addEventListener)MQ.addEventListener('change',applyTheme);
@@ -1505,7 +1510,7 @@ fetch('data.json').then(r=>r.json()).then(j=>{D=j;setTimeout(()=>{init();appStar
 <div class="hint">Fine-grained Token, nur Repo „Longboard-Daten“, Contents: Read and write</div>
 <div class="btnrow"><button class="btn" id="s_save">Speichern</button></div><div id="s_msg" class="small" style="color:#1a7f37;margin-top:6px"></div>
 <div class="sync"><span id="ghstat" class="small muted"></span><button class="btn sec sm" id="syncbtn">Jetzt abgleichen</button></div></div>
-<div class="card"><div class="ch">Darstellung</div><div class="seg" id="themeSel"><button data-t="auto">Automatisch</button><button data-t="light">Hell</button><button data-t="dark">Dunkel</button></div><div class="hint">„Automatisch“ folgt der Einstellung deines Handys.</div></div>
+<div class="card"><div class="ch">Darstellung</div><div class="seg" id="themeSel"><button data-t="auto">Automatisch</button><button data-t="light">Hell</button><button data-t="dark">Dunkel</button></div><div class="hint">„Automatisch“ folgt der Einstellung deines Handys.</div><div class="ch" style="margin-top:14px">Karte dunkel</div><div class="seg" id="mapThemeSel"><button data-m="sun">Nur nachts</button><button data-m="app">Wie die App</button><button data-m="light">Nie</button></div><div class="hint">„Nur nachts“: dunkle Karte erst, wenn die Sonne am Kartenort untergegangen ist.</div></div>
 <div class="card"><div class="ch">Über</div><div class="small muted">Wegdaten © OpenStreetMap-Mitwirkende (ODbL) · Höhen: Copernicus DEM GLO-30 · Wetter: DWD über Bright Sky, Open-Meteo · Luftbild: Esri · Topo: OpenTopoMap</div></div>
 </div></section>
 <nav id="tabs"><a href="#karte" data-p="karte"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span>Karte</span></a><a href="#fahrten" data-p="fahrten"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Fahrten</span></a><a href="#wind" data-p="wind"><svg viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg><span>Wind</span></a><a href="#mehr" data-p="mehr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Mehr</span></a></nav>

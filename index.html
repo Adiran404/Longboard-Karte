@@ -1389,7 +1389,7 @@ function prefill(r,I,k){const o={},src={};const sv=r.rv&&r.rv.vals&&k!=null?r.rv
 
 // ---- Prüf-Ansicht ----
 let REV=null,REVIEWING=false,revLayer=null;
-function exitReview(){if(!REVIEWING)return;REVIEWING=false;REV=null;if(revLayer)revLayer.clearLayers();redrawSoon()}
+function exitReview(){SPLIT=null;if(!REVIEWING)return;REVIEWING=false;REV=null;if(revLayer)revLayer.clearLayers();redrawSoon()}
 async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)await new Promise(s=>setTimeout(s,250));
  const r=RIDES.find(x=>x.id===id);const body=document.getElementById('rvbody');if(!r){body.innerHTML='<div class="card">Fahrt nicht gefunden.</div>';return}
  const A=rideArrays(r);let rv=r.rv&&r.rv.sec&&(r.rv.v===REV_VER||r.rv.fin)?r.rv:null;
@@ -1402,7 +1402,7 @@ function revDraw(){if(!REV)return;revLayer.clearLayers();const R=L.canvas({paddi
  REV.infos.forEach((I,k)=>{const seg=pts.slice(I.i0,I.i1+1);if(seg.length<2)return;const st=REV.rv.res[k];const isCur=k===REV.cur;
   const col=isCur?'#1f6fd1':st==='ok'||st==='new'||st==='spot'?'#2e9e44':st==='del'?'#b0b0b0':I.kind==='road'?'#9a9a9a':'#f0a030';
   if(isCur)L.polyline(seg,{renderer:R,color:'#fff',weight:12,opacity:1,interactive:false}).addTo(revLayer);
-  L.polyline(seg,{renderer:R,color:col,weight:isCur?7:5,opacity:isCur?1:.85}).on('click',()=>goSec(k)).addTo(revLayer)});
+  L.polyline(seg,{renderer:R,color:col,weight:isCur?7:5,opacity:isCur?1:.85}).on('click',ev=>{if(SPLIT){L.DomEvent.stop(ev);SPLIT(ev.latlng);return}goSec(k)}).addTo(revLayer)});
  const I=REV.infos[REV.cur];if(!I)return;const seg=pts.slice(I.i0,I.i1+1);
  let acc=0;for(let i=1;i<seg.length;i++){acc+=dist(seg[i-1],seg[i]);if(acc>Math.max(120,I.L/5)){acc=0;const b=bearing(seg[i-1],seg[Math.min(seg.length-1,i+2)]);
    L.marker(seg[i],{interactive:false,icon:L.divIcon({className:'rvarr',iconSize:[18,18],html:'<div style="transform:rotate('+(b-90)+'deg)">➤</div>'})}).addTo(revLayer)}}
@@ -1433,7 +1433,8 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  h+='<div class="rvbtns"><button class="btn sec" id="rvprev" aria-label="Zurück">‹</button><button class="btn" id="rvok">'+(I.kind==='road'?(Object.keys(REV.sel).length?'Übernehmen':'Weiter'):I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter')+'</button><button class="btn sec" id="rvskip" aria-label="Überspringen">›</button></div>';
  if(I.kind==='new')h+='<div class="btnrow"><button class="btn sec sm" id="rvdel">Kein Weg (GPS-Ungenauigkeit)</button><button class="btn sec sm" id="rvtospot">War ein Spot</button></div>';
  if(I.kind==='spot')h+='<div class="btnrow"><button class="btn sec sm" id="rvtonew">Kein Spot, war ein Weg</button><button class="btn sec sm" id="rvdel">Verwerfen</button></div>';
- h+='<div style="display:flex;justify-content:center;gap:14px;margin-top:12px">'+(LASTSEL&&(I.kind==='way'||I.kind==='uway')?'<button class="lnkbtn" id="rvsame">Wie der vorige</button>':'')+'<button class="lnkbtn" id="rvrest">Restliche Wege passen auch</button></div>';
+ h+='<div style="display:flex;justify-content:center;gap:14px;margin-top:12px">'+(REV.cur>0&&I.kind!=='spot'?'<button class="lnkbtn" id="rvsame">Wie der vorige</button>':'')+'<button class="lnkbtn" id="rvrest">Restliche Wege passen auch</button></div>';
+ h+='<div class="btnrow" style="justify-content:center"><button class="btn sec sm" id="rvsplit">✂ Hier teilen</button>'+(REV.cur+1<REV.infos.length?'<button class="btn sec sm" id="rvmerge">Mit nächstem verbinden</button>':'')+'</div>';
  const body=document.getElementById('rvbody');body.innerHTML=h;
  body.querySelectorAll('.chips2').forEach(c=>c.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const q=c.dataset.k;let v=b.dataset.v;if(q==='belag')v=+v;
    REV.dirty=true;if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}if(I.kind==='road')document.getElementById('rvok').textContent=Object.keys(REV.sel).length?'Übernehmen':'Weiter'}));
@@ -1442,10 +1443,24 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  if($('rvdel'))$('rvdel').onclick=()=>markSec('del');
  if($('rvtospot'))$('rvtospot').onclick=()=>{REV.rv.sec[REV.cur][0]='spot';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  if($('rvtonew'))$('rvtonew').onclick=()=>{REV.rv.sec[REV.cur][0]='new';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
- $('rvrest').onclick=acceptRest;if($('rvsame'))$('rvsame').onclick=()=>{for(const q of ['belag','autos','wind','leute'])if(LASTSEL[q]!=null)REV.sel[q]=LASTSEL[q];else delete REV.sel[q];document.querySelectorAll('#rvbody .chips2').forEach(c=>{const q=c.dataset.k;c.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',REV.sel[q]!=null&&b.dataset.v==String(REV.sel[q])))})};
+ $('rvrest').onclick=acceptRest;$('rvsplit').onclick=startSplit;if($('rvmerge'))$('rvmerge').onclick=mergeNext;if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['belag','autos','wind','leute','wo'])if(PV[q]!=null&&qs.includes(q))REV.sel[q]=PV[q];else if(qs.includes(q))delete REV.sel[q];if(I.kind==='road')$('rvok').textContent=Object.keys(REV.sel).length?'Übernehmen':'Weiter';document.querySelectorAll('#rvbody .chips2').forEach(c=>{const q=c.dataset.k;c.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',REV.sel[q]!=null&&b.dataset.v==String(REV.sel[q])))})};
  $('rvtl').onclick=ev=>{const rc=ev.currentTarget.getBoundingClientRect();const f=(ev.clientX-rc.left)/rc.width;const dd=f*REV.A.d[REV.A.n-1];const k=REV.infos.findIndex(J=>REV.A.d[J.i0]<=dd&&REV.A.d[J.i1]>=dd);if(k>=0)goSec(k)};
  revDraw();const seg=REV.A.pts.slice(I.i0,I.i1+1);map.invalidateSize();if(seg.length>1){const b=L.latLngBounds(seg);const tz=Math.min(16,map.getBoundsZoom(b,false,L.point(100,100)));
   if(!REV.moved||!map.getBounds().pad(-.08).contains(b)||map.getZoom()<tz-1||map.getZoom()>tz+1){map.flyToBounds(b,{padding:[50,50],maxZoom:16,duration:REV.moved?.45:0});REV.moved=true}}}
+let SPLIT=null,SPLITHOOK=false;
+function shiftKeys(o,from,delta){const n={};for(const k in o||{}){const i=+k;if(i>=from){if(delta<0&&i===from)continue;n[i+delta]=o[k]}else n[i]=o[k]}return n}
+async function mergeNext(){const R_=REV;if(!R_)return;if(R_.dirty){R_.dirty=false;await saveCur(R_)}const k=R_.cur,s=R_.rv.sec;if(k+1>=s.length)return;
+ const a=s[k],b=s[k+1];a[2]=b[2];if(a[0]==='road'&&b[0]!=='road'){a[0]=b[0];a[3]=b[3]}s.splice(k+1,1);
+ R_.rv.res=shiftKeys(R_.rv.res,k+1,-1);delete R_.rv.res[k];R_.rv.vals=shiftKeys(R_.rv.vals,k+1,-1);R_.rv.man=true;
+ R_.infos.splice(k+1,1);R_.infos[k]=secInfo(R_.r,R_.A,a);await saveRv(R_);showSec(k)}
+function startSplit(){const R_=REV;if(!R_)return;if(!SPLITHOOK){SPLITHOOK=true;map.on('click',ev=>{if(SPLIT)SPLIT(ev.latlng)})}const I=R_.infos[R_.cur];if(I.i1-I.i0<4)return;
+ document.getElementById('rvprog').textContent='Tippe auf die Stelle im blauen Abschnitt, an der geteilt werden soll';document.getElementById('pg-pruefen').scrollTo({top:0,behavior:'smooth'});map.getContainer().style.cursor='crosshair';
+ SPLIT=async ll=>{SPLIT=null;map.getContainer().style.cursor='';if(REV!==R_)return;const q=[ll.lat,ll.lng];let bi=-1,bd=80;
+  for(let i=I.i0+2;i<=I.i1-2;i++){const dd=dist(q,R_.A.pts[i]);if(dd<bd){bd=dd;bi=i}}
+  if(bi<0){showSec(R_.cur);document.getElementById('rvprog').textContent='Daneben getippt – nochmal „Hier teilen“';return}
+  if(R_.dirty){R_.dirty=false;await saveCur(R_)}const k=R_.cur,s=R_.rv.sec;const a=s[k];const b=[a[0],bi,a[2],a[3]];a[2]=bi;s.splice(k+1,0,b);
+  R_.rv.res=shiftKeys(R_.rv.res,k+1,1);R_.rv.vals=shiftKeys(R_.rv.vals,k+1,1);if(R_.rv.vals&&R_.rv.vals[k])R_.rv.vals[k+1]=Object.assign({},R_.rv.vals[k]);delete R_.rv.res[k];R_.rv.man=true;
+  R_.infos.splice(k+1,0,secInfo(R_.r,R_.A,b));R_.infos[k]=secInfo(R_.r,R_.A,a);await saveRv(R_);showSec(k)}}
 function curSel(){const sel=Object.assign({},REV.sel);const nm=document.getElementById('rvname');if(nm&&nm.value.trim())sel.name=nm.value.trim();const note=((document.getElementById('rvnote')||{}).value||'').trim();return {sel,note}}
 async function saveCur(R_){const {sel,note}=curSel();const res=await applySec(R_,R_.cur,sel,note);R_.rv.res[R_.cur]=res;R_.rv.vals=R_.rv.vals||{};R_.rv.vals[R_.cur]=Object.assign({},sel,note?{note}:{});
  const I=R_.infos[R_.cur];if(I.kind==='way'||I.kind==='uway')LASTSEL=sel;await saveRv(R_)}

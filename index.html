@@ -737,6 +737,43 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 @media(min-width:700px){.legbox{left:auto;right:12px;width:340px;bottom:12px}}
 .legbtn{height:34px;padding:0 10px;background:#fff;font-size:13px;font-weight:600;cursor:pointer;border:2px solid rgba(0,0,0,.2);border-radius:4px;color:#333}
 .legbtn.on{color:#fff;background:#1d1f1a}
+
+:root{--c:#1f6fd1;--ink:#1d1f1a;--bg:#f3f4ef;--mut:#6b6f66;--tab:60px;--sb:env(safe-area-inset-bottom,0px)}
+#map{bottom:calc(var(--tab) + var(--sb))}
+#chartbox,#sheet{bottom:calc(var(--tab) + var(--sb))!important}
+.legbox{bottom:calc(var(--tab) + var(--sb) + 8px)!important}
+#tabs{position:fixed;left:0;right:0;bottom:0;height:var(--tab);padding-bottom:var(--sb);background:#fff;border-top:1px solid #e3e4de;display:flex;z-index:4000}
+#tabs a{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:11px;color:#8a8e85;text-decoration:none;font-weight:600;-webkit-tap-highlight-color:transparent}
+#tabs a svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#tabs a.on{color:var(--c)}
+.page{position:fixed;left:0;right:0;top:0;bottom:calc(var(--tab) + var(--sb));overflow:auto;background:var(--bg);z-index:3500;display:none;-webkit-overflow-scrolling:touch}
+.page.show{display:block}
+.pin{max-width:640px;margin:0 auto;padding:18px 14px 28px;font-size:14px}
+.pin h1{font-size:26px;margin:2px 0 8px;letter-spacing:-.3px}
+.card{background:#fff;border-radius:16px;padding:14px;margin:12px 0;box-shadow:0 1px 2px rgba(0,0,0,.05),0 2px 10px rgba(0,0,0,.04)}
+.ch{font-weight:700;margin-bottom:6px;font-size:15px}
+.muted{color:var(--mut)}.hint{font-size:12px;color:var(--mut);margin-top:3px}
+.btn{border:0;border-radius:11px;padding:10px 14px;background:var(--ink);color:#fff;font-weight:600;font-size:14px;cursor:pointer;display:inline-block;font-family:inherit;line-height:1.2}
+.btn.sec{background:#e8eae3;color:var(--ink)}.btn.wide{width:100%;margin:12px 0 4px;padding:12px}.btn.sm{padding:6px 10px;font-size:12px}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.pin label{display:block;margin-top:12px;font-size:13px;font-weight:600}.pin input[type=password],.pin input:not([type]){width:100%;box-sizing:border-box;padding:10px;font-size:15px;margin-top:4px;border:1px solid #d8dad2;border-radius:10px;background:#fafbf8}
+#gpxlbl{margin:0}
+.sync{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #efefea}
+.back{color:var(--c);text-decoration:none;font-weight:600;font-size:15px}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.tile{background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 1px 2px rgba(0,0,0,.05)}.tv{font-size:18px;font-weight:700;white-space:nowrap}.tl{font-size:11px;color:var(--mut);margin-top:2px}
+.wrow{display:flex;gap:16px;align-items:center;margin-top:6px}.wkt{font-size:48px;font-weight:800;line-height:1;letter-spacing:-1px}.wkt small{font-size:18px;font-weight:600;letter-spacing:0}
+.arr{display:inline-block;width:20px;text-align:center;font-weight:800;color:var(--c);line-height:1}.arr.big{font-size:52px;width:56px}
+.fr{display:grid;grid-template-columns:44px 18px 36px 1fr 58px 50px;align-items:center;gap:6px;font-size:13px;padding:5px 0;border-top:1px solid #f1f1ec}
+.fb{position:relative;height:10px;background:#f0f1ec;border-radius:5px;overflow:hidden}.fb i{position:absolute;left:0;top:0;bottom:0;border-radius:5px}.fb i.g{background:none;border-right:2px solid rgba(0,0,0,.55);border-radius:0}
+.fv{text-align:right;white-space:nowrap}.fp{font-size:11px;color:var(--mut);text-align:right}
+.wchip{position:absolute;z-index:1001;top:10px;left:50%;transform:translateX(-50%);background:#fff;border-radius:22px;padding:7px 14px;box-shadow:0 2px 10px rgba(0,0,0,.2);display:flex;gap:7px;align-items:center;color:var(--ink);text-decoration:none;font-size:14px;white-space:nowrap}
+.wchip .muted{font-size:12px}
+#pg-fahrten .cal{background:#fff;border-radius:16px;padding:12px;margin:12px 0;box-shadow:0 1px 2px rgba(0,0,0,.05),0 2px 10px rgba(0,0,0,.04)}
+#pg-fahrten .cd{height:44px;font-size:14px}#pg-fahrten .calh{font-size:16px}
+#pg-fahrten .ride{background:#fff;border-radius:14px;padding:12px 14px;margin:8px 0;box-shadow:0 1px 2px rgba(0,0,0,.05);font-size:14px}
+#pg-fahrten .ride .rn{font-size:12px;margin-top:3px}#pg-fahrten .ride.lnk{background:none;box-shadow:none;padding:4px 2px}
+@media (max-width:600px){.wchip{top:auto;bottom:calc(var(--tab) + var(--sb) + 14px)}}
 </style></head><body>
 <div id="map"></div>
 <div id="legbox" class="legbox" style="display:none"><div class="legh"><b>Legende</b><button id="legclose" aria-label="Legende schließen">✕</button></div>
@@ -753,14 +790,8 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 <div id="wleg" class="small" style="display:none"><span style="color:#2e9e44">■</span> Rückenwind <span style="color:#9ccc3c">■</span> halber Wind/raum <span style="color:#f08c19">■</span> am Wind <span style="color:#d6301f">■</span> gegen den Wind (±45°)</div><div id="chval" class="small"></div><canvas id="chart"></canvas></div>
 <button id="toggle">Filter</button>
 <div class="panel" id="panel">
-<h1>Longboard-Karte · Ostalb &amp; Ries</h1>
-<div id="wnow" class="wnow"></div>
-<div class="q" style="margin-top:6px"><b>Deine Fahrten</b></div><div id="rides" class="small"></div>
-<div class="row"><button id="icubtn" class="pbtn">Neue Fahrten holen</button><button id="setbtn" class="pbtn">⚙ Einstellungen</button><label id="gpxlbl">Datei importieren (GPX/FIT/TCX)<input type="file" id="gpx" multiple accept=".gpx,.fit,.tcx,application/gpx+xml,application/octet-stream" style="display:none"></label></div>
-<div class="row small" id="dbstat">Lade gespeicherte Daten …</div>
-<div class="row small"><span id="ghstat" style="color:#666"></span> <button id="syncbtn" class="pbtn" style="padding:1px 6px">↻</button></div>
+<h1>Filter &amp; Darstellung</h1>
 
-<hr style="border:none;border-top:1px solid #e3e3e3;margin:8px 0">
 <div class="row"><b>Linienfarbe:</b><label><input type="radio" name="cm" value="car" checked> Autofrei</label><label><input type="radio" name="cm" value="grade"> Steigung</label></div>
 <div class="row"><b>Wind aus:</b> <span id="wlabel"></span></div>
 <div class="wind" id="wind"></div>
@@ -1064,17 +1095,25 @@ const WX={busy:false,
    try{const ok=await this.forRide(id);if(ok&&curRide===id)setTimeout(()=>showRide(id),50)}catch(e){console.warn('wx',e)}}}finally{this.busy=false}}};
 
 // ---------- Wind jetzt + Vorhersage ----------
-async function windNow(lat,lon){const el=document.getElementById('wnow');if(!el)return;
- if(lat==null){const c=map.getCenter();lat=c.lat;lon=c.lng}
- el.innerHTML='<span class="small">Wind wird geladen …</span>';
- try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m&wind_speed_unit=kn&timezone=auto&forecast_hours=13');
-  const j=await r.json();const c=j.current;const sec=Math.round(c.wind_direction_10m/45)%8;
-  const H=j.hourly||{time:[]};let fc='';for(let i=2;i<H.time.length;i+=2)fc+='<span>'+H.time[i].slice(11,13)+' h: <b>'+Math.round(H.wind_speed_10m[i])+'</b>/'+Math.round(H.wind_gusts_10m[i])+' '+DIR16(H.wind_direction_10m[i])+'</span> ';
-  el.innerHTML='<div><b>Wind jetzt: '+Math.round(c.wind_speed_10m)+' kt</b>, Böen '+Math.round(c.wind_gusts_10m)+' kt, aus '+DIR16(c.wind_direction_10m)+' ('+Math.round(c.wind_direction_10m)+'°)</div>'
-   +'<div class="row"><button class="pbtn" id="wset">Karte auf '+DIRS[sec]+'-Wind stellen</button><button class="pbtn" id="wref">Für Kartenmitte neu laden</button></div>'
-   +'<div class="small fc">Vorhersage (kt/Böen): '+fc+'</div><div class="small" style="color:#888">Modell Open-Meteo, Ort: '+lat.toFixed(3)+', '+lon.toFixed(3)+'</div>';
-  document.getElementById('wset').onclick=()=>{wind=sec;draw()};document.getElementById('wref').onclick=()=>windNow()}
- catch(e){el.innerHTML='<span class="small">Windvorhersage gerade nicht erreichbar. </span><button class="pbtn" onclick="windNow()">Nochmal</button>'}}
+let WINDNOW=null;
+function arrow(dir,cls){return '<span class="arr '+(cls||'')+'" style="transform:rotate('+((dir+180)%360)+'deg)">↑</span>'}
+function wcol(k){return k<8?'#b9c2cc':k<12?'#9ccc3c':k<20?'#2e9e44':k<28?'#f08c19':'#d6301f'}
+function wrow(time,ws,gs,dir,extra){const mx=35;return '<div class="fr"><span class="ft">'+time+'</span>'+arrow(dir)+'<span class="fd">'+DIR16(dir)+'</span><span class="fb"><i style="width:'+Math.min(100,100*ws/mx)+'%;background:'+wcol(ws)+'"></i>'+(gs!=null?'<i class="g" style="width:'+Math.min(100,100*gs/mx)+'%"></i>':'')+'</span><span class="fv"><b>'+Math.round(ws)+'</b>'+(gs!=null?' / '+Math.round(gs):'')+'</span><span class="fp">'+(extra||'')+'</span></div>'}
+async function windNow(lat,lon,label){const el=document.getElementById('wnow');
+ if(lat==null){if(locMk){const ll=locMk.getLatLng();lat=ll.lat;lon=ll.lng;label='an deinem Standort'}else{const c=map.getCenter();lat=c.lat;lon=c.lng;label='in der Kartenmitte'}}
+ if(el)el.innerHTML='<div class="card muted">Wind wird geladen …</div>';
+ try{const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat.toFixed(3)+'&longitude='+lon.toFixed(3)+'&current=wind_speed_10m,wind_direction_10m,wind_gusts_10m,temperature_2m&hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,precipitation_probability&wind_speed_unit=kn&timezone=auto&forecast_hours=25');
+  if(!r.ok)throw new Error(r.status);const j=await r.json();const c=j.current;WINDNOW={c,lat,lon,label,t:Date.now()};const sec=Math.round(c.wind_direction_10m/45)%8;
+  const chip=document.getElementById('wchip');if(chip){chip.innerHTML=arrow(c.wind_direction_10m)+'<b>'+Math.round(c.wind_speed_10m)+' kt</b><span class="muted">'+DIR16(c.wind_direction_10m)+' · Böen '+Math.round(c.wind_gusts_10m)+'</span>';chip.style.display='flex'}
+  if(!el)return;const H=j.hourly||{time:[]};let rows='';
+  for(let i=1;i<H.time.length;i++)rows+=wrow(H.time[i].slice(11,16),H.wind_speed_10m[i],H.wind_gusts_10m[i],H.wind_direction_10m[i],H.precipitation_probability&&H.precipitation_probability[i]>=30?'☂ '+H.precipitation_probability[i]+'%':'');
+  el.innerHTML='<div class="card wbig"><div class="muted">Wind jetzt '+label+'</div><div class="wrow">'+arrow(c.wind_direction_10m,'big')+'<div><div class="wkt">'+Math.round(c.wind_speed_10m)+' <small>kt</small></div><div>Böen <b>'+Math.round(c.wind_gusts_10m)+' kt</b> · aus '+DIR16(c.wind_direction_10m)+' ('+Math.round(c.wind_direction_10m)+'°)</div>'+(c.temperature_2m!=null?'<div class="muted">'+Math.round(c.temperature_2m)+' °C</div>':'')+'</div></div>'
+   +'<div class="btnrow"><button class="btn" id="wset">Karte auf '+DIRS[sec]+'-Wind stellen</button><button class="btn sec" id="wloc">Mein Standort</button><button class="btn sec" id="wmap">Kartenmitte</button></div></div>'
+   +'<div class="card"><div class="ch">Nächste 24 Stunden <span class="muted" style="font-weight:400">· kt / Böen</span></div>'+rows+'<div class="small muted" style="margin-top:6px">Wettermodell Open-Meteo</div></div>';
+  document.getElementById('wset').onclick=()=>{wind=sec;draw();location.hash='#karte'};
+  document.getElementById('wmap').onclick=()=>{const m=map.getCenter();windNow(m.lat,m.lng,'in der Kartenmitte')};
+  document.getElementById('wloc').onclick=()=>{if(!navigator.geolocation)return;navigator.geolocation.getCurrentPosition(p=>windNow(p.coords.latitude,p.coords.longitude,'an deinem Standort'),()=>{el.insertAdjacentHTML('afterbegin','<div class="card">Standort nicht verfügbar.</div>')},{maximumAge:60000,timeout:15000})}}
+ catch(e){if(el)el.innerHTML='<div class="card">Windvorhersage gerade nicht erreichbar. <button class="btn sm" onclick="windNow()">Nochmal</button></div>'}}
 
 // ---------- Kartenhintergründe ----------
 function addBaseLayers(){
@@ -1106,22 +1145,45 @@ function toggleLegend(show){const box=document.getElementById('legbox');const on
 function addLegendBtn(){const C=L.Control.extend({onAdd(){const b=L.DomUtil.create('button','legbtn leaflet-bar');b.title='Legende';b.textContent='Legende';L.DomEvent.disableClickPropagation(b);b.onclick=()=>toggleLegend();return b}});new C({position:'topright'}).addTo(map);
  document.getElementById('legclose').onclick=()=>toggleLegend(false)}
 
-// ---------- Einstellungen ----------
-function openSettings(msg){const c=cfg();document.getElementById('s_icuId').value=c.icuId||'';document.getElementById('s_icuKey').value=c.icuKey||'';document.getElementById('s_gh').value=c.ghToken||'';
- document.getElementById('s_msg').textContent=msg||'';document.getElementById('setdlg').style.display='flex'}
-function initSettings(){
- document.getElementById('setbtn').onclick=()=>openSettings();
- document.getElementById('s_close').onclick=()=>document.getElementById('setdlg').style.display='none';
+// ---------- Einstellungen (Seite „Mehr“) ----------
+function fillSettings(){const c=cfg();document.getElementById('s_icuId').value=c.icuId||'';document.getElementById('s_icuKey').value=c.icuKey||'';document.getElementById('s_gh').value=c.ghToken||''}
+function openSettings(msg){location.hash='#mehr';setTimeout(()=>{fillSettings();document.getElementById('s_msg').textContent=msg||''},30)}
+function initSettings(){fillSettings();
  document.getElementById('s_save').onclick=()=>{const v=id=>document.getElementById(id).value.trim();
-  setCfg({icuId:v('s_icuId'),icuKey:v('s_icuKey'),ghToken:v('s_gh')});document.getElementById('setdlg').style.display='none';
+  setCfg({icuId:v('s_icuId'),icuKey:v('s_icuKey'),ghToken:v('s_gh')});document.getElementById('s_msg').textContent='Gespeichert.';
   GH.sync().then(()=>ICU.pull(true))};
- document.getElementById('icubtn').onclick=()=>ICU.pull(true);
+ document.getElementById('icubtn').onclick=()=>{location.hash='#fahrten';ICU.pull(true)};
  document.getElementById('syncbtn').onclick=()=>GH.sync()}
+
+// ---------- Unterseiten ----------
+function route(){const h=(location.hash||'#karte').slice(1);const [pg,arg]=h.split('/');
+ document.querySelectorAll('.page').forEach(p=>p.classList.toggle('show',p.id==='pg-'+pg));
+ document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.p===(pg==='fahrt'?'fahrten':pg)));
+ if(pg==='karte'||!document.getElementById('pg-'+pg))setTimeout(()=>map&&map.invalidateSize(),60);
+ if(pg==='fahrt')renderDetail(decodeURIComponent(arg||''));
+ if(pg==='fahrten')renderRides();
+ if(pg==='wind'&&(!WINDNOW||Date.now()-WINDNOW.t>15*60000||!document.querySelector('#wnow .wbig')))windNow();
+ if(pg==='mehr')fillSettings();
+ const pe=document.getElementById('pg-'+pg);if(pe)pe.scrollTop=0}
+window.addEventListener('hashchange',route);
+function tile(v,l){return '<div class="tile"><div class="tv">'+v+'</div><div class="tl">'+l+'</div></div>'}
+function renderDetail(id){const el=document.getElementById('detail');const r=RIDES.find(x=>x.id===id);
+ if(!r){el.innerHTML='<a href="#fahrten" class="back">‹ Fahrten</a><div class="card">Fahrt nicht gefunden.</div>';return}
+ const st=new Date(r.start||r.date),t1=r.start&&r.elapsed?new Date(Date.parse(r.start)+r.elapsed*1000):null,hm=d=>d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+ let h='<a href="#fahrten" class="back">‹ Fahrten</a><h1 style="margin-bottom:2px">'+st.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+'</h1><div class="muted">'+(r.start?hm(st)+(t1?'–'+hm(t1):'')+' Uhr':'')+(r.name?' · '+esc(r.name):'')+'</div>';
+ h+='<button class="btn wide" id="dmap">Strecke &amp; Diagramme auf der Karte</button>';
+ h+='<div class="tiles">'+tile(r.km.toFixed(1)+' km','Distanz')+tile(fmtDur(r.dur),'Fahrzeit')+(r.elapsed?tile(fmtDur(r.elapsed),'Gesamtzeit'):'')+(r.avg?tile(r.avg+' km/h','Ø Tempo'):'')+(r.vmax?tile(r.vmax+' km/h','Max. Tempo'):'')
+  +(r.up!=null?tile(r.up+' m','Anstieg'):'')+(r.hrAvg?tile(r.hrAvg+(r.hrMax?' / '+r.hrMax:''),'Puls Ø / max'):'')+(r.kcal?tile(r.kcal,'kcal'):'')+(r.ways!=null?tile(r.ways,'Wege aufgedeckt'):'')+'</div>';
+ if(r.wx&&r.wx.h){const t0=Date.parse(r.start)/1000,t2=t0+(r.elapsed||r.dur||0);const hs=r.wx.h.filter(x=>{const t=Date.parse(x[0])/1000;return t>=t0-3600&&t<=t2+3600&&x[1]!=null});
+  h+='<div class="card"><div class="ch">Wind während der Fahrt <span class="muted" style="font-weight:400">· kt / Böen</span></div>'+hs.map(x=>wrow(new Date(Date.parse(x[0])).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),x[1],x[2],x[3],x[4]!=null?Math.round(x[4])+' °C':'')).join('')
+   +'<div class="small muted" style="margin-top:6px">'+esc(r.wx.station)+(r.wx.km!=null?' · '+r.wx.km+' km entfernt':'')+(r.wx.src?' · '+esc(r.wx.src):'')+'</div></div>'}
+ else{h+='<div class="card muted">Winddaten werden geladen …</div>';WX.forRide(id).then(ok=>{if(ok&&location.hash==='#fahrt/'+id)renderDetail(id)})}
+ el.innerHTML=h;document.getElementById('dmap').onclick=()=>{location.hash='#karte';setTimeout(()=>showRide(id),120)}}
 
 // ---------- Start ----------
 storeReady.then(()=>{notify('ratings');notify('rides');updDbStat()});
 function appStart(){
- initSettings();addBaseLayers();addLocate();addLegendBtn();windNow();
+ initSettings();addBaseLayers();addLocate();addLegendBtn();route();windNow();
  (async()=>{await GH.sync();await ICU.pull(false)})();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(cfg().icuLast||0)>10*60000){GH.sync().then(()=>ICU.pull(false))}})}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));
@@ -1285,7 +1347,7 @@ function renderRides(){const el=document.getElementById('rides');if(!el)return;
    +'<div class="rn">'+(r.name?esc(r.name):'')+(w?(r.name?' · ':'')+'Wind '+w:'')+'</div></div>'}).join('')
   +(CALDAY?'<div class="ride lnk" data-all="1">Alle Fahrten im Monat zeigen</div>':'')+(curRide?'<div class="ride lnk" data-id="">✕ Fahrt ausblenden</div>':'');
  el.innerHTML=g;
- const open=id=>{showRide(id);if(id&&window.innerWidth<600)document.getElementById('panel').classList.add('hide')};
+ const open=id=>{if(id)location.hash='#fahrt/'+encodeURIComponent(id);else showRide('')};
  el.querySelectorAll('.calnav').forEach(b=>b.onclick=()=>{let mm=CAL.m+(+b.dataset.d),yy=CAL.y;if(mm<0){mm=11;yy--}if(mm>11){mm=0;yy++}CAL={y:yy,m:mm};CALDAY=null;renderRides()});
  el.querySelectorAll('.cd.has').forEach(c=>c.onclick=()=>{const rs=byDay[c.dataset.day];if(rs.length===1){CALDAY=null;open(rs[0].id)}else{CALDAY=CALDAY===c.dataset.day?null:c.dataset.day;renderRides()}});
  el.querySelectorAll('.ride').forEach(d=>d.onclick=()=>{if(d.dataset.all){CALDAY=null;renderRides()}else open(d.dataset.id)})}
@@ -1371,16 +1433,22 @@ setTimeout(()=>{const cv=document.getElementById('chart');if(!cv)return;['mousem
 
 fetch('data.json').then(r=>r.json()).then(j=>{D=j;setTimeout(()=>{init();appStart()},10)}).catch(e=>{document.getElementById('busy').textContent='Daten konnten nicht geladen werden.'});
 </script>
-<div id="setdlg" class="dlg"><div class="dlgin">
-<b>Einstellungen</b>
-<div class="hint">Alles hier bleibt nur auf diesem Gerät im Browser gespeichert. Auf jedem Gerät einmal eintragen.</div>
+<a id="wchip" class="wchip" href="#wind" style="display:none"></a>
+<section class="page" id="pg-fahrten"><div class="pin"><h1>Fahrten</h1><div class="small muted" id="dbstat">Lade gespeicherte Daten …</div><div id="rides"></div></div></section>
+<section class="page" id="pg-fahrt"><div class="pin" id="detail"></div></section>
+<section class="page" id="pg-wind"><div class="pin"><h1>Wind</h1><div id="wnow"></div></div></section>
+<section class="page" id="pg-mehr"><div class="pin"><h1>Mehr</h1>
+<div class="card"><div class="ch">Fahrten</div><div class="muted small">Neue Fahrten kommen beim Öffnen automatisch aus intervals.icu. Hier kannst du es erzwingen oder eine Datei von Hand laden.</div>
+<div class="btnrow"><button class="btn" id="icubtn">Neue Fahrten holen</button><label id="gpxlbl" class="btn sec">Datei importieren<input type="file" id="gpx" multiple accept=".gpx,.fit,.tcx,application/gpx+xml,application/octet-stream" style="display:none"></label></div></div>
+<div class="card"><div class="ch">Konten &amp; Abgleich</div><div class="muted small">Bleibt nur auf diesem Gerät gespeichert. Auf jedem Gerät einmal eintragen.</div>
 <label>intervals.icu Athleten-ID<input id="s_icuId" placeholder="i123456" autocomplete="off"></label>
-<div class="hint">intervals.icu → Settings → Developer Settings (steht oben, beginnt mit „i“).</div>
 <label>intervals.icu API-Schlüssel<input id="s_icuKey" type="password" autocomplete="off"></label>
-<div class="hint">Gleiche Seite, „API Key“. Damit holt die Karte deine Fahrten automatisch.</div>
+<div class="hint">intervals.icu → Settings → Developer Settings</div>
 <label>GitHub-Token für Longboard-Daten<input id="s_gh" type="password" autocomplete="off"></label>
-<div class="hint">Fine-grained Token, nur Repo „Longboard-Daten“, Recht „Contents: Read and write“. Damit sind Handy und Rechner synchron. Ohne Token bleibt alles nur auf diesem Gerät.</div>
-<div class="row" style="margin-top:12px"><button class="pbtn" id="s_save">Speichern</button><button class="pbtn" id="s_close">Schließen</button></div>
-<div id="s_msg" class="small" style="color:#b3261e"></div>
-</div></div>
+<div class="hint">Fine-grained Token, nur Repo „Longboard-Daten“, Contents: Read and write</div>
+<div class="btnrow"><button class="btn" id="s_save">Speichern</button></div><div id="s_msg" class="small" style="color:#1a7f37;margin-top:6px"></div>
+<div class="sync"><span id="ghstat" class="small muted"></span><button class="btn sec sm" id="syncbtn">Jetzt abgleichen</button></div></div>
+<div class="card"><div class="ch">Über</div><div class="small muted">Wegdaten © OpenStreetMap-Mitwirkende (ODbL) · Höhen: Copernicus DEM GLO-30 · Wetter: DWD über Bright Sky, Open-Meteo · Luftbild: Esri · Topo: OpenTopoMap</div></div>
+</div></section>
+<nav id="tabs"><a href="#karte" data-p="karte"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span>Karte</span></a><a href="#fahrten" data-p="fahrten"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Fahrten</span></a><a href="#wind" data-p="wind"><svg viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg><span>Wind</span></a><a href="#mehr" data-p="mehr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Mehr</span></a></nav>
 </body></html>

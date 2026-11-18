@@ -810,7 +810,13 @@ const SNAME={1:"Asphalt",2:"Beton",3:"befestigt (Art nicht angegeben)",4:"nicht 
 const MNAME={0:"nicht eingetragen",1:"sehr gut",2:"gut",3:"mittel",4:"schlecht"};
 function dist(a,b){const k=Math.cos(a[0]*Math.PI/180)*111320;return Math.hypot((b[1]-a[1])*k,(b[0]-a[0])*111320)}
 function bearing(a,b){const k=Math.cos(a[0]*Math.PI/180);return (Math.atan2((b[1]-a[1])*k,b[0]-a[0])*180/Math.PI+360)%360}
-function init(){
+function restoreUI(){const u=cfg().ui;if(!u)return;if(u.wind!=null)wind=u.wind;
+ const s=(id,p,v)=>{const e=document.getElementById(id);if(e&&v!=null)e[p]=v};s('minRun','value',u.minRun);s('hideSh','checked',u.hideSh);s('unk','checked',u.unk);s('fog','checked',u.fog);
+ if(u.cm){const r=document.querySelector('input[name=cm][value='+u.cm+']');if(r){r.checked=true;const g=u.cm==='grade';document.getElementById('gleg').style.display=g?'grid':'none';document.querySelectorAll('.carleg').forEach(e=>e.style.display=g?'none':'')}}}
+function saveUI(){setCfg({ui:{wind,minRun:document.getElementById('minRun').value,hideSh:document.getElementById('hideSh').checked,unk:document.getElementById('unk').checked,fog:document.getElementById('fog').checked,cm:cmode()}})}
+const BELAG_SM={1:1,2:2,3:3,4:4,5:4};
+function myBelag(id){const r=RAT['w'+id];return r&&r.belag?+r.belag:0}
+function init(){restoreUI();
  map=L.map('map',{preferCanvas:true}).setView([48.86,10.2],10);
  map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('Daten © OpenStreetMap-Mitwirkende (ODbL)');
  const R=L.canvas({padding:.5,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.5});ctxFill=L.layerGroup().addTo(map);
@@ -846,7 +852,7 @@ function init(){
 function cmode(){const r=document.querySelector('input[name=cm]:checked');return r?r.value:'car'}
 function gcol(g){if(g===-128)return '#9a9a9a';g=Math.abs(g);return g<=2?'#2e9e44':g<=4?'#9ccc3c':g<=6?'#f0c419':g<=9?'#f08c19':'#d6301f'}
 function gcls(g){if(g===-128)return 9;g=Math.abs(g);return g<=2?0:g<=4?1:g<=6?2:g<=9?3:4}
-function rideable(p){const s=W[p.w][2];return s!==6||document.getElementById('unk').checked}
+function rideable(p){const s=W[p.w][2];return s!==6||document.getElementById('unk').checked||myBelag(W[p.w][0])>0}
 function openSeg(c){return wind<0?!(c&256):(!((c>>wind)&1)&&!(c&256))}
 function computeComps(){
  const par=new Int32Array(segCount);for(let i=0;i<segCount;i++)par[i]=i;
@@ -866,21 +872,22 @@ function computeComps(){
 function draw(){
  document.querySelectorAll('#wind button').forEach(b=>b.classList.toggle('on',+b.dataset.d===wind));
  document.getElementById('wlabel').textContent=wind<0?'– (kein Windfilter, nur Straßennähe)':DIRS[wind];
- computeComps();
+ saveUI();computeComps();
  layer.clearLayers();halo.clearLayers();reveal.clearLayers();const R=L.canvas({padding:.5,tolerance:8});
  const hide=document.getElementById('hideSh').checked,minRun=+document.getElementById('minRun').value,fog=document.getElementById('fog').checked;
  let shown=0;
  for(const p of P){if(!rideable(p))continue;const w=W[p.w];const n=p.k.length;
   const st=new Uint8Array(n);for(let i=0;i<n;i++){const g=p.base+i;st[i]=comp[g]<0?0:(compLen[g]>=minRun?2:1)}
   const rt=RAT['w'+w[0]];const known=!!rt;
+  const rb=rt&&rt.belag?+rt.belag:0;if(rb===5)st.fill(0);
   if(rt&&rt.wind&&wind>=0&&rt.windDir===wind){if(rt.wind==='windschatten')st.fill(0);else if(rt.wind==='frei')st.fill(2)}
   if(known)L.polyline(p.pts,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85,interactive:false}).addTo(reveal);
-  const fogOp=((fog&&!known)?.25:1)*(RD?.2:1);
-  const dash=w[2]===4?"7 5":w[2]===6?"2 5":null;
+  const fogOp=((fog&&!known)?.25:1)*(RD?.2:1)*(rb===5?.35:1);
+  const dash=rb?null:w[2]===4?"7 5":w[2]===6?"2 5":null;const sm=rb?BELAG_SM[rb]:w[3];
   let s=0;while(s<n){const v=st[s];let e=s;while(e<n&&st[e]===v)e++;const pts=p.pts.slice(s,e+1);
    if(v===2){let L0=0;for(let q=s;q<e;q++)L0+=p.segs[q];shown+=L0;
     L.polyline(pts,{renderer:R,color:"#ff3fd2",weight:11,opacity:.33*fogOp,interactive:false}).addTo(halo)}
-   if(v===2||!hide){const wt=(w[3]==1||w[3]==2)?5:3.4,op=(v===2?1:.85)*fogOp;
+   if(v===2||!hide){const wt=(sm==1||sm==2)?5:rb===5?2:3.4,op=(v===2?1:.85)*fogOp;
     if(cmode()==='grade'){let a=s;while(a<e){const c=gcls(p.gr[a]);let z=a;while(z<e&&gcls(p.gr[z])===c)z++;
       L.polyline(p.pts.slice(a,z+1),{renderer:R,color:gcol(p.gr[a]),weight:wt,opacity:op,dashArray:dash,lineCap:dash?"butt":"round"}).on('click',ev=>pop(p,ev.latlng)).addTo(layer);a=z}}
     else L.polyline(pts,{renderer:R,color:COL[w[1]],weight:wt,opacity:op,dashArray:dash,lineCap:dash?"butt":"round"}).on('click',ev=>pop(p,ev.latlng)).addTo(layer)}
@@ -903,7 +910,7 @@ function pop(p,ll){
  const la=ll.lat.toFixed(5),lo=ll.lng.toFixed(5);
  L.popup().setLatLng(ll).setContent('<b>'+CNAME[w[1]]+'</b>'+(w[4]?'<br>'+w[4]:'')+
   '<br><i>An dieser Stelle: '+reasonAt(p,ll)+'</i>'+
-  '<br>Belag: '+SNAME[w[2]]+'<br>Glätte: '+MNAME[w[3]]+
+  (myBelag(w[0])?'<br>Belag laut dir: <b>'+(OPT.belag.find(o=>o[0]===myBelag(w[0]))||[0,'?'])[1]+'</b><br><span style="color:#777">OSM: '+SNAME[w[2]]+', Glätte '+MNAME[w[3]]+'</span>':'<br>Belag: '+SNAME[w[2]]+'<br>Glätte: '+MNAME[w[3]])+
   gradeHtml(p)+
   '<br>Dieses Stück: '+(len/1000).toFixed(2)+' km, davon offen: '+Math.round(100*ol/len)+' %'+
   (cl>0?'<br>Zusammenhängend offen (mit Nachbarwegen): <b>'+(cl/1000).toFixed(1)+' km</b>':'')+dirTxt+

@@ -817,13 +817,22 @@ html.dark #busy{background:#1d2023;color:#eceee8}html.dark .wnow{background:#1f2
 
 #chval{display:grid;grid-template-columns:repeat(3,1fr);gap:2px 8px;font-variant-numeric:tabular-nums;line-height:1.45;margin:4px 0}#chval span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
-.rvtop{display:flex;justify-content:space-between;align-items:center;padding:12px 14px 8px;max-width:640px;margin:0 auto}
-.rvmap{position:relative;height:50vh;min-height:260px}.rvmap #map{position:absolute!important;inset:0!important}
-.tl{width:100%;height:36px;display:block;cursor:pointer;background:var(--card);border-radius:8px}
-.tlx{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-top:3px}.tlx .acc{color:var(--c);font-weight:600}
-.rvt{font-size:18px;font-weight:700;margin-top:10px}.stb{font-size:11px;background:#e5f3e8;color:#1a7f37;border-radius:8px;padding:2px 7px;vertical-align:middle;font-weight:600}
-.qrow{display:grid;grid-template-columns:76px 1fr;gap:6px 8px;align-items:center;margin-top:10px}.ql{font-size:13px;color:var(--mut);font-weight:600}.ql i{display:block;font-style:normal;font-weight:400;font-size:10px;opacity:.8}
-.chips2{display:flex;flex-wrap:wrap;gap:6px}.chip{border:1px solid #c9ccc2;background:var(--card);border-radius:15px;padding:7px 11px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer}
+.rvtop{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;flex:none}
+#pg-pruefen{bottom:0}#pg-pruefen.show{display:flex;flex-direction:column;overflow:hidden}body.reviewing #tabs{display:none}
+#rvbody{flex:1 1 auto;overflow-y:auto;padding:6px 12px 4px;position:relative;font-size:14px;max-width:640px;width:100%;box-sizing:border-box;margin:0 auto}
+.rvbar{flex:none;display:grid;grid-template-columns:56px 1fr 56px;gap:8px;padding:8px 12px calc(8px + var(--sb));border-top:1px solid var(--line);background:var(--bg);max-width:640px;width:100%;box-sizing:border-box;margin:0 auto}.rvbar .btn{font-size:16px;padding:12px 6px}
+.rvtools{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 -12px 6px;padding:0 12px}.rvtools::-webkit-scrollbar{display:none}
+.tbtn{flex:none;border:1px solid #d3d5cc;background:var(--card);color:var(--ink);border-radius:14px;padding:5px 10px;font:inherit;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}.tbtn.on{background:#e6f1fb;color:#0c447c;border-color:#85b7eb}
+.rvi{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rvh{font-size:12px;color:var(--mut);margin-top:2px}
+.rvin{flex:1;min-width:0;padding:6px 9px;border-radius:9px;border:1px solid #d8dad2;font:inherit;font-size:14px;background:var(--card);color:var(--ink)}
+.rvnotebox{position:absolute;inset:0;background:var(--bg);padding:10px 12px;z-index:5}.rvnotebox textarea{width:100%;box-sizing:border-box;min-height:120px;font:inherit;border-radius:10px;border:1px solid #d8dad2;padding:8px;background:var(--card);color:var(--ink)}
+html.dark .tbtn{background:#25282a;border-color:#3a3e41;color:#eceee8}html.dark .tbtn.on{background:#0c447c;color:#e6f1fb}html.dark .rvin{border-color:#3a3e41}
+.rvmap{position:relative;flex:0 0 38vh;min-height:200px}.rvmap #map{position:absolute!important;inset:0!important}
+.tl{width:100%;height:26px;display:block;cursor:pointer;background:var(--card);border-radius:7px}
+.tlx{display:flex;justify-content:space-between;font-size:11px;color:var(--mut);margin-top:2px}.tlx .acc{color:var(--c);font-weight:600}
+.rvt{font-size:16px;font-weight:700;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.stb{font-size:11px;background:#e5f3e8;color:#1a7f37;border-radius:8px;padding:2px 7px;vertical-align:middle;font-weight:600}
+.qrow{display:flex;gap:8px;align-items:center;margin-top:7px}.ql{flex:0 0 58px;font-size:12px;color:var(--mut);font-weight:600;line-height:1.1}.ql i{display:block;font-style:normal;font-weight:400;font-size:10px;opacity:.8}
+.chips2{display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}.chips2::-webkit-scrollbar{display:none}.chip{flex:none;border:1px solid #c9ccc2;background:var(--card);border-radius:15px;padding:7px 11px;font:inherit;font-size:13px;color:var(--ink);cursor:pointer;white-space:nowrap}
 .chip.on{background:#e6f1fb;color:#0c447c;border-color:#85b7eb;font-weight:600}
 .rvbtns{display:grid;grid-template-columns:52px 1fr 52px;gap:8px;margin-top:16px}.rvbtns .btn{font-size:16px;padding:12px}
 .lnkbtn{border:0;background:none;color:var(--c);font:inherit;font-weight:600;cursor:pointer;padding:6px}
@@ -1389,12 +1398,12 @@ function prefill(r,I,k){const o={},src={};const sv=r.rv&&r.rv.vals&&k!=null?r.rv
 
 // ---- Prüf-Ansicht ----
 let REV=null,REVIEWING=false,revLayer=null;
-function exitReview(){SPLIT=null;if(!REVIEWING)return;REVIEWING=false;REV=null;if(revLayer)revLayer.clearLayers();redrawSoon()}
+function exitReview(){SPLIT=null;document.body.classList.remove('reviewing');if(!REVIEWING)return;REVIEWING=false;REV=null;if(revLayer)revLayer.clearLayers();redrawSoon()}
 async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)await new Promise(s=>setTimeout(s,250));
  const r=RIDES.find(x=>x.id===id);const body=document.getElementById('rvbody');if(!r){body.innerHTML='<div class="card">Fahrt nicht gefunden.</div>';return}
  const A=rideArrays(r);let rv=r.rv&&r.rv.sec&&(r.rv.v===REV_VER||r.rv.fin)?r.rv:null;
  if(!rv){const sec=segmentRide(r,A);const res={};sec.forEach((s,i)=>{if(s[0]==='road')res[i]='ok'});rv={v:REV_VER,sec,res,fin:!sec.some(s=>s[0]!=='road')};await DB.collection('rides').doc(r.id).set(Object.assign({},r,{rv}))}
- REV={id,r,A,rv,infos:rv.sec.map(s=>secInfo(r,A,s)),cur:0,sel:null};if(rv.fin&&!r.rv)rv.fin=false;REVIEWING=true;
+ REV={id,r,A,rv,infos:rv.sec.map(s=>secInfo(r,A,s)),cur:0,sel:null};if(rv.fin&&!r.rv)rv.fin=false;REVIEWING=true;document.body.classList.add('reviewing');
  const started=rv.sec.some((s,i)=>s[0]!=='road'&&rv.res[i]);const first=rv.sec.findIndex((s,i)=>!rv.res[i]);REV.cur=!started||first<0?0:first;
  if(!revLayer)revLayer=L.layerGroup().addTo(map);draw();showSec(REV.cur)}
 function revDraw(){if(!REV)return;revLayer.clearLayers();const R=L.canvas({padding:.5,tolerance:8,pane:ridePane()});const {pts}=REV.A;
@@ -1413,40 +1422,48 @@ function tlSvg(){const {v,d,n}=REV.A;const D_=d[n-1]||1;let p='';const step=Math
  const I=REV.infos[REV.cur];const x0=300*d[I.i0]/D_,x1=300*d[I.i1]/D_;
  let marks='';REV.infos.forEach((J,k)=>{const st=REV.rv.res[k];if(st&&k!==REV.cur)marks+='<rect x="'+(300*d[J.i0]/D_).toFixed(1)+'" y="33" width="'+Math.max(1,300*(d[J.i1]-d[J.i0])/D_).toFixed(1)+'" height="3" fill="#2e9e44"/>'});
  return '<svg viewBox="0 0 300 36" preserveAspectRatio="none" class="tl" id="rvtl"><rect x="'+x0.toFixed(1)+'" y="0" width="'+Math.max(2,x1-x0).toFixed(1)+'" height="36" fill="#1f6fd1" opacity=".18"/><path d="'+p+'" stroke="#1f6fd1" stroke-width="1.3" fill="none" vector-effect="non-scaling-stroke"/>'+marks+'</svg>'}
-function chips(k,cur){const opts=OPT[k]||ROPT[k];return '<div class="chips2" data-k="'+k+'">'+opts.map(([v,t])=>'<button class="chip'+(cur==v?' on':'')+'" data-v="'+v+'">'+t+'</button>').join('')+'</div>'}
+const SHORT={belag:{1:'glatt',2:'gut',3:'rau',4:'grob',5:'unfahrbar'},autos:{schild:'Verbot',keine:'keine',vereinzelt:'vereinzelt',oft:'oft'},wind:{frei:'frei',teilweise:'teils',windschatten:'Schatten'},leute:{leer:'leer',wenig:'wenig',viel:'viel'},typ:{radweg:'Radweg',feldweg:'Feldweg',strasse:'Straße',schotter:'Schotter',pfad:'Pfad'},wo:{fahrbahn:'Fahrbahn',begleit:'Radweg',gehweg:'Gehweg'},zugang:{offen:'offen',erlaubnis:'Erlaubnis',privat:'privat'}};
+function chips(k,cur){const opts=OPT[k]||ROPT[k];return '<div class="chips2" data-k="'+k+'">'+opts.map(([v,t])=>'<button class="chip'+(cur==v?' on':'')+'" data-v="'+v+'">'+((SHORT[k]||{})[v]||t)+'</button>').join('')+'</div>'}
 function hm2(t){return t?new Date(t*1000).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):''}
 function navIdx(from,dir){return Math.max(0,Math.min(REV.rv.sec.length-1,from+dir))}
 let LASTSEL=null;
 function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-1,k));const I=REV.infos[REV.cur],r=REV.r,rv=REV.rv;
  const real=rv.sec.map((s,i)=>i).filter(i=>rv.sec[i][0]!=='road');const done=real.filter(i=>rv.res[i]).length;
- document.getElementById('rvprog').textContent=(I.kind==='road'?'Straßenstück':'Abschnitt '+(real.indexOf(REV.cur)+1)+' von '+real.length)+' · '+done+' erledigt';
- const pf=prefill(r,I,REV.cur);REV.sel=Object.assign({},pf.o);REV.src=pf.src;REV.dirty=false;const st=rv.res[REV.cur];
+ document.getElementById('rvprog').textContent=(I.kind==='road'?'Straßenstück':'Abschnitt '+(real.indexOf(REV.cur)+1)+'/'+real.length)+' · '+done+' erledigt';
+ const pf=prefill(r,I,REV.cur);REV.sel=Object.assign({},pf.o);REV.src=pf.src;REV.dirty=false;REV.note=pf.note||'';const st=rv.res[REV.cur];
  let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='uway')qs=WOSET[REV.sel.wo]?['wo','belag','autos','wind','leute']:['typ','belag','autos','wind','leute'];else if(I.kind==='way')qs=['belag','autos','wind','leute'];else if(I.kind==='road')qs=['wo','belag','autos','wind','leute'];
  if((r.act||'board')==='fuss'&&I.kind!=='road'&&I.kind!=='spot')qs.push('board');
- let h=tlSvg()+'<div class="tlx"><span>'+hm2(REV.A.T&&REV.A.T[0])+'</span><span class="acc">'+(I.t0?hm2(I.t0)+'–'+hm2(I.t1)+' · ':'')+'km '+I.km0.toFixed(1)+'–'+I.km1.toFixed(1)+'</span><span>'+hm2(REV.A.T&&REV.A.T[REV.A.n-1])+'</span></div>';
- h+='<div class="rvt">'+esc(I.title)+(st&&!(I.kind==='road'&&st==='ok')?' <span class="stb">'+(st==='del'?'verworfen':st==='skip'?'übersprungen':'erledigt')+'</span>':'')+'</div><div class="muted small">'+(I.where?esc(I.where)+' · ':'')+(I.L/1000).toFixed(1)+' km'+(I.vavg?' · Ø '+Math.round(I.vavg)+' km/h':'')+(I.w?' · '+Math.round(I.w.ws)+' kt '+DIR16(I.w.dir)+(I.twa!=null?', '+twaTxt(I.twa):''):'')+'</div>';
- if(I.kind==='road')h+='<div class="hint" style="margin-top:6px">Straße mit Autoverkehr. Warst du hier auf einem Radweg, Gehweg oder der Fahrbahn unterwegs, trag es ein – dann merkt sich die Karte dieses Stück als deinen Weg. Sonst einfach weiter.</div>';
- if(I.kind==='new')h+='<div class="hint" style="margin-top:6px">Dieses Stück liegt auf keinem Weg, den die Karte kennt. Wenn es ein echter Weg ist, wird er in deine Karte übernommen.</div>';
- if(I.kind==='spot')h+='<div class="hint" style="margin-top:6px">Du warst hier auf kleiner Fläche viel unterwegs – sieht nach einem Spot aus (Platz, Gelände).</div><label class="small" style="display:block;margin-top:8px">Name<input id="rvname" placeholder="z. B. Parkplatz Sportplatz" style="width:100%;box-sizing:border-box;padding:8px;border-radius:9px;border:1px solid #d8dad2;margin-top:3px"></label>';
+ const tool=(id,txt,on)=>'<button class="tbtn'+(on?' on':'')+'" id="'+id+'">'+txt+'</button>';
+ let h='<div class="rvtools">'+(REV.cur>0&&I.kind!=='spot'?tool('rvsame','⟲ Wie vorher'):'')+tool('rvsplit','✂ Teilen')+(REV.cur+1<REV.infos.length?tool('rvmerge','⊕ Verbinden'):'')+tool('rvnotebtn','✎ Notiz',!!REV.note)
+  +(I.kind==='new'?tool('rvtospot','◎ War ein Spot')+tool('rvdel','✕ Kein Weg'):'')+(I.kind==='spot'?tool('rvtonew','↺ Doch ein Weg')+tool('rvdel','✕ Verwerfen'):'')+tool('rvrest','⏭ Rest passt')+'</div>';
+ h+=tlSvg()+'<div class="tlx"><span>'+hm2(REV.A.T&&REV.A.T[0])+'</span><span class="acc">'+(I.t0?hm2(I.t0)+'–'+hm2(I.t1)+' · ':'')+'km '+I.km0.toFixed(1)+'–'+I.km1.toFixed(1)+'</span><span>'+hm2(REV.A.T&&REV.A.T[REV.A.n-1])+'</span></div>';
+ h+='<div class="rvt">'+esc(I.title)+(st&&!(I.kind==='road'&&st==='ok')?' <span class="stb">'+(st==='del'?'verworfen':st==='skip'?'übersprungen':'erledigt')+'</span>':'')+'</div><div class="rvi">'+(I.where?esc(I.where)+' · ':'')+(I.L/1000).toFixed(1)+' km'+(I.vavg?' · Ø '+Math.round(I.vavg)+' km/h':'')+(I.w?' · '+Math.round(I.w.ws)+' kt '+DIR16(I.w.dir)+(I.twa!=null?', '+twaTxt(I.twa):''):'')+'</div>';
+ if(I.kind==='road')h+='<div class="rvh">Straße mit Autoverkehr – nur ausfüllen, wenn du hier auf Gehweg, Radweg oder Fahrbahn unterwegs warst.</div>';
+ if(I.kind==='new')h+='<div class="rvh">Liegt auf keinem bekannten Weg.</div>';
+ if(I.kind==='spot')h+='<div class="qrow"><span class="ql">Name</span><input id="rvname" class="rvin" placeholder="z. B. Parkplatz Sportplatz"></div>';
  for(const q of qs)h+='<div class="qrow"><span class="ql">'+RQN[q]+(REV.src[q]&&REV.src[q]!=='du'?'<i>'+REV.src[q]+'</i>':'')+'</span>'+chips(q,REV.sel[q])+'</div>';
- h+='<details class="small" style="margin-top:8px"><summary>Notiz</summary><textarea id="rvnote" maxlength="500" style="margin-top:4px">'+esc(pf.note||'')+'</textarea></details>';
- h+='<div class="rvbtns"><button class="btn sec" id="rvprev" aria-label="Zurück">‹</button><button class="btn" id="rvok">'+(I.kind==='road'?(Object.keys(REV.sel).length?'Übernehmen':'Weiter'):I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter')+'</button><button class="btn sec" id="rvskip" aria-label="Überspringen">›</button></div>';
- if(I.kind==='new')h+='<div class="btnrow"><button class="btn sec sm" id="rvdel">Kein Weg (GPS-Ungenauigkeit)</button><button class="btn sec sm" id="rvtospot">War ein Spot</button></div>';
- if(I.kind==='spot')h+='<div class="btnrow"><button class="btn sec sm" id="rvtonew">Kein Spot, war ein Weg</button><button class="btn sec sm" id="rvdel">Verwerfen</button></div>';
- h+='<div style="display:flex;justify-content:center;gap:14px;margin-top:12px">'+(REV.cur>0&&I.kind!=='spot'?'<button class="lnkbtn" id="rvsame">Wie der vorige</button>':'')+'<button class="lnkbtn" id="rvrest">Restliche Wege passen auch</button></div>';
- h+='<div class="btnrow" style="justify-content:center"><button class="btn sec sm" id="rvsplit">✂ Hier teilen</button>'+(REV.cur+1<REV.infos.length?'<button class="btn sec sm" id="rvmerge">Mit nächstem verbinden</button>':'')+'</div>';
- const body=document.getElementById('rvbody');body.innerHTML=h;
+ h+='<div class="rvnotebox" id="rvnotebox" style="display:none"><div class="ch">Notiz</div><textarea id="rvnote" maxlength="500">'+esc(REV.note)+'</textarea><div class="btnrow"><button class="btn" id="rvnoteok">Fertig</button></div></div>';
+ const body=document.getElementById('rvbody');body.innerHTML=h;body.scrollTop=0;
+ const okTxt=()=>I.kind==='road'?(Object.keys(REV.sel).length?'Übernehmen':'Weiter'):I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter';
+ document.getElementById('rvbar').innerHTML='<button class="btn sec" id="rvprev" aria-label="Voriger Abschnitt">‹</button><button class="btn" id="rvok">'+okTxt()+'</button><button class="btn sec" id="rvskip" aria-label="Nächster Abschnitt">›</button>';
  body.querySelectorAll('.chips2').forEach(c=>c.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const q=c.dataset.k;let v=b.dataset.v;if(q==='belag')v=+v;
-   REV.dirty=true;if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}if(I.kind==='road')document.getElementById('rvok').textContent=Object.keys(REV.sel).length?'Übernehmen':'Weiter'}));
+   REV.dirty=true;if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}document.getElementById('rvok').textContent=okTxt()}));
  const $=id=>document.getElementById(id);
- $('rvprev').onclick=()=>goSec(REV.cur-1);$('rvskip').onclick=()=>goSec(REV.cur+1);$('rvok').onclick=()=>acceptSec();const nt=$('rvnote');if(nt)nt.oninput=()=>{REV.dirty=true};const nmI=$('rvname');if(nmI){if(pf.o.name)nmI.value=pf.o.name;nmI.oninput=()=>{REV.dirty=true}}
+ $('rvprev').onclick=()=>goSec(REV.cur-1);$('rvskip').onclick=()=>goSec(REV.cur+1);$('rvok').onclick=()=>acceptSec();
+ const nmI=$('rvname');if(nmI){if(pf.o.name)nmI.value=pf.o.name;nmI.oninput=()=>{REV.dirty=true}}
+ $('rvnotebtn').onclick=()=>{$('rvnotebox').style.display='block';$('rvnote').focus()};
+ $('rvnoteok').onclick=()=>{REV.note=$('rvnote').value.trim();REV.dirty=true;$('rvnotebox').style.display='none';$('rvnotebtn').classList.toggle('on',!!REV.note)};
+ $('rvnote').oninput=()=>{REV.dirty=true};
  if($('rvdel'))$('rvdel').onclick=()=>markSec('del');
  if($('rvtospot'))$('rvtospot').onclick=()=>{REV.rv.sec[REV.cur][0]='spot';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  if($('rvtonew'))$('rvtonew').onclick=()=>{REV.rv.sec[REV.cur][0]='new';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
- $('rvrest').onclick=acceptRest;$('rvsplit').onclick=startSplit;if($('rvmerge'))$('rvmerge').onclick=mergeNext;if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['belag','autos','wind','leute','wo'])if(PV[q]!=null&&qs.includes(q))REV.sel[q]=PV[q];else if(qs.includes(q))delete REV.sel[q];if(I.kind==='road')$('rvok').textContent=Object.keys(REV.sel).length?'Übernehmen':'Weiter';document.querySelectorAll('#rvbody .chips2').forEach(c=>{const q=c.dataset.k;c.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',REV.sel[q]!=null&&b.dataset.v==String(REV.sel[q])))})};
+ $('rvrest').onclick=acceptRest;$('rvsplit').onclick=startSplit;if($('rvmerge'))$('rvmerge').onclick=mergeNext;
+ if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['belag','autos','wind','leute','wo'])if(qs.includes(q)){if(PV[q]!=null)REV.sel[q]=PV[q];else delete REV.sel[q]}
+  document.querySelectorAll('#rvbody .chips2').forEach(c=>{const q=c.dataset.k;c.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',REV.sel[q]!=null&&b.dataset.v==String(REV.sel[q])))});$('rvok').textContent=okTxt()};
  $('rvtl').onclick=ev=>{const rc=ev.currentTarget.getBoundingClientRect();const f=(ev.clientX-rc.left)/rc.width;const dd=f*REV.A.d[REV.A.n-1];const k=REV.infos.findIndex(J=>REV.A.d[J.i0]<=dd&&REV.A.d[J.i1]>=dd);if(k>=0)goSec(k)};
- revDraw();const seg=REV.A.pts.slice(I.i0,I.i1+1);map.invalidateSize();if(seg.length>1){const b=L.latLngBounds(seg);const tz=Math.min(16,map.getBoundsZoom(b,false,L.point(100,100)));
-  if(!REV.moved||!map.getBounds().pad(-.08).contains(b)||map.getZoom()<tz-1||map.getZoom()>tz+1){map.flyToBounds(b,{padding:[50,50],maxZoom:16,duration:REV.moved?.45:0});REV.moved=true}}}
+ revDraw();const seg=REV.A.pts.slice(I.i0,I.i1+1);map.invalidateSize();if(seg.length>1){const b=L.latLngBounds(seg);const tz=Math.min(16,map.getBoundsZoom(b,false,L.point(60,60)));
+  if(!REV.moved||!map.getBounds().pad(-.08).contains(b)||map.getZoom()<tz-1||map.getZoom()>tz+1){map.flyToBounds(b,{padding:[30,30],maxZoom:16,duration:REV.moved?.45:0});REV.moved=true}}}
+
 let SPLIT=null,SPLITHOOK=false;
 function shiftKeys(o,from,delta){const n={};for(const k in o||{}){const i=+k;if(i>=from){if(delta<0&&i===from)continue;n[i+delta]=o[k]}else n[i]=o[k]}return n}
 async function mergeNext(){const R_=REV;if(!R_)return;if(R_.dirty){R_.dirty=false;await saveCur(R_)}const k=R_.cur,s=R_.rv.sec;if(k+1>=s.length)return;
@@ -1454,14 +1471,14 @@ async function mergeNext(){const R_=REV;if(!R_)return;if(R_.dirty){R_.dirty=fals
  R_.rv.res=shiftKeys(R_.rv.res,k+1,-1);delete R_.rv.res[k];R_.rv.vals=shiftKeys(R_.rv.vals,k+1,-1);R_.rv.man=true;
  R_.infos.splice(k+1,1);R_.infos[k]=secInfo(R_.r,R_.A,a);await saveRv(R_);showSec(k)}
 function startSplit(){const R_=REV;if(!R_)return;if(!SPLITHOOK){SPLITHOOK=true;map.on('click',ev=>{if(SPLIT)SPLIT(ev.latlng)})}const I=R_.infos[R_.cur];if(I.i1-I.i0<4)return;
- document.getElementById('rvprog').textContent='Tippe auf die Stelle im blauen Abschnitt, an der geteilt werden soll';document.getElementById('pg-pruefen').scrollTo({top:0,behavior:'smooth'});map.getContainer().style.cursor='crosshair';
+ document.getElementById('rvprog').textContent='Tippe auf die Stelle im blauen Abschnitt, an der geteilt werden soll';map.getContainer().style.cursor='crosshair';
  SPLIT=async ll=>{SPLIT=null;map.getContainer().style.cursor='';if(REV!==R_)return;const q=[ll.lat,ll.lng];let bi=-1,bd=80;
   for(let i=I.i0+2;i<=I.i1-2;i++){const dd=dist(q,R_.A.pts[i]);if(dd<bd){bd=dd;bi=i}}
   if(bi<0){showSec(R_.cur);document.getElementById('rvprog').textContent='Daneben getippt – nochmal „Hier teilen“';return}
   if(R_.dirty){R_.dirty=false;await saveCur(R_)}const k=R_.cur,s=R_.rv.sec;const a=s[k];const b=[a[0],bi,a[2],a[3]];a[2]=bi;s.splice(k+1,0,b);
   R_.rv.res=shiftKeys(R_.rv.res,k+1,1);R_.rv.vals=shiftKeys(R_.rv.vals,k+1,1);if(R_.rv.vals&&R_.rv.vals[k])R_.rv.vals[k+1]=Object.assign({},R_.rv.vals[k]);delete R_.rv.res[k];R_.rv.man=true;
   R_.infos.splice(k+1,0,secInfo(R_.r,R_.A,b));R_.infos[k]=secInfo(R_.r,R_.A,a);await saveRv(R_);showSec(k)}}
-function curSel(){const sel=Object.assign({},REV.sel);const nm=document.getElementById('rvname');if(nm&&nm.value.trim())sel.name=nm.value.trim();const note=((document.getElementById('rvnote')||{}).value||'').trim();return {sel,note}}
+function curSel(){const sel=Object.assign({},REV.sel);const nm=document.getElementById('rvname');if(nm&&nm.value.trim())sel.name=nm.value.trim();const nt=document.getElementById('rvnote');const note=((nt&&nt.value)||REV.note||'').trim();return {sel,note}}
 async function saveCur(R_){const {sel,note}=curSel();const res=await applySec(R_,R_.cur,sel,note);R_.rv.res[R_.cur]=res;R_.rv.vals=R_.rv.vals||{};R_.rv.vals[R_.cur]=Object.assign({},sel,note?{note}:{});
  const I=R_.infos[R_.cur];if(I.kind==='way'||I.kind==='uway')LASTSEL=sel;await saveRv(R_)}
 async function goSec(k){const R_=REV;if(!R_)return;if(k<0||k>=R_.infos.length)return;if(R_.dirty){R_.dirty=false;await saveCur(R_);if(REV!==R_)return}showSec(k)}
@@ -1772,7 +1789,7 @@ fetch('data.json').then(r=>r.json()).then(j=>{D=j;setTimeout(()=>{init();appStar
 <a id="wchip" class="wchip" href="#wind" style="display:none"></a>
 <section class="page" id="pg-fahrten"><div class="pin"><h1>Fahrten</h1><div class="small muted" id="dbstat">Lade gespeicherte Daten …</div><div id="rides"></div></div></section>
 <section class="page" id="pg-fahrt"><div class="pin"><div id="dhead"></div><div id="dmapslot" class="mapslot"></div><div id="dchartslot"></div><div id="detail"></div></div></section>
-<section class="page" id="pg-pruefen"><div class="rvtop"><a class="back" id="rvback" href="javascript:history.back()">‹ Zurück</a><span id="rvprog" class="small muted"></span></div><div id="rvmapslot" class="rvmap"></div><div class="pin" id="rvbody" style="padding-top:8px"></div></section>
+<section class="page" id="pg-pruefen"><div class="rvtop"><a class="back" id="rvback" href="javascript:history.back()">‹ Zurück</a><span id="rvprog" class="small muted"></span></div><div id="rvmapslot" class="rvmap"></div><div id="rvbody"></div><div id="rvbar" class="rvbar"></div></section>
 <section class="page" id="pg-wind"><div class="pin"><h1>Wind</h1><div id="wnow"></div></div></section>
 <section class="page" id="pg-mehr"><div class="pin"><h1>Mehr</h1>
 <div class="card"><div class="ch">Fahrten</div><div class="muted small">Neue Fahrten kommen beim Öffnen automatisch aus intervals.icu. Hier kannst du es erzwingen oder eine Datei von Hand laden.</div>

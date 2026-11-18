@@ -718,6 +718,16 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 .dlgin label{display:block;margin-top:10px}.dlgin input{width:100%;box-sizing:border-box;padding:6px;font-size:14px;margin-top:3px}
 .leaflet-top.leaflet-right{top:52px}
 .dlgin .hint{font-size:12px;color:#666;margin-top:2px}
+
+.cal{margin:4px 0 6px}.calh{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;font-size:14px}
+.calnav{border:none;background:#f0f1ec;border-radius:6px;width:36px;height:30px;font-size:18px;cursor:pointer}
+.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}.cwd{text-align:center;font-size:11px;color:#888;padding-bottom:2px}
+.cd{position:relative;height:38px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#666}
+.cd.has{cursor:pointer;color:#fff;font-weight:700}.cd .dot{position:absolute;border-radius:50%;background:#1f6fd1}
+.cd .dn{position:relative}.cd .dc{position:absolute;top:1px;right:2px;font-size:9px;background:#ff3fd2;color:#fff;border-radius:6px;padding:0 3px}
+.cd.today{box-shadow:inset 0 0 0 1.5px #1d1f1a}.cd.sel{background:#e7eefb}.cd.on .dot{background:#1d1f1a}
+.calsum{margin-top:4px;color:#555}.ride .rn{font-size:11px;color:#777}.ride.on .rn{color:#ccc}
+.ride.lnk{background:none;color:#1f6fd1;text-decoration:underline}
 </style></head><body>
 <div id="map"></div>
 <div id="busy">Lade Kartendaten …</div>
@@ -730,6 +740,12 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 <div class="panel" id="panel">
 <h1>Longboard-Karte · Ostalb &amp; Ries</h1>
 <div id="wnow" class="wnow"></div>
+<div class="q" style="margin-top:6px"><b>Deine Fahrten</b></div><div id="rides" class="small"></div>
+<div class="row"><button id="icubtn" class="pbtn">Neue Fahrten holen</button><button id="setbtn" class="pbtn">⚙ Einstellungen</button><label id="gpxlbl">Datei importieren (GPX/FIT/TCX)<input type="file" id="gpx" multiple accept=".gpx,.fit,.tcx,application/gpx+xml,application/octet-stream" style="display:none"></label></div>
+<div class="row small" id="dbstat">Lade gespeicherte Daten …</div>
+<div class="row small"><span id="ghstat" style="color:#666"></span> <button id="syncbtn" class="pbtn" style="padding:1px 6px">↻</button></div>
+
+<hr style="border:none;border-top:1px solid #e3e3e3;margin:8px 0">
 <div class="small">Alle befestigten Feld- und Radwege ohne Autoverkehr laut OpenStreetMap. Rosa hinterlegt sind die Stücke, die bei der gewählten Windrichtung frei angeströmt sind (kein Wald, keine Hecke, keine Bebauung bis 80 m auf der Windseite, mind. 75 m weg von Haupt-/Kreisstraßen). Antippen zeigt, warum ein Stück nicht rosa ist.</div>
 <div class="row"><b>Linienfarbe:</b><label><input type="radio" name="cm" value="car" checked> Autofrei</label><label><input type="radio" name="cm" value="grade"> Steigung</label></div>
 <div class="leg" id="gleg" style="display:none;margin-bottom:4px">
@@ -760,10 +776,7 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 <div style="text-align:center;color:#7a1f8a;font-weight:700">●</div><div>Bahnhalt · ○ ohne Regelverkehr</div>
 </div>
 <div class="row"><label><input type="checkbox" id="fog"> Fog of War (Unentdecktes abdunkeln)</label></div>
-<div class="row"><button id="icubtn" class="pbtn">Neue Fahrten holen</button><button id="setbtn" class="pbtn">⚙ Einstellungen</button><label id="gpxlbl">Datei importieren (GPX/FIT/TCX)<input type="file" id="gpx" multiple accept=".gpx,.fit,.tcx,application/gpx+xml,application/octet-stream" style="display:none"></label></div>
-<div class="row small" id="dbstat">Lade gespeicherte Daten …</div>
-<div class="row small"><span id="ghstat" style="color:#666"></span> <button id="syncbtn" class="pbtn" style="padding:1px 6px">↻</button></div>
-<div class="q" style="margin-top:8px"><b>Deine Fahrten</b></div><div id="rides" class="small"></div>
+
 <div class="leg" id="vleg" style="display:none">
 <div class="sw" style="border-color:#3b6fd8"></div><div>unter 10 km/h</div>
 <div class="sw" style="border-color:#2e9e44"></div><div>10–20 km/h</div>
@@ -1239,11 +1252,38 @@ let RIDES=[],rideLayer=null,curRide=null;
 const VCOL=v=>v==null?'#9a9a9a':v<10?'#3b6fd8':v<20?'#2e9e44':v<30?'#e0b400':v<40?'#f08c19':'#d6301f';
 const VCLS=v=>v==null?9:v<10?0:v<20?1:v<30?2:v<40?3:4;
 function fmtDur(s){if(!s)return '–';s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
+let CAL=null,CALDAY=null;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rDay=r=>r.start?new Date(r.start).toLocaleDateString('sv-SE'):r.date;
+function rWind(r){if(!r.wx||!r.wx.h||!r.start)return '';const t=Date.parse(r.start)/1000+(r.elapsed||r.dur||0)/2;let b=null,bd=1e12;
+ for(const x of r.wx.h){const d=Math.abs(Date.parse(x[0])/1000-t);if(d<bd&&x[1]!=null){bd=d;b=x}}return b?Math.round(b[1])+' kt '+DIR16(b[3]):''}
 function renderRides(){const el=document.getElementById('rides');if(!el)return;
- if(!RIDES.length){el.innerHTML='<span style="color:#777">Noch keine Fahrten importiert.</span>';return}
- el.innerHTML=RIDES.filter(r=>r.p&&r.date).slice(0,30).map(r=>'<div class="ride'+(curRide===r.id?' on':'')+'" data-id="'+r.id+'"><b>'+(r.date||'').split('-').reverse().join('.')+'</b> · '+r.km.toFixed(1)+' km · '+fmtDur(r.dur)+(r.avg?' · Ø '+r.avg+' km/h':'')+'</div>').join('')+
-  (curRide?'<div class="ride" data-id="">✕ Fahrt ausblenden</div>':'');
- el.querySelectorAll('.ride').forEach(d=>d.onclick=()=>showRide(d.dataset.id))}
+ const list=RIDES.filter(r=>r.p&&r.date);
+ if(!list.length){el.innerHTML='<span style="color:#777">Noch keine Fahrten. Neue Fahrten kommen automatisch aus intervals.icu.</span>';return}
+ if(!CAL){const d=rDay(list[0]);CAL={y:+d.slice(0,4),m:+d.slice(5,7)-1}}
+ const y=CAL.y,mo=CAL.m,mk=y+'-'+String(mo+1).padStart(2,'0');
+ const byDay={};for(const r of list){const d=rDay(r);(byDay[d]||(byDay[d]=[])).push(r)}
+ const inM=list.filter(r=>rDay(r).startsWith(mk)).sort((a,b)=>(a.start||a.date)<(b.start||b.date)?1:-1);
+ const km=inM.reduce((a,r)=>a+(r.km||0),0),dur=inM.reduce((a,r)=>a+(r.dur||0),0);
+ const first=new Date(y,mo,1),off=(first.getDay()+6)%7,nd=new Date(y,mo+1,0).getDate(),today=new Date().toLocaleDateString('sv-SE');
+ let g='<div class="cal"><div class="calh"><button class="calnav" data-d="-1" aria-label="Vormonat">‹</button><b>'+first.toLocaleDateString('de-DE',{month:'long',year:'numeric'})+'</b><button class="calnav" data-d="1" aria-label="Nächster Monat">›</button></div>'
+  +'<div class="calg">'+['Mo','Di','Mi','Do','Fr','Sa','So'].map(x=>'<div class="cwd">'+x+'</div>').join('');
+ for(let i=0;i<off;i++)g+='<div></div>';
+ for(let d=1;d<=nd;d++){const ds=mk+'-'+String(d).padStart(2,'0');const rs=byDay[ds]||[];const k=rs.reduce((a,r)=>a+(r.km||0),0);
+  const sz=rs.length?Math.round(Math.min(32,18+k*0.7)):0;
+  g+='<div class="cd'+(rs.length?' has':'')+(ds===today?' today':'')+(CALDAY===ds?' sel':'')+(rs.some(r=>r.id===curRide)?' on':'')+'" data-day="'+ds+'"'+(rs.length?' title="'+rs.length+' Fahrt(en), '+k.toFixed(1)+' km"':'')+'>'
+   +(rs.length?'<span class="dot" style="width:'+sz+'px;height:'+sz+'px"></span>':'')+'<span class="dn">'+d+'</span>'+(rs.length>1?'<span class="dc">'+rs.length+'</span>':'')+'</div>'}
+ g+='</div><div class="small calsum">'+(inM.length?'<b>'+inM.length+' Fahrt'+(inM.length>1?'en':'')+'</b> · '+km.toFixed(1)+' km · '+fmtDur(dur):'Keine Fahrten in diesem Monat')+'</div></div>';
+ const shown=CALDAY?(byDay[CALDAY]||[]):inM;
+ g+=shown.map(r=>{const w=rWind(r);const st=r.start?new Date(r.start):new Date(r.date);
+  return '<div class="ride'+(curRide===r.id?' on':'')+'" data-id="'+r.id+'"><b>'+st.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})+(r.start?', '+st.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}):'')+'</b> · '+r.km.toFixed(1)+' km · '+fmtDur(r.dur)+(r.avg?' · Ø '+r.avg+' km/h':'')
+   +'<div class="rn">'+(r.name?esc(r.name):'')+(w?(r.name?' · ':'')+'Wind '+w:'')+'</div></div>'}).join('')
+  +(CALDAY?'<div class="ride lnk" data-all="1">Alle Fahrten im Monat zeigen</div>':'')+(curRide?'<div class="ride lnk" data-id="">✕ Fahrt ausblenden</div>':'');
+ el.innerHTML=g;
+ const open=id=>{showRide(id);if(id&&window.innerWidth<600)document.getElementById('panel').classList.add('hide')};
+ el.querySelectorAll('.calnav').forEach(b=>b.onclick=()=>{let mm=CAL.m+(+b.dataset.d),yy=CAL.y;if(mm<0){mm=11;yy--}if(mm>11){mm=0;yy++}CAL={y:yy,m:mm};CALDAY=null;renderRides()});
+ el.querySelectorAll('.cd.has').forEach(c=>c.onclick=()=>{const rs=byDay[c.dataset.day];if(rs.length===1){CALDAY=null;open(rs[0].id)}else{CALDAY=CALDAY===c.dataset.day?null:c.dataset.day;renderRides()}});
+ el.querySelectorAll('.ride').forEach(d=>d.onclick=()=>{if(d.dataset.all){CALDAY=null;renderRides()}else open(d.dataset.id)})}
 let RD=null,rMetric='v',rMarker=null;
 function ridePane(){if(!map.getPane('ridePane')){map.createPane('ridePane');map.getPane('ridePane').style.zIndex=450}return 'ridePane'}
 function rideColor(m,x){if(x==null)return '#9a9a9a';

@@ -1,5 +1,5 @@
 // Offline-Fallback: eigene Dateien zuerst aus dem Netz, sonst aus dem Cache.
-const C='lbk-v1';const CORE=['./','index.html','data.json','leaflet.js','manifest.webmanifest','icon-192.png'];
+const C='lbk-v2';const CORE=['./','index.html','data.json','leaflet.js','manifest.webmanifest','icon-192.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
 self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(e.request.method!=='GET'||u.origin!==location.origin)return;

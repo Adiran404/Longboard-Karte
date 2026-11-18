@@ -774,6 +774,41 @@ html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Robo
 #pg-fahrten .ride{background:#fff;border-radius:14px;padding:12px 14px;margin:8px 0;box-shadow:0 1px 2px rgba(0,0,0,.05);font-size:14px}
 #pg-fahrten .ride .rn{font-size:12px;margin-top:3px}#pg-fahrten .ride.lnk{background:none;box-shadow:none;padding:4px 2px}
 @media (max-width:600px){.wchip{top:auto;bottom:calc(var(--tab) + var(--sb) + 14px)}}
+
+.mapslot{position:relative;height:46vh;min-height:260px;border-radius:16px;overflow:hidden;margin:12px 0 0;box-shadow:0 1px 2px rgba(0,0,0,.05),0 2px 10px rgba(0,0,0,.06)}
+.mapslot #map{position:absolute!important;inset:0!important;bottom:0!important}
+#chartbox.inline{position:static!important;display:block;box-shadow:none;border-radius:16px;margin:10px 0;padding:10px 12px;background:var(--card)}
+#chartbox.inline #chclose,#chartbox.inline #chtitle,#chartbox.inline #chwx{display:none}
+#chartbox.inline .chhead{display:none}
+.seg{display:flex;background:var(--seg);border-radius:11px;padding:3px;gap:3px;margin-top:6px}.seg button{flex:1;border:0;background:none;padding:8px;border-radius:9px;font:inherit;font-weight:600;color:var(--mut);cursor:pointer}.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+:root{--card:#fff;--seg:#e8eae3;--line:#f1f1ec}
+html.dark{--bg:#121416;--card:#1d2023;--ink:#eceee8;--mut:#9da198;--seg:#2a2e31;--line:#2a2d30;color-scheme:dark}
+html.dark body{background:#121416;color:#eceee8}
+html.dark .card,html.dark .tile,html.dark #pg-fahrten .cal,html.dark #pg-fahrten .ride{background:var(--card);box-shadow:none}
+html.dark .fr{border-top-color:var(--line)}html.dark .fb{background:#2c3033}html.dark .fb i.g{border-right-color:rgba(255,255,255,.7)}
+html.dark .btn{background:#eceee8;color:#121416}html.dark .btn.sec{background:#2c3033;color:#eceee8}
+html.dark .pin input{background:#16191b!important;border-color:#33373a!important;color:#eceee8}
+html.dark #tabs{background:#1a1d20;border-top-color:#2a2d30}html.dark #tabs a{color:#7f847b}html.dark #tabs a.on{color:#6aa5ff}
+html.dark .arr{color:#6aa5ff}html.dark .back{color:#6aa5ff}
+html.dark .panel,html.dark #chartbox,html.dark #sheet,html.dark .legbox{background:rgba(29,32,35,.97);color:#eceee8}
+html.dark .small{color:#a9ada4}html.dark .ride{background:#2a2e31}html.dark .ride.on{background:#eceee8;color:#121416}
+html.dark .calnav,html.dark #chclose,html.dark .legbox .legh button,html.dark .btns{background:#2c3033;color:#eceee8}
+html.dark .cd{color:#a9ada4}html.dark .cd.sel{background:#22314a}html.dark .cd.today{box-shadow:inset 0 0 0 1.5px #eceee8}html.dark .cd.on .dot{background:#eceee8}
+html.dark .mb{background:#25282a;border-color:#3a3e41;color:#eceee8}html.dark .mb.on{background:#eceee8;color:#121416}
+html.dark #toggle,html.dark .pbtn,html.dark .btnp{background:#eceee8;color:#121416}
+html.dark .wchip,html.dark .locbtn,html.dark .legbtn,html.dark .leaflet-bar a,html.dark .leaflet-control-layers{background:#1d2023;color:#eceee8;border-color:#3a3e41}
+html.dark .legbtn.on,html.dark .locbtn.on{background:#6aa5ff;color:#121416}
+html.dark .leaflet-control-layers-toggle{filter:invert(1)}
+html.dark .leaflet-popup-content-wrapper,html.dark .leaflet-popup-tip{background:#1d2023;color:#eceee8}
+html.dark .leaflet-popup-content a{color:#6aa5ff}
+html.dark .leaflet-container,html.dark #map{background:#1a1c1e}
+html.dark #gpxlbl{background:#2c3033;color:#eceee8}
+html.dark .leaflet-fill-pane canvas{filter:invert(1) hue-rotate(180deg) brightness(1.15) saturate(.7)}
+html.dark .leaflet-container:not(.sat) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
+html.dark .lbl{color:#d6d8d2;text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000}html.dark .lbl.st{color:#d9a6e4}
+html.dark .leaflet-control-attribution{background:rgba(29,32,35,.8)!important;color:#9da198}html.dark .leaflet-control-attribution a{color:#6aa5ff}
+html.dark textarea{background:#16191b;color:#eceee8;border-color:#33373a}html.dark .chips button{background:#25282a;color:#eceee8;border-color:#3a3e41}
+html.dark #busy{background:#1d2023;color:#eceee8}html.dark .wnow{background:#1f2a38}
 </style></head><body>
 <div id="map"></div>
 <div id="legbox" class="legbox" style="display:none"><div class="legh"><b>Legende</b><button id="legclose" aria-label="Legende schließen">✕</button></div>
@@ -831,7 +866,7 @@ function myBelag(id){const r=RAT['w'+id];return r&&r.belag?+r.belag:0}
 function init(){restoreUI();
  map=L.map('map',{preferCanvas:true}).setView([48.86,10.2],10);
  map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('Daten © OpenStreetMap-Mitwirkende (ODbL)');
- const R=L.canvas({padding:.5,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.5});ctxFill=L.layerGroup().addTo(map);
+ const R=L.canvas({padding:.5,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.5});ctxFill=L.layerGroup().addTo(map);window.CTXL=ctx;
  for(const p of D.ctx.forest) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#cfe0c4",fillOpacity:.8,interactive:false}).addTo(ctxFill);
  for(const p of D.ctx.built) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#e2dbd0",fillOpacity:.9,interactive:false}).addTo(ctxFill);
  for(const p of D.ctx.water||[]) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#a9d1ee",fillOpacity:1,interactive:false}).addTo(ctxFill);
@@ -1124,7 +1159,7 @@ function addBaseLayers(){
  const bases={'Eigene Karte':own,'Satellit':sat,'Relief/Topo':topo,'OpenStreetMap':osm};
  const pick=cfg().base;const first=bases[pick]?pick:'Eigene Karte';bases[first].addTo(map);if(first!=='Eigene Karte')ctxFill.remove();
  L.control.layers(bases,null,{position:'topright',collapsed:true}).addTo(map);
- map.on('baselayerchange',e=>{if(e.layer===own)ctxFill.addTo(map);else ctxFill.remove();setCfg({base:e.name})})}
+ map.getContainer().classList.toggle('sat',first==='Satellit');map.on('baselayerchange',e=>{if(e.layer===own)ctxFill.addTo(map);else ctxFill.remove();map.getContainer().classList.toggle('sat',e.name==='Satellit');setCfg({base:e.name})})}
 
 // ---------- Live-Standort ----------
 let locWatch=null,locMk=null,locAcc=null,locFirst=true;
@@ -1148,7 +1183,7 @@ function addLegendBtn(){const C=L.Control.extend({onAdd(){const b=L.DomUtil.crea
 // ---------- Einstellungen (Seite „Mehr“) ----------
 function fillSettings(){const c=cfg();document.getElementById('s_icuId').value=c.icuId||'';document.getElementById('s_icuKey').value=c.icuKey||'';document.getElementById('s_gh').value=c.ghToken||''}
 function openSettings(msg){location.hash='#mehr';setTimeout(()=>{fillSettings();document.getElementById('s_msg').textContent=msg||''},30)}
-function initSettings(){fillSettings();
+function initSettings(){fillSettings();applyTheme();document.querySelectorAll('#themeSel button').forEach(b=>b.onclick=()=>{setCfg({theme:b.dataset.t});applyTheme()});
  document.getElementById('s_save').onclick=()=>{const v=id=>document.getElementById(id).value.trim();
   setCfg({icuId:v('s_icuId'),icuKey:v('s_icuKey'),ghToken:v('s_gh')});document.getElementById('s_msg').textContent='Gespeichert.';
   GH.sync().then(()=>ICU.pull(true))};
@@ -1156,34 +1191,52 @@ function initSettings(){fillSettings();
  document.getElementById('syncbtn').onclick=()=>GH.sync()}
 
 // ---------- Unterseiten ----------
+let DOCKED=false;const HOME={};
+function dockMap(on){const m=document.getElementById('map'),cb=document.getElementById('chartbox');
+ if(!HOME.m){HOME.m=[m.parentNode,m.nextSibling];HOME.c=[cb.parentNode,cb.nextSibling]}
+ if(on&&!DOCKED){document.getElementById('dmapslot').appendChild(m);document.getElementById('dchartslot').appendChild(cb);cb.classList.add('inline');DOCKED=true}
+ else if(!on&&DOCKED){HOME.m[0].insertBefore(m,HOME.m[1]);HOME.c[0].insertBefore(cb,HOME.c[1]);cb.classList.remove('inline');DOCKED=false}
+ document.body.classList.toggle('docked',DOCKED);setTimeout(()=>{map.invalidateSize();if(RD){drawCharts();setCursor(RD.ci||0)}},60)}
+function fitRide(){if(!RD)return;map.invalidateSize();map.fitBounds(L.latLngBounds(RD.pts),{padding:[24,24]});drawCharts();setCursor(RD.ci||0)}
 function route(){const h=(location.hash||'#karte').slice(1);const [pg,arg]=h.split('/');
  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('show',p.id==='pg-'+pg));
  document.querySelectorAll('#tabs a').forEach(a=>a.classList.toggle('on',a.dataset.p===(pg==='fahrt'?'fahrten':pg)));
  if(pg==='karte'||!document.getElementById('pg-'+pg))setTimeout(()=>map&&map.invalidateSize(),60);
- if(pg==='fahrt')renderDetail(decodeURIComponent(arg||''));
+ if(pg==='fahrt'){const id=decodeURIComponent(arg||'');dockMap(true);if(renderDetail(id)&&curRide!==id)setTimeout(()=>{showRide(id);fitRide()},80);else setTimeout(fitRide,80)}
+ else if(DOCKED){dockMap(false);showRide('')}
  if(pg==='fahrten')renderRides();
  if(pg==='wind'&&(!WINDNOW||Date.now()-WINDNOW.t>15*60000||!document.querySelector('#wnow .wbig')))windNow();
  if(pg==='mehr')fillSettings();
  const pe=document.getElementById('pg-'+pg);if(pe)pe.scrollTop=0}
 window.addEventListener('hashchange',route);
 function tile(v,l){return '<div class="tile"><div class="tv">'+v+'</div><div class="tl">'+l+'</div></div>'}
-function renderDetail(id){const el=document.getElementById('detail');const r=RIDES.find(x=>x.id===id);
- if(!r){el.innerHTML='<a href="#fahrten" class="back">‹ Fahrten</a><div class="card">Fahrt nicht gefunden.</div>';return}
+function renderDetail(id){const el=document.getElementById('detail'),hd=document.getElementById('dhead');const r=RIDES.find(x=>x.id===id);
+ if(!r){hd.innerHTML='<a href="#fahrten" class="back">‹ Fahrten</a><h1>Fahrt nicht gefunden</h1>';el.innerHTML='';return false}
  const st=new Date(r.start||r.date),t1=r.start&&r.elapsed?new Date(Date.parse(r.start)+r.elapsed*1000):null,hm=d=>d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
- let h='<a href="#fahrten" class="back">‹ Fahrten</a><h1 style="margin-bottom:2px">'+st.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+'</h1><div class="muted">'+(r.start?hm(st)+(t1?'–'+hm(t1):'')+' Uhr':'')+(r.name?' · '+esc(r.name):'')+'</div>';
- h+='<button class="btn wide" id="dmap">Strecke &amp; Diagramme auf der Karte</button>';
+ let h='<a href="#fahrten" class="back">‹ Fahrten</a><h1 style="margin-bottom:2px">'+st.toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'})+'</h1><div class="muted">'+(r.start?hm(st)+(t1?'–'+hm(t1):'')+' Uhr':'')+(r.name?' · '+esc(r.name):'')+'</div>';hd.innerHTML=h;h='';
  h+='<div class="tiles">'+tile(r.km.toFixed(1)+' km','Distanz')+tile(fmtDur(r.dur),'Fahrzeit')+(r.elapsed?tile(fmtDur(r.elapsed),'Gesamtzeit'):'')+(r.avg?tile(r.avg+' km/h','Ø Tempo'):'')+(r.vmax?tile(r.vmax+' km/h','Max. Tempo'):'')
   +(r.up!=null?tile(r.up+' m','Anstieg'):'')+(r.hrAvg?tile(r.hrAvg+(r.hrMax?' / '+r.hrMax:''),'Puls Ø / max'):'')+(r.kcal?tile(r.kcal,'kcal'):'')+(r.ways!=null?tile(r.ways,'Wege aufgedeckt'):'')+'</div>';
  if(r.wx&&r.wx.h){const t0=Date.parse(r.start)/1000,t2=t0+(r.elapsed||r.dur||0);const hs=r.wx.h.filter(x=>{const t=Date.parse(x[0])/1000;return t>=t0-3600&&t<=t2+3600&&x[1]!=null});
   h+='<div class="card"><div class="ch">Wind während der Fahrt <span class="muted" style="font-weight:400">· kt / Böen</span></div>'+hs.map(x=>wrow(new Date(Date.parse(x[0])).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}),x[1],x[2],x[3],x[4]!=null?Math.round(x[4])+' °C':'')).join('')
    +'<div class="small muted" style="margin-top:6px">'+esc(r.wx.station)+(r.wx.km!=null?' · '+r.wx.km+' km entfernt':'')+(r.wx.src?' · '+esc(r.wx.src):'')+'</div></div>'}
  else{h+='<div class="card muted">Winddaten werden geladen …</div>';WX.forRide(id).then(ok=>{if(ok&&location.hash==='#fahrt/'+id)renderDetail(id)})}
- el.innerHTML=h;document.getElementById('dmap').onclick=()=>{location.hash='#karte';setTimeout(()=>showRide(id),120)}}
+ el.innerHTML=h;return true}
+
+// ---------- Hell / Dunkel ----------
+const THEME={chartBg:'#f4f5f0',chartTx:'#555',cur:'#1d1f1a',dark:false};const MQ=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
+function applyTheme(){const t=cfg().theme||'auto';const d=t==='dark'||(t==='auto'&&MQ&&MQ.matches);THEME.dark=d;
+ document.documentElement.classList.toggle('dark',d);Object.assign(THEME,d?{chartBg:'#25282a',chartTx:'#a9ada4',cur:'#f2f3ee'}:{chartBg:'#f4f5f0',chartTx:'#555',cur:'#1d1f1a'});
+ const DK={'#a3a3a3':'#4b4f53','#c4c4c4':'#44484c','#808080':'#62666a','#5f5f5f':'#7d8186','#777':'#5a5d60'};
+ if(window.CTXL)CTXL.eachLayer(l=>{if(!l.options)return;if(l.options._c==null)l.options._c=l.options.color;const c=d?(DK[l.options._c]||l.options._c):l.options._c;if(l.options.color!==c)l.setStyle({color:c})});
+ const mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=d?'#16181a':'#1f6fd1';
+ document.querySelectorAll('#themeSel button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));try{if(RD){drawCharts();setCursor(RD.ci||0)}}catch(e){}}
+if(MQ&&MQ.addEventListener)MQ.addEventListener('change',applyTheme);
+applyTheme();
 
 // ---------- Start ----------
 storeReady.then(()=>{notify('ratings');notify('rides');updDbStat()});
 function appStart(){
- initSettings();addBaseLayers();addLocate();addLegendBtn();route();windNow();
+ initSettings();applyTheme();addBaseLayers();addLocate();addLegendBtn();route();windNow();
  (async()=>{await GH.sync();await ICU.pull(false)})();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&Date.now()-(cfg().icuLast||0)>10*60000){GH.sync().then(()=>ICU.pull(false))}})}
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(e=>console.warn('sw',e));
@@ -1402,20 +1455,20 @@ function drawCharts(){if(!RD)return;const cv=document.getElementById('chart');co
  const L0=38,R0=8,T0=4,gap=6,rh=(H0-T0-gap*(rows.length-1)-14)/rows.length;const D=RD.d[RD.d.length-1]||1;const X=dd=>L0+(W0-L0-R0)*dd/D;
  RD.rows=rows.map((r,k)=>{const vals=r[1].filter(x=>x!=null);let lo=Math.min(...vals),hi=Math.max(...vals);if(r[0].startsWith('Tempo'))lo=0;if(hi-lo<1)hi=lo+1;const y0=T0+k*(rh+gap);
   const Y=x=>y0+rh-(x-lo)/(hi-lo)*rh;
-  c.fillStyle='#f4f5f0';c.fillRect(L0,y0,W0-L0-R0,rh);
+  c.fillStyle=THEME.chartBg;c.fillRect(L0,y0,W0-L0-R0,rh);
   c.beginPath();let st=false;for(let i=0;i<RD.pts.length;i++){const x=r[1][i];if(x==null){st=false;continue}const px=X(RD.d[i]),py=Y(x);if(!st){c.moveTo(px,py);st=true}else c.lineTo(px,py)}
   c.strokeStyle=r[2];c.lineWidth=1.5;c.stroke();
   if(r[0].startsWith('Höhe')){c.lineTo(X(D),y0+rh);c.lineTo(X(0),y0+rh);c.closePath();c.globalAlpha=.18;c.fillStyle=r[2];c.fill();c.globalAlpha=1}
-  c.fillStyle='#555';c.font='10px system-ui';c.textAlign='right';c.fillText(Math.round(hi),L0-4,y0+9);c.fillText(Math.round(lo),L0-4,y0+rh);
+  c.fillStyle=THEME.chartTx;c.font='10px system-ui';c.textAlign='right';c.fillText(Math.round(hi),L0-4,y0+9);c.fillText(Math.round(lo),L0-4,y0+rh);
   c.save();c.translate(10,y0+rh/2);c.rotate(-Math.PI/2);c.textAlign='center';c.fillStyle=r[2];c.fillText(r[0].split(' ')[0],0,0);c.restore();
   return {Y,y0,rh,arr:r[1],name:r[0]}});
  if(RD.pauses)for(const [a,b] of RD.pauses){c.fillStyle='rgba(120,120,120,.18)';c.fillRect(X(RD.d[a])-1,T0,Math.max(2,X(RD.d[b])-X(RD.d[a])+2),H0-T0-14)}
- c.fillStyle='#555';c.textAlign='center';const step=D>20000?5000:D>8000?2000:D>3000?1000:500;for(let x=0;x<=D;x+=step)c.fillText((x/1000)+' km',X(x),H0-2);
+ c.fillStyle=THEME.chartTx;c.textAlign='center';const step=D>20000?5000:D>8000?2000:D>3000?1000:500;for(let x=0;x<=D;x+=step)c.fillText((x/1000)+' km',X(x),H0-2);
  RD.X=X;RD.L0=L0;RD.R0=R0;RD.D=D;RD.img=c.getImageData(0,0,cv.width,cv.height)}
 function setCursor(i){if(!RD)return;i=Math.max(0,Math.min(RD.pts.length-1,i));RD.ci=i;if(rMarker)rMarker.setLatLng(RD.pts[i]);
  const cv=document.getElementById('chart');const c=cv.getContext('2d');const dpr=window.devicePixelRatio||1;if(RD.img)c.putImageData(RD.img,0,0);
- c.save();c.setTransform(dpr,0,0,dpr,0,0);const x=RD.X(RD.d[i]);c.strokeStyle='#1d1f1a';c.lineWidth=1;c.beginPath();c.moveTo(x,0);c.lineTo(x,cv.clientHeight-12);c.stroke();
- for(const r of RD.rows||[]){const v=r.arr[i];if(v==null)continue;c.fillStyle='#1d1f1a';c.beginPath();c.arc(x,r.Y(v),3,0,7);c.fill()}c.restore();
+ c.save();c.setTransform(dpr,0,0,dpr,0,0);const x=RD.X(RD.d[i]);c.strokeStyle=THEME.cur;c.lineWidth=1;c.beginPath();c.moveTo(x,0);c.lineTo(x,cv.clientHeight-12);c.stroke();
+ for(const r of RD.rows||[]){const v=r.arr[i];if(v==null)continue;c.fillStyle=THEME.cur;c.beginPath();c.arc(x,r.Y(v),3,0,7);c.fill()}c.restore();
  const t=RD.r.start?new Date(Date.parse(RD.r.start)):null;
  const W_=RD.wind&&RD.wind[i];const twaTxt=W_&&W_.twa!=null?(W_.twa<45?'gegen den Wind':W_.twa<90?'am Wind':W_.twa<135?'halber Wind/raum':'Rückenwind'):'';
  document.getElementById('chval').textContent=(RD.T?new Date(RD.T[i]*1000).toLocaleTimeString('de-DE')+' · ':'')+(RD.d[i]/1000).toFixed(2)+' km'+(RD.e[i]!=null?' · '+Math.round(RD.e[i])+' m':'')+(RD.v[i]!=null?' · '+RD.v[i]+' km/h':'')+(RD.h[i]!=null?' · ♥ '+RD.h[i]:'')+(W_?' · Wind '+Math.round(W_.ws)+' kt'+(twaTxt?' ('+twaTxt+')':''):'')}
@@ -1435,7 +1488,7 @@ fetch('data.json').then(r=>r.json()).then(j=>{D=j;setTimeout(()=>{init();appStar
 </script>
 <a id="wchip" class="wchip" href="#wind" style="display:none"></a>
 <section class="page" id="pg-fahrten"><div class="pin"><h1>Fahrten</h1><div class="small muted" id="dbstat">Lade gespeicherte Daten …</div><div id="rides"></div></div></section>
-<section class="page" id="pg-fahrt"><div class="pin" id="detail"></div></section>
+<section class="page" id="pg-fahrt"><div class="pin"><div id="dhead"></div><div id="dmapslot" class="mapslot"></div><div id="dchartslot"></div><div id="detail"></div></div></section>
 <section class="page" id="pg-wind"><div class="pin"><h1>Wind</h1><div id="wnow"></div></div></section>
 <section class="page" id="pg-mehr"><div class="pin"><h1>Mehr</h1>
 <div class="card"><div class="ch">Fahrten</div><div class="muted small">Neue Fahrten kommen beim Öffnen automatisch aus intervals.icu. Hier kannst du es erzwingen oder eine Datei von Hand laden.</div>
@@ -1448,6 +1501,7 @@ fetch('data.json').then(r=>r.json()).then(j=>{D=j;setTimeout(()=>{init();appStar
 <div class="hint">Fine-grained Token, nur Repo „Longboard-Daten“, Contents: Read and write</div>
 <div class="btnrow"><button class="btn" id="s_save">Speichern</button></div><div id="s_msg" class="small" style="color:#1a7f37;margin-top:6px"></div>
 <div class="sync"><span id="ghstat" class="small muted"></span><button class="btn sec sm" id="syncbtn">Jetzt abgleichen</button></div></div>
+<div class="card"><div class="ch">Darstellung</div><div class="seg" id="themeSel"><button data-t="auto">Automatisch</button><button data-t="light">Hell</button><button data-t="dark">Dunkel</button></div><div class="hint">„Automatisch“ folgt der Einstellung deines Handys.</div></div>
 <div class="card"><div class="ch">Über</div><div class="small muted">Wegdaten © OpenStreetMap-Mitwirkende (ODbL) · Höhen: Copernicus DEM GLO-30 · Wetter: DWD über Bright Sky, Open-Meteo · Luftbild: Esri · Topo: OpenTopoMap</div></div>
 </div></section>
 <nav id="tabs"><a href="#karte" data-p="karte"><svg viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2z"/><path d="M9 4v14M15 6v14"/></svg><span>Karte</span></a><a href="#fahrten" data-p="fahrten"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span>Fahrten</span></a><a href="#wind" data-p="wind"><svg viewBox="0 0 24 24"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h8"/></svg><span>Wind</span></a><a href="#mehr" data-p="mehr"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span>Mehr</span></a></nav>

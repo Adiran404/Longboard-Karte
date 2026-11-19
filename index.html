@@ -965,7 +965,7 @@ function draw(){
  let shown=0;
  for(let pi=0;pi<P.length;pi++){const p=P[pi];if(!rideable(p))continue;const w=W[p.w];const n=p.k.length;
   const st=new Uint8Array(n);for(let i=0;i<n;i++){const g=p.base+i;st[i]=comp[g]<0?0:(compLen[g]>=minRun?2:1)}
-  const rt=RAT['w'+w[0]];const kv=knownIv(pi,rt),known=kv===true;
+  const rt0=RAT['w'+w[0]];const kv=knownIv(pi,rt0),known=kv===true;const rt=kv?dispRat(pi,w):rt0;
   const rb=rt&&rt.belag?+rt.belag:0;if(rb===5)st.fill(0);
   if(rt&&rt.wind&&wind>=0&&rt.windDir===wind){if(rt.wind==='windschatten')st.fill(0);else if(rt.wind==='frei')st.fill(2)}
   if(kv===true)REV_.push(p.pts);else if(kv)for(const [a,b] of kv)REV_.push(clipPts(p,a,b));
@@ -977,7 +977,7 @@ function draw(){
    if(v===2){let L0=0;for(let q=s;q<e;q++)L0+=p.segs[q];shown+=L0;const op=+(.33*fogOp).toFixed(3);add(H,op,{op},p.pts.slice(s,e+1));const o2=+(.33*fullOp).toFixed(3);ov(q=>add(H,o2,{op:o2},q),s,e)}
    if(v===2||!hide){const wt=(sm==1||sm==2)?5:rb===5?2:3.4,op=+((v===2?1:.85)*fogOp).toFixed(3);
     if(grade){let a=s;while(a<e){const g0=p.gr[a],c=gcls(g0);let z=a;while(z<e&&gcls(p.gr[z])===c)z++;const col=gcol(g0);add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(a,z+1));const o2=+((v===2?1:.85)*fullOp).toFixed(3);ov(q=>add(G,col+'|'+wt+'|'+o2+'|'+dash,{col,wt,op:o2,dash},q),a,z);a=z}}
-    else{const col=COL[w[1]];add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(s,e+1));const o2=+((v===2?1:.85)*fullOp).toFixed(3);ov(q=>add(G,col+'|'+wt+'|'+o2+'|'+dash,{col,wt,op:o2,dash},q),s,e)}}
+    else{const col=wcolOf(w,rt);add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(s,e+1));const o2=+((v===2?1:.85)*fullOp).toFixed(3);ov(q=>add(G,col+'|'+wt+'|'+o2+'|'+dash,{col,wt,op:o2,dash},q),s,e)}}
    s=e}}
  for(const g of byCell(REV_))L.polyline(g,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
  const hw=map.getZoom()>=14?11:map.getZoom()>=12?8:5;for(const k in H)L.polyline(H[k].ls,{renderer:R,color:"#ff3fd2",weight:hw,opacity:H[k].st.op,interactive:false,smoothFactor:1.5}).addTo(halo);
@@ -1005,7 +1005,7 @@ function pop(p,ll){
  if(wind>=0){const from=wind*45;let off=Math.abs(((p.br-from)%180+180)%180);off=Math.min(off,180-off);
   dirTxt=off<45?'<br><b>Achtung:</b> liegt fast in Windrichtung – nur Richtung '+DIRS[Math.round(((from+180)%360)/45)%8]+' fahrbar (mit dem Wind).':'<br>Liegt quer genug zum Wind – in beide Richtungen fahrbar.'}
  const la=ll.lat.toFixed(5),lo=ll.lng.toFixed(5);
- L.popup().setLatLng(ll).setContent('<b>'+CNAME[w[1]]+'</b>'+(w[4]?'<br>'+w[4]:'')+
+ L.popup().setLatLng(ll).setContent('<b>'+wName(w)+'</b>'+(w[4]?'<br>'+w[4]:'')+
   '<br><i>An dieser Stelle: '+reasonAt(p,ll)+'</i>'+
   (myBelag(w[0])?'<br>Belag laut dir: <b>'+(OPT.belag.find(o=>o[0]===myBelag(w[0]))||[0,'?'])[1]+'</b><br><span style="color:#777">OSM: '+SNAME[w[2]]+', Glätte '+MNAME[w[3]]+'</span>':'<br>Belag: '+SNAME[w[2]]+'<br>Glätte: '+MNAME[w[3]])+
   gradeHtml(p)+
@@ -1332,9 +1332,10 @@ const ROPT=Object.assign({},null,{
  typ:[['radweg','Radweg'],['feldweg','Feldweg'],['strasse','Straße'],['schotter','Schotter/Wald'],['pfad','Pfad']],
  zugang:[['offen','öffentlich'],['erlaubnis','mit Erlaubnis'],['privat','privat']],
  board:[['ja','ja'],['nein','nein']],
- wo:[['fahrbahn','Fahrbahn'],['begleit','Radweg daneben'],['gehweg','Gehweg']]});
+ wo:[['fahrbahn','Fahrbahn'],['begleit','Radweg daneben'],['gehweg','Gehweg']],
+ art:[['radweg','Radweg'],['feldweg','Feldweg'],['strasse','Straße'],['schotter','Schotter'],['pfad','Pfad']]});
 const WOSET={fahrbahn:1,begleit:1,gehweg:1};
-const RQN={wo:'Wo?',belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',zugang:'Zugang',board:'Boardbar?'};
+const RQN={wo:'Wo?',belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',art:'Wegart',zugang:'Zugang',board:'Boardbar?'};
 const UCOL={fahrbahn:'#d23c3c',begleit:'#1f6fd1',gehweg:'#5b8fd6',radweg:'#1f6fd1',feldweg:'#1a9e4a',strasse:'#8a8a8a',schotter:'#9b6b3d',pfad:'#9b6b3d'};
 let WMAP=null,SIDX=null;
 LIS.uways.push(()=>{SIDX=null;redrawSoon()});LIS.spots.push(()=>redrawSoon());
@@ -1406,8 +1407,11 @@ function secInfo(r,A,sec){let secCnt=null;const [kind,i0,i1,uid]=sec;const {pts,
 function lbl2(k,v){let o=(OPT[k]||ROPT[k]||[]).find(x=>x[0]===v);if(!o&&k==='typ')o=ROPT.wo.find(x=>x[0]===v);return o?o[1]:v}
 function twaTxt(t){return t==null?'':t<45?'Gegenwind':t<90?'am Wind':t<135?'Halbwind':'Rückenwind'}
 function prefill(r,I,k){const o={},src={};const sv=r.rv&&r.rv.vals&&k!=null?r.rv.vals[k]:null;
- if(sv){for(const q in sv)if(q!=='note'&&sv[q]!=null){o[q]=sv[q];src[q]='du'}return {o,src,note:sv.note||''}}
+ if(sv){for(const q in sv)if(q!=='note'&&sv[q]!=null){o[q]=sv[q];src[q]='du'}
+  if(I.kind==='way'&&o.art==null){const rt=[...(I.ids||[])].map(id=>RAT['w'+id]).find(x=>x&&x.typ);if(rt){o.art=rt.typ;src.art='du'}}
+  return {o,src,note:sv.note||''}}
  if(I.kind==='way'){const rt=[...I.ids].map(id=>RAT['w'+id]).find(x=>x)||{};for(const k of ['belag','autos','wind','leute'])if(rt[k]!=null){o[k]=rt[k];src[k]='du'}
+  if(rt.typ){o.art=rt.typ;src.art='du'}
   const w=I.w0;if(o.belag==null&&w&&w[3]>=1&&w[3]<=4){o.belag=w[3];src.belag='OSM'}
   if(o.autos==null&&w&&(w[1]===1||w[1]===2)){o.autos='schild';src.autos='OSM'}
   if(o.wind==null&&I.shel!=null){o.wind=I.shel>.7?'windschatten':I.shel<.25?'frei':'teilweise';src.wind='berechnet'}}
@@ -1449,7 +1453,7 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  const real=rv.sec.map((s,i)=>i).filter(i=>rv.sec[i][0]!=='road');const done=real.filter(i=>rv.res[i]).length;
  document.getElementById('rvprog').textContent=(I.kind==='road'?'Straßenstück':'Abschnitt '+(real.indexOf(REV.cur)+1)+'/'+real.length)+' · '+done+' erledigt';
  const pf=prefill(r,I,REV.cur);REV.sel=Object.assign({},pf.o);REV.src=pf.src;REV.dirty=false;REV.note=pf.note||'';const st=rv.res[REV.cur];
- let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='uway')qs=WOSET[REV.sel.wo]?['wo','belag','autos','wind','leute']:['typ','belag','autos','wind','leute'];else if(I.kind==='way')qs=['belag','autos','wind','leute'];else if(I.kind==='road')qs=['wo','belag','autos','wind','leute'];
+ let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='uway')qs=WOSET[REV.sel.wo]?['wo','belag','autos','wind','leute']:['typ','belag','autos','wind','leute'];else if(I.kind==='way')qs=['art','belag','autos','wind','leute'];else if(I.kind==='road')qs=['wo','belag','autos','wind','leute'];
  if((r.act||'board')==='fuss'&&I.kind!=='road'&&I.kind!=='spot')qs.push('board');
  const tool=(id,txt,on)=>'<button class="tbtn'+(on?' on':'')+'" id="'+id+'">'+txt+'</button>';
  let h='<div class="rvtools">'+(REV.cur>0&&I.kind!=='spot'?tool('rvsame','⟲ Wie vorher'):'')+tool('rvsplit','✂ Teilen')+(REV.cur+1<REV.infos.length?tool('rvmerge','⊕ Verbinden'):'')+tool('rvnotebtn','✎ Notiz',!!REV.note)
@@ -1459,7 +1463,7 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  if(I.kind==='road')h+='<div class="rvh">Straße mit Autoverkehr – nur ausfüllen, wenn du hier auf Gehweg, Radweg oder Fahrbahn unterwegs warst.</div>';
  if(I.kind==='new')h+='<div class="rvh">Liegt auf keinem bekannten Weg.</div>';
  if(I.kind==='spot')h+='<div class="qrow"><span class="ql">Name</span><input id="rvname" class="rvin" placeholder="z. B. Parkplatz Sportplatz"></div>';
- for(const q of qs)h+='<div class="qrow"><span class="ql">'+RQN[q]+(REV.src[q]&&REV.src[q]!=='du'?'<i>'+REV.src[q]+'</i>':'')+'</span>'+chips(q,REV.sel[q])+'</div>';
+ for(const q of qs)h+='<div class="qrow"><span class="ql">'+RQN[q]+(REV.src[q]&&REV.src[q]!=='du'?'<i>'+REV.src[q]+'</i>':(q==='art'&&REV.sel.art==null&&I.w0&&KIND_LBL[I.w0[1]]?'<i>OSM: '+esc(KIND_LBL[I.w0[1]])+'</i>':''))+'</span>'+chips(q,REV.sel[q])+'</div>';
  h+='<div class="rvnotebox" id="rvnotebox" style="display:none"><div class="ch">Notiz</div><textarea id="rvnote" maxlength="500">'+esc(REV.note)+'</textarea><div class="btnrow"><button class="btn" id="rvnoteok">Fertig</button></div></div>';
  const body=document.getElementById('rvbody');body.innerHTML=h;body.scrollTop=0;
  const okTxt=()=>I.kind==='road'?(Object.keys(REV.sel).length?'Übernehmen':'Weiter'):I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter';
@@ -1477,7 +1481,7 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  if($('rvtospot'))$('rvtospot').onclick=()=>{REV.rv.sec[REV.cur][0]='spot';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  if($('rvtonew'))$('rvtonew').onclick=()=>{REV.rv.sec[REV.cur][0]='new';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  $('rvrest').onclick=acceptRest;$('rvsplit').onclick=startSplit;if($('rvmerge'))$('rvmerge').onclick=mergeNext;
- if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['belag','autos','wind','leute','wo'])if(qs.includes(q)){if(PV[q]!=null)REV.sel[q]=PV[q];else delete REV.sel[q]}
+ if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['art','belag','autos','wind','leute','wo'])if(qs.includes(q)){if(PV[q]!=null)REV.sel[q]=PV[q];else delete REV.sel[q]}
   document.querySelectorAll('#rvbody .chips2').forEach(c=>{const q=c.dataset.k;c.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',REV.sel[q]!=null&&b.dataset.v==String(REV.sel[q])))});$('rvok').textContent=okTxt()};
  $('rvtl').onclick=ev=>{const rc=ev.currentTarget.getBoundingClientRect();const f=(ev.clientX-rc.left)/rc.width;const dd=f*REV.A.d[REV.A.n-1];const k=REV.infos.findIndex(J=>REV.A.d[J.i0]<=dd&&REV.A.d[J.i1]>=dd);if(k>=0)goSec(k)};
  revDraw();const seg=REV.A.pts.slice(I.i0,I.i1+1);map.invalidateSize();if(seg.length>1){const b=L.latLngBounds(seg);const tz=Math.min(16,map.getBoundsZoom(b,false,L.point(60,60)));
@@ -1519,6 +1523,7 @@ async function applySec(R_,k,sel,note){const I=R_.infos[k];const day=R_.r.start?
    await DB.collection('uways').doc('u'+R_.id.slice(1)+'_'+I.i0).set(o);return 'new'}
  if(I.kind==='way'){for(const id of I.ids){const my=I.cnt&&I.cnt.get(id)||0;if(R_.infos.some((J,k2)=>k2!==k&&J&&J.kind==='way'&&J.cnt&&(J.cnt.get(id)||0)>my&&R_.rv.vals&&R_.rv.vals[k2]&&Object.keys(R_.rv.vals[k2]).length))continue;const o=Object.assign({},RAT['w'+id]||{});o.way=id;
    for(const kk of ['belag','autos','wind','leute'])if(sel[kk]!=null)o[kk]=sel[kk];else delete o[kk];
+   if(sel.art)o.typ=sel.art;
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;else delete o.windDir;if(sel.board)o.board=sel.board;if(note)o.notiz=note;
    o.confirmed=day;o.updated=today();addA(o);await DB.collection('ratings').doc('w'+id).set(o)}return 'ok'}
  if(I.kind==='uway'){const e=STORE.uways[I.uid]&&STORE.uways[I.uid].data?STORE.uways[I.uid]:null;let base=null;if(!e){const pv=R_.rv.sec[k-1];base=pv&&pv[0]==='uway'&&STORE.uways[pv[3]]&&STORE.uways[pv[3]].data}
@@ -1564,7 +1569,7 @@ async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return
 
 // ---- Reparatur fertig geprüfter Fahrten: geteilte eigene Wege trennen, Wegbewertung vom Abschnitt mit den meisten Punkten ----
 let REPBUSY=false;
-async function repairRides(){if(REPBUSY||!P.length)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=1||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
+async function repairRides(){if(REPBUSY||!P.length||REVIEWING)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=1||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
 async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const A=rideArrays(r);const V=k=>rv.vals&&rv.vals[k]&&Object.keys(rv.vals[k]).length?rv.vals[k]:null;
  const day=r.start?new Date(r.start).toLocaleDateString('sv-SE'):r.date;const ws=s=>{try{return secInfo(r,A,s).windSec}catch(e){return null}};
  for(let k=1;k<rv.sec.length;k++){const s=rv.sec[k];if(s[0]!=='uway'||!s[3])continue;let f=k;while(f>0&&rv.sec[f-1][0]==='uway'&&rv.sec[f-1][3]===s[3]&&rv.sec[f-1][2]<=s[1]+1)f--;if(f===k)continue;
@@ -1577,10 +1582,10 @@ async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const 
  const best=new Map();
  rv.sec.forEach((s,k)=>{if(s[0]!=='way'||!V(k))return;let pk=null;const c=new Map();for(let i=s[1];i<=s[2];i++){const mm=matchPt(A.pts[i],pk);if(mm.t!=='x')pk=mm.k;if(mm.t==='w')c.set(W[P[mm.pi].w][0],(c.get(W[P[mm.pi].w][0])||0)+1)}
   for(const [w,n] of c){const b=best.get(w);if(!b||n>b[1])best.set(w,[k,n])}});
- for(const [w,[k]] of best){const rt=RAT['w'+w];if(!rt)continue;const used=(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
-  const v=V(k);const o=Object.assign({},rt);let ch=false;for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
+ for(const [w,[k,n]] of best){const rt=RAT['w'+w];if(!rt||!['belag','autos','wind','leute'].some(q=>rt[q]!=null))continue;const used=(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
+  const v=V(k);const o=Object.assign({},rt);let ch=false;if(v.art&&o.typ!==v.art){o.typ=v.art;ch=true}for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
   if(v.wind!=null){const w2=ws(rv.sec[k]);if(w2!=null&&o.windDir!==w2){o.windDir=w2;ch=true}}if(ch){o.updated=today();await DB.collection('ratings').doc('w'+w).set(o)}}
- rv.rep=1;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
+ rv.rep=5;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
 
 // ---- Fog of War aus den echten GPS-Spuren: aufgedeckt wird genau der befahrene Teil ----
 let COV=null,COVKEY='';const ABIT={board:1,fuss:2};
@@ -1589,7 +1594,7 @@ function clipPts(p,a,b){const c=cumOf(p),P_=p.pts,out=[];const at=s=>{let i=0;wh
  const [ia,pa]=at(a),[ib,pb]=at(b);out.push(pa);for(let i=ia+1;i<=ib;i++)out.push(P_[i]);out.push(pb);return out}
 function mergeIv(L){L=L.slice().sort((x,y)=>x[0]-y[0]);const o=[];for(const v of L){const t=o[o.length-1];if(t&&v[0]<=t[1]+1)t[1]=Math.max(t[1],v[1]);else o.push(v.slice())}return o}
 function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.rides[id];return id+':'+(e&&e.data?(e.data.act||'b')+(e.data.p?e.data.p.length:0):'x')}).join(',')+'|'+Object.keys(STORE.uways).length;if(COV&&COVKEY===key)return COV;COVKEY=key;
- COV={iv:new Map(),foot:[],links:[]};setTimeout(repairRides,50);const TOL=28,cell=0.0005,KM=111320;const ck=(la,lo)=>Math.floor(la/cell)+','+Math.floor(lo/cell);
+ COV={iv:new Map(),foot:[],links:[]};SIDX=null;setTimeout(repairRides,50);const TOL=28,cell=0.0005,KM=111320;const ck=(la,lo)=>Math.floor(la/cell)+','+Math.floor(lo/cell);
  const T=new Map(),RS=[];
  for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||(r.act||'board')==='ignore')continue;const bit=ABIT[r.act||'board']||1;const pts=dec(r.p);
   let la0=90,la1=-90,lo0=180,lo1=-180;for(const q of pts){la0=Math.min(la0,q[0]);la1=Math.max(la1,q[0]);lo0=Math.min(lo0,q[1]);lo1=Math.max(lo1,q[1])}const sec=new Int16Array(pts.length).fill(-1);if(r.rv&&r.rv.sec)r.rv.sec.forEach((q,k)=>{for(let i=Math.max(0,q[1]);i<=Math.min(pts.length-1,q[2]);i++)sec[i]=k});
@@ -1598,19 +1603,30 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const k=Math.cos(a[0]*Math.PI/180)*KM;const dx=(b[1]-a[1])*k,dy=(b[0]-a[0])*KM,d=Math.hypot(dx,dy);if(d<0.5)continue;
    const n=Math.ceil(d/6);for(let j=0;j<=n;j++){const q=[a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n,dx/d,dy/d,bit];const kk=ck(q[0],q[1]);let arr=T.get(kk);if(!arr)T.set(kk,arr=[]);arr.push(q)}}}
  if(!RS.length)return COV;
- // Richtung zählt: ein Abzweig quer zur Spur wird nicht aufgedeckt, nur weil er an der Kreuzung beginnt
- const near=(q,ux,uy)=>{const x=Math.floor(q[0]/cell),y=Math.floor(q[1]/cell);let bits=0;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const arr=T.get((x+a)+','+(y+b));if(arr)for(const t of arr){if((bits|t[4])===bits)continue;if(Math.abs(ux*t[2]+uy*t[3])<0.55)continue;if(dist(q,t)<TOL)bits|=t[4]}}return bits};
- const E=new Map();const addE=(q,tag)=>{const kk=ck(q[0],q[1]);let arr=E.get(kk);if(!arr)E.set(kk,arr=[]);arr.push([q[0],q[1],tag])};
- for(let pi=0;pi<P.length;pi++){const p=P[pi],a0=p.pts[0];let inb=false;for(const R_ of RS)if(a0[0]>R_.bb[0]&&a0[0]<R_.bb[1]&&a0[1]>R_.bb[2]&&a0[1]<R_.bb[3]){inb=true;break}if(!inb)continue;
-  const S=[];let cum=0,any=0;
-  for(let i=0;i<p.segs.length;i++){const A=p.pts[i],B=p.pts[i+1],len=p.segs[i];const k=Math.cos(A[0]*Math.PI/180)*KM;const dx=(B[1]-A[1])*k,dy=(B[0]-A[0])*KM,d=Math.hypot(dx,dy)||1;
-   const ns=Math.max(1,Math.ceil(len/6));for(let j=0;j<ns;j++){const t=(j+.5)/ns;const q=[A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t];const bits=near(q,dx/d,dy/d);any|=bits;S.push([cum+len*t,bits,q,i])}cum+=len}
-  if(!any)continue;const tot=cum,res={L:tot};
-  for(const bit of [1,2]){if(!(any&bit))continue;let runs=[];let cur=null;for(const sm of S){if(sm[1]&bit){if(cur&&sm[0]-cur[1]<=40)cur[1]=sm[0];else{cur=[sm[0],sm[0]];runs.push(cur)}}}
-   runs=runs.map(r=>[Math.max(0,r[0]-3),Math.min(tot,r[1]+3)]).filter(r=>r[1]-r[0]>=25||(tot<45&&r[1]-r[0]>=tot*.5));
-   for(const r of runs){if(r[0]<15)r[0]=0;if(tot-r[1]<15)r[1]=tot}if(runs.length)res[bit]=runs}
+ // Jeder Spurpunkt gehört genau EINEM Weg: dem nächsten, der in Spurrichtung läuft. Straßen und eigene Wege konkurrieren mit,
+ // damit nicht der Gehweg auf der anderen Straßenseite oder ein Stich an der Kreuzung mit aufgedeckt wird.
+ const SI=buildIdx(),SC=SI.cell,RDS=SI.RDS,UP=SI.U;const H=new Map();const E=new Map();const addE=(q,tag)=>{const kk=ck(q[0],q[1]);let arr=E.get(kk);if(!arr)E.set(kk,arr=[]);arr.push([q[0],q[1],tag])};
+ const geo=it=>it[0]===0?P[it[1]].pts:it[0]===1?RDS[it[1]]:UP[it[1]];
+ for(const R_ of RS){const pts=R_.pts;let prev=null;
+  for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const k=Math.cos(a[0]*Math.PI/180)*KM;const dx=(b[1]-a[1])*k,dy=(b[0]-a[0])*KM,d=Math.hypot(dx,dy);if(d<0.5)continue;const ux=dx/d,uy=dy/d;
+   const n=Math.max(1,Math.round(d/5));for(let j=0;j<n;j++){const q=[a[0]+(b[0]-a[0])*(j+.5)/n,a[1]+(b[1]-a[1])*(j+.5)/n];
+    const best=new Map();const x0=Math.floor((q[0]-.0004)/SC),x1=Math.floor((q[0]+.0004)/SC),y0=Math.floor((q[1]-.0006)/SC),y1=Math.floor((q[1]+.0006)/SC);
+    for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)for(const it of SI.G.get(x+','+y)||[]){const g=geo(it);if(!g)continue;const A=g[it[2]],B=g[it[2]+1];if(!B)continue;
+     const sx=(B[1]-A[1])*k,sy=(B[0]-A[0])*KM,sl=Math.hypot(sx,sy);if(sl<0.3)continue;if(Math.abs(ux*sx+uy*sy)/sl<0.55)continue;
+     const dd=segDist(q,A,B);if(dd>=TOL)continue;const key=(it[0]===0?'w':it[0]===1?'r':'u')+it[1];const o=best.get(key);if(!o||dd<o[0])best.set(key,[dd,it,A,B,sl])}
+    if(!best.size){prev=null;continue}
+    let bk=null,bv=null;for(const [key,v] of best)if(!bv||v[0]<bv[0]){bk=key;bv=v}
+    if(prev&&best.has(prev)&&best.get(prev)[0]<=bv[0]+8){bk=prev;bv=best.get(prev)}prev=bk;
+    if(bk[0]!=='w')continue;const it=bv[1],pi=it[1],A=bv[2],B=bv[3];const px=(q[1]-A[1])*k,py=(q[0]-A[0])*KM;const t=Math.max(0,Math.min(1,(px*(B[1]-A[1])*k+py*(B[0]-A[0])*KM)/(bv[4]*bv[4])));
+    const sp=cumOf(P[pi])[it[2]]+t*P[pi].segs[it[2]];let h=H.get(pi);if(!h)H.set(pi,h=[]);h.push([sp,R_.bit])}}}
+ for(const [pi,h] of H){const p=P[pi],c=cumOf(p),tot=c[c.length-1],res={L:tot};
+  for(const bit of [1,2]){const hs=h.filter(x=>x[1]&bit).map(x=>x[0]).sort((u,v)=>u-v);if(!hs.length)continue;let runs=[],cur=null;
+   for(const sp of hs){if(cur&&sp-cur[1]<=40)cur[1]=sp;else{cur=[sp,sp];runs.push(cur)}}
+   // erst an der echten Spannweite der Treffer messen (sonst wird aus einem Treffer an der Kreuzung ein ganzer Stich)
+   runs=runs.filter(r=>r[1]-r[0]>=20||(tot<45&&r[1]-r[0]>=tot*.6));
+   runs=runs.map(r=>[Math.max(0,r[0]-4),Math.min(tot,r[1]+4)]);for(const r of runs){if(r[0]<15)r[0]=0;if(tot-r[1]<15)r[1]=tot}if(runs.length)res[bit]=runs}
   if(!res[1]&&!res[2])continue;COV.iv.set(pi,res);const all=mergeIv([...(res[1]||[]),...(res[2]||[])]);
-  for(const sm of S)if(all.some(r=>sm[0]>=r[0]&&sm[0]<=r[1]))addE(sm[2],['w',pi,sm[3]])}
+  for(let i=0;i<p.segs.length;i++){const A=p.pts[i],B=p.pts[i+1],len=p.segs[i];const ns=Math.max(1,Math.ceil(len/6));for(let j=0;j<ns;j++){const t=(j+.5)/ns,sp=c[i]+len*t;if(all.some(r=>sp>=r[0]&&sp<=r[1]))addE([A[0]+(B[0]-A[0])*t,A[1]+(B[1]-A[1])*t],['w',pi,i])}}}
  for(const [uid,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;const pts=dec(u.p);const tag=[u.road?'r':'u',uid];
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const n=Math.max(1,Math.ceil(dist(a,b)/6));for(let j=0;j<=n;j++)addE([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n],tag)}}
  const tkey=t=>t[0]==='w'?'w'+t[1]:'u'+t[1];const nearSamp=(q,key)=>{const x=Math.floor(q[0]/cell),y=Math.floor(q[1]/cell);let b=null,bd=40;for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const arr=E.get((x+a)+','+(y+c));if(arr)for(const t of arr){if(tkey(t[2])!==key)continue;const d=dist(q,t);if(d<bd){bd=d;b=[t[0],t[1]]}}}return b};
@@ -1637,6 +1653,13 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
    else gap+=step}
   flush(pts.length)}
  return COV}
+const DISP=new Map();let DISPKEY='';
+function dispRat(pi,w){const rt=RAT['w'+w[0]];if(rt&&['belag','autos','wind','leute'].some(q=>rt[q]!=null))return rt;
+ const C=coverage();if(DISPKEY!==COVKEY){DISP.clear();DISPKEY=COVKEY}if(!C.iv.has(pi))return rt;if(DISP.has(pi))return DISP.get(pi)||rt;
+ const p=P[pi],iv=C.iv.get(pi);const L_=mergeIv([...(iv[1]||[]),...(iv[2]||[])]);const g=clipPts(p,L_[0][0],L_[0][1]);const m=g[Math.floor(g.length/2)];let best=null,bd=30;
+ for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||!r.rv||!r.rv.sec)continue;const pts=dec(r.p);let bi=-1;for(let i=0;i<pts.length;i+=2){const d=dist(m,pts[i]);if(d<bd){bd=d;bi=i}}
+  if(bi<0)continue;const k=r.rv.sec.findIndex(s=>bi>=s[1]&&bi<=s[2]);for(let k2=k;k2>=0;k2--){const v=r.rv.vals&&r.rv.vals[k2];if(v&&Object.keys(v).length){best=v;break}}}
+ const o=best?Object.assign({},rt||{},{belag:best.belag,autos:best.autos,wind:best.wind,leute:best.leute,virt:true}):null;DISP.set(pi,o);return o||rt}
 // true = ganz aufgedeckt, Array = nur diese Abschnitte (Meter entlang des Stücks), null = Nebel
 function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'alle';
  if(f==='alle'&&rt&&!rt.ridden&&!(rt.act&&Object.keys(rt.act).length))return true;
@@ -1644,7 +1667,9 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
 function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
-function elStyle(key){if(!key)return null;if(key[0]==='w'){const p=P[+key.slice(1)];if(!p)return null;const w=W[p.w],rt=RAT['w'+w[0]];const rb=rt&&rt.belag?+rt.belag:0;const sm=rb?BELAG_SM[rb]:w[3];return {col:cmode()==='grade'?'#888':COL[w[1]],wt:(sm==1||sm==2)?5:3.4}}
+function wcolOf(w,rt){const t=rt&&rt.typ;if(t)return ({radweg:COL[1],feldweg:COL[2],strasse:COL[4]})[t]||UCOL[t]||COL[w[1]];return COL[w[1]]}
+function wName(w){const rt=RAT['w'+w[0]];return rt&&rt.typ?lbl2('art',rt.typ)+' <span style="font-weight:normal;color:#777">(von dir)</span>':CNAME[w[1]]}
+function elStyle(key){if(!key)return null;if(key[0]==='w'){const p=P[+key.slice(1)];if(!p)return null;const w=W[p.w],rt=RAT['w'+w[0]];const rb=rt&&rt.belag?+rt.belag:0;const sm=rb?BELAG_SM[rb]:w[3];return {col:cmode()==='grade'?'#888':wcolOf(w,rt),wt:(sm==1||sm==2)?5:3.4}}
  const u=STORE.uways[key.slice(1)]&&STORE.uways[key.slice(1)].data;if(!u)return null;const sm=u.belag?BELAG_SM[u.belag]:0;return {col:UCOL[u.typ]||'#1a9e4a',wt:(sm==1||sm==2)?5:3.4}}
 function footStyle(o){const v=o.sv;if(o.con){const a=elStyle(o.ka),b=elStyle(o.kb);const x=a&&b?(a.wt>=b.wt?a:b):(a||b);return x||{col:'#8d9188',wt:3.4}}
  if(v){const typ=v.wo||v.typ||'begleit';const sm=v.belag?BELAG_SM[v.belag]:0;return {col:UCOL[typ]||'#1f6fd1',wt:(sm==1||sm==2)?5:3.4,op:(+v.belag===5?.35:1)}}return {col:'#8d9188',wt:3.4}}

@@ -1022,7 +1022,7 @@ const OPT={belag:[[1,'spiegelglatt'],[2,'gut'],[3,'rau'],[4,'grob/Flickwerk'],[5
 const QN={belag:'Belag',autos:'Autos / Traktoren',wind:'Wind',leute:'Fußgänger / Radler'};
 function lbl(k,v){const o=OPT[k].find(x=>x[0]===v);return o?o[1]:v}
 function rtHtml(id){const r=RAT['w'+id];if(!r)return DB?'<br><span style="color:#777">Noch nicht von dir aufgedeckt.</span>':'';
- const parts=[];for(const k of ['belag','autos','wind','leute'])if(r[k]!=null)parts.push(QN[k]+': '+lbl(k,r[k])+(k==='wind'&&r.windDir!=null?' (bei Wind aus '+DIRS[r.windDir]+')':''));
+ const parts=[];if(r.typ)parts.push('Wegart: '+lbl2('art',r.typ));for(const k of ['belag','autos','wind','leute'])if(r[k]!=null)parts.push(QN[k]+': '+lbl(k,r[k])+(k==='wind'&&r.windDir!=null?' (bei Wind aus '+DIRS[r.windDir]+')':''));if(r.board)parts.push('Boardbar: '+lbl2('board',r.board));
  return '<br><b>Deine Einträge</b>'+(actLine(r)?'<br><span style="color:#777">'+actLine(r)+'</span>':'')+(parts.length?'<br>'+parts.join('<br>'):'')+(r.notiz?'<br>„'+r.notiz.replace(/[<>&]/g,'')+'“':'')}
 let cur=null;
 function openSheet(id){map.closePopup();const r=Object.assign({},RAT['w'+id]||{});cur={id,r};
@@ -1333,7 +1333,7 @@ const ROPT=Object.assign({},null,{
  zugang:[['offen','öffentlich'],['erlaubnis','mit Erlaubnis'],['privat','privat']],
  board:[['ja','ja'],['nein','nein']],
  wo:[['fahrbahn','Fahrbahn'],['begleit','Radweg daneben'],['gehweg','Gehweg']],
- art:[['radweg','Radweg'],['feldweg','Feldweg'],['strasse','Straße'],['schotter','Schotter'],['pfad','Pfad']]});
+ art:[['radweg','Radweg'],['gehweg','Gehweg'],['strasse','Straße'],['feldweg','Feldweg'],['schotter','Schotter'],['pfad','Pfad']]});
 const WOSET={fahrbahn:1,begleit:1,gehweg:1};
 const RQN={wo:'Wo?',belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',art:'Wegart',zugang:'Zugang',board:'Boardbar?'};
 const UCOL={fahrbahn:'#d23c3c',begleit:'#1f6fd1',gehweg:'#5b8fd6',radweg:'#1f6fd1',feldweg:'#1a9e4a',strasse:'#8a8a8a',schotter:'#9b6b3d',pfad:'#9b6b3d'};
@@ -1659,7 +1659,7 @@ function dispRat(pi,w){const rt=RAT['w'+w[0]];if(rt&&['belag','autos','wind','le
  const p=P[pi],iv=C.iv.get(pi);const L_=mergeIv([...(iv[1]||[]),...(iv[2]||[])]);const g=clipPts(p,L_[0][0],L_[0][1]);const m=g[Math.floor(g.length/2)];let best=null,bd=30;
  for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||!r.rv||!r.rv.sec)continue;const pts=dec(r.p);let bi=-1;for(let i=0;i<pts.length;i+=2){const d=dist(m,pts[i]);if(d<bd){bd=d;bi=i}}
   if(bi<0)continue;const k=r.rv.sec.findIndex(s=>bi>=s[1]&&bi<=s[2]);for(let k2=k;k2>=0;k2--){const v=r.rv.vals&&r.rv.vals[k2];if(v&&Object.keys(v).length){best=v;break}}}
- const o=best?Object.assign({},rt||{},{belag:best.belag,autos:best.autos,wind:best.wind,leute:best.leute,virt:true}):null;DISP.set(pi,o);return o||rt}
+ const o=best?Object.assign({},rt||{},{belag:best.belag,autos:best.autos,wind:best.wind,leute:best.leute,virt:true},best.art?{typ:best.art}:{}):null;DISP.set(pi,o);return o||rt}
 // true = ganz aufgedeckt, Array = nur diese Abschnitte (Meter entlang des Stücks), null = Nebel
 function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'alle';
  if(f==='alle'&&rt&&!rt.ridden&&!(rt.act&&Object.keys(rt.act).length))return true;
@@ -1667,12 +1667,13 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
 function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
-function wcolOf(w,rt){const t=rt&&rt.typ;if(t)return ({radweg:COL[1],feldweg:COL[2],strasse:COL[4]})[t]||UCOL[t]||COL[w[1]];return COL[w[1]]}
+function artCol(a){return ({radweg:COL[1],gehweg:UCOL.gehweg,feldweg:COL[2],strasse:COL[4],schotter:UCOL.schotter,pfad:UCOL.pfad})[a]||null}
+function wcolOf(w,rt){const t=rt&&rt.typ;return (t&&artCol(t))||COL[w[1]]}
 function wName(w){const rt=RAT['w'+w[0]];return rt&&rt.typ?lbl2('art',rt.typ)+' <span style="font-weight:normal;color:#777">(von dir)</span>':CNAME[w[1]]}
 function elStyle(key){if(!key)return null;if(key[0]==='w'){const p=P[+key.slice(1)];if(!p)return null;const w=W[p.w],rt=RAT['w'+w[0]];const rb=rt&&rt.belag?+rt.belag:0;const sm=rb?BELAG_SM[rb]:w[3];return {col:cmode()==='grade'?'#888':wcolOf(w,rt),wt:(sm==1||sm==2)?5:3.4}}
  const u=STORE.uways[key.slice(1)]&&STORE.uways[key.slice(1)].data;if(!u)return null;const sm=u.belag?BELAG_SM[u.belag]:0;return {col:UCOL[u.typ]||'#1a9e4a',wt:(sm==1||sm==2)?5:3.4}}
 function footStyle(o){const v=o.sv;if(o.con){const a=elStyle(o.ka),b=elStyle(o.kb);const x=a&&b?(a.wt>=b.wt?a:b):(a||b);return x||{col:'#8d9188',wt:3.4}}
- if(v){const typ=v.wo||v.typ||'begleit';const sm=v.belag?BELAG_SM[v.belag]:0;return {col:UCOL[typ]||'#1f6fd1',wt:(sm==1||sm==2)?5:3.4,op:(+v.belag===5?.35:1)}}return {col:'#8d9188',wt:3.4}}
+ if(v){const typ=v.wo||v.typ||'begleit';const sm=v.belag?BELAG_SM[v.belag]:0;return {col:(v.art&&artCol(v.art))||UCOL[typ]||'#1f6fd1',wt:(sm==1||sm==2)?5:3.4,op:(+v.belag===5?.35:1)}}return {col:'#8d9188',wt:3.4}}
 function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||'alle';const dim=(RD?.2:REVIEWING?.5:1);const C=coverage();
  for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const st=footStyle(o);
   L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
@@ -1680,7 +1681,7 @@ function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||
   if(!o.con&&rosaOk(o.sv))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}}
 function popFoot(o,ll){if(o.con){const k=o.ka&&o.ka[0]==='w'?o.ka:o.kb&&o.kb[0]==='w'?o.kb:null;if(k)return pop(P[+k.slice(1)],ll);const u=(o.ka||o.kb||'').slice(1);if(STORE.uways[u])return popU(u,ll);return}
  const v=o.sv,dt=String(o.date||'').split('-').reverse().join('.');
- if(v)L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
+ if(v)L.popup().setLatLng(ll).setContent('<b>'+(v.art?lbl2('art',v.art):v.wo?lbl2('wo',v.wo):'Gefahren')+'</b> <span style="color:#777">· '+dt+'</span><br>'+vals(v,['belag','autos','wind','leute','board'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
  else L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)}
 // ---- Antippen: eine zentrale Erkennung statt Klicks auf einzelnen Zeichenflächen ----
 let LASTPOP=0,LASTCLOSE=0,TAPHOOK=false;const UPTS=new WeakMap();

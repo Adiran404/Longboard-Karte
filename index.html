@@ -909,7 +909,7 @@ function init(){restoreUI();
  for(const p of D.ctx.water||[]) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#a9d1ee",fillOpacity:1,interactive:false,smoothFactor:2}).addTo(ctxFill);
  window.DETF=L.layerGroup();for(const r of D.ctx.streams||[]) L.polyline(dec(r),{renderer:RF,color:"#9fc9e8",weight:1,interactive:false,smoothFactor:2}).addTo(DETF);
  for(const r of D.ctx.rivers||[]) L.polyline(dec(r),{renderer:RF,color:"#7fb6df",weight:2.4,interactive:false}).addTo(ctxFill);
- window.DETR=L.layerGroup();for(const r of D.ctx.conn) L.polyline(dec(r[1]),{renderer:R,color:"#c4c4c4",weight:1.6,smoothFactor:2}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Straße'+(r[2]?' – '+r[2]:'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br>Falls dort in echt ein Verbotsschild steht: bitte melden bzw. in OSM eintragen.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">OSM</a>').openOn(map)).addTo(DETR);
+ window.DETR=L.layerGroup();for(const r of D.ctx.conn) L.polyline(dec(r[1]),{renderer:R,color:"#c4c4c4",weight:1.6,smoothFactor:2,interactive:false}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Straße'+(r[2]?' – '+r[2]:'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br>Falls dort in echt ein Verbotsschild steht: bitte melden bzw. in OSM eintragen.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">OSM</a>').openOn(map)).addTo(DETR);
  for(const r of D.ctx.rail) L.polyline(dec(r),{renderer:R,color:"#777",weight:1.5,dashArray:"6 4",interactive:false}).addTo(ctx);
  for(const r of D.ctx.roads) L.polyline(dec(r[1]),{renderer:R,color:r[0]==1?"#5f5f5f":r[0]==2?"#808080":"#a3a3a3",weight:r[0]==1?3.2:r[0]==2?2.4:1.8,interactive:false}).addTo(ctx);
  W=D.ways;
@@ -982,7 +982,7 @@ function draw(){
  for(const g of byCell(REV_))L.polyline(g,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
  const hw=map.getZoom()>=14?11:map.getZoom()>=12?8:5;for(const k in H)L.polyline(H[k].ls,{renderer:R,color:"#ff3fd2",weight:hw,opacity:H[k].st.op,interactive:false,smoothFactor:1.5}).addTo(halo);
  const keys=Object.keys(G).sort((a,b)=>(G[a].st.dash?0:1)-(G[b].st.dash?0:1));
- for(const k of keys){const st=G[k].st;L.polyline(G[k].ls,{renderer:R,color:st.col,weight:st.wt,opacity:st.op,dashArray:st.dash,lineCap:st.dash?"butt":"round"}).on('click',ev=>netClick(ev.latlng)).addTo(layer)}
+ for(const k of keys){const st=G[k].st;L.polyline(G[k].ls,{renderer:R,color:st.col,weight:st.wt,opacity:st.op,dashArray:st.dash,lineCap:st.dash?"butt":"round",interactive:false}).addTo(layer)}
  drawExtras(R,fog);document.getElementById('stat').textContent=(shown/1000).toFixed(0)+' km rosa (wing-taugliche) Wegstücke';
 }
 function netClick(ll){const S=buildIdx();const q=[ll.lat,ll.lng];const x=Math.floor(q[0]/S.cell),y=Math.floor(q[1]/S.cell);let best=null,bd=40;
@@ -1547,14 +1547,14 @@ function showDone(){if(!REV)return;const rv=REV.rv;const c=v=>Object.keys(rv.res
  map.fitBounds(L.latLngBounds(REV.A.pts),{padding:[30,30]})}
 
 // ---- eigene Wege und Spots auf der Karte ----
-function drawExtras(R,fog){try{drawFoot(R,fog)}catch(e){console.error(e)}
+function drawExtras(R,fog){hookTap();try{drawFoot(R,fog)}catch(e){console.error(e)}
 for(const [id,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;const pts=dec(u.p);
   const col=UCOL[u.typ]||'#1a9e4a';const dash=u.typ==='pfad'?'2 6':u.typ==='schotter'?'8 5':null;const sm=u.belag?BELAG_SM[u.belag]:0;
   if(seenOk(u))L.polyline(pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*(RD?.2:1),interactive:false}).addTo(reveal);
-  L.polyline(pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:(RD?.2:1)*(u.belag===5?.35:1),dashArray:dash}).on('click',ev=>popU(id,ev.latlng)).addTo(layer);
+  L.polyline(pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:(RD?.2:1)*(u.belag===5?.35:1),dashArray:dash,interactive:false}).addTo(layer);
   if(rosaOk(u))L.polyline(pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*(RD?.2:1),interactive:false}).addTo(halo)}
  for(const [id,e] of Object.entries(STORE.spots)){const s=e&&e.data;if(!s||!s.poly)continue;
-  L.polygon(dec(s.poly),{renderer:R,color:'#7a3fd1',weight:2,fillColor:'#7a3fd1',fillOpacity:.18*(RD?.3:1),opacity:RD?.3:1}).on('click',ev=>popS(id,ev.latlng)).addTo(layer)}}
+  L.polygon(dec(s.poly),{renderer:R,color:'#7a3fd1',weight:2,fillColor:'#7a3fd1',fillOpacity:.18*(RD?.3:1),opacity:RD?.3:1,interactive:false}).addTo(layer)}}
 function seenOk(o){const f=(document.getElementById('seenBy')||{}).value||'alle';if(f==='alle')return true;return !!(o&&o.act&&o.act[f]&&o.act[f].length)||(f==='board'&&o&&o.ridden)}
 function actLine(o){if(!o)return '';const p=[];const A=o.act||{};if(!A.board&&o.ridden&&o.rides)A.board=o.rides;for(const k in A)if(A[k]&&A[k].length)p.push((ACT_LBL[k]||k)+' '+A[k].length+'× (zuletzt '+A[k][A[k].length-1].split('-').reverse().join('.')+')');return p.join(', ')}
 function vals(o,keys){return keys.filter(k=>o[k]!=null).map(k=>RQN[k]+': '+lbl2(k,o[k])).join('<br>')}
@@ -1632,7 +1632,7 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
    if(h){const hk=tkey(h);if(last&&tkey(last)!==hk&&gap<=60){
      if(h[0]==='w'&&last[0]==='w'){const k1=P[last[1]].base+last[2],k2=P[h[1]].base+h[2];const kk=k1<k2?k1+','+k2:k2+','+k1;if(!LK.has(kk)){LK.add(kk);COV.links.push([k1,k2])}}
      // berühren sich die gezeichneten Teile nicht, Lücke entlang der Spur schließen
-     const cb=nearSamp(pts[i],hk),ca=nearSamp(lastQ,tkey(last));if(ca&&cb){const ta=nearSamp(cb,tkey(last));if(!(ta&&dist(ta,cb)<5)&&dist(ca,cb)>3){const ck2=ca[0].toFixed(5)+cb[0].toFixed(5);if(!LK.has(ck2)){LK.add(ck2);COV.foot.push({pts:[ca,...pts.slice(lastI+1,i),cb],bit:R_.bit,date:R_.date,id:R_.id,sv:null,sk:-1,con:true})}}}}
+     const cb=nearSamp(pts[i],hk),ca=nearSamp(lastQ,tkey(last));if(ca&&cb){const ta=nearSamp(cb,tkey(last));if(!(ta&&dist(ta,cb)<5)&&dist(ca,cb)>3){const ck2=ca[0].toFixed(5)+cb[0].toFixed(5);if(!LK.has(ck2)){LK.add(ck2);COV.foot.push({pts:[ca,...pts.slice(lastI+1,i),cb],bit:R_.bit,date:R_.date,id:R_.id,sv:null,sk:-1,con:true,ka:tkey(last),kb:hk})}}}}
      last=h;lastQ=pts[i];lastI=i;gap=0}
    else gap+=step}
   flush(pts.length)}
@@ -1644,16 +1644,31 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
 function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
+function elStyle(key){if(!key)return null;if(key[0]==='w'){const p=P[+key.slice(1)];if(!p)return null;const w=W[p.w],rt=RAT['w'+w[0]];const rb=rt&&rt.belag?+rt.belag:0;const sm=rb?BELAG_SM[rb]:w[3];return {col:cmode()==='grade'?'#888':COL[w[1]],wt:(sm==1||sm==2)?5:3.4}}
+ const u=STORE.uways[key.slice(1)]&&STORE.uways[key.slice(1)].data;if(!u)return null;const sm=u.belag?BELAG_SM[u.belag]:0;return {col:UCOL[u.typ]||'#1a9e4a',wt:(sm==1||sm==2)?5:3.4}}
+function footStyle(o){const v=o.sv;if(o.con){const a=elStyle(o.ka),b=elStyle(o.kb);const x=a&&b?(a.wt>=b.wt?a:b):(a||b);return x||{col:'#8d9188',wt:3.4}}
+ if(v){const typ=v.wo||v.typ||'begleit';const sm=v.belag?BELAG_SM[v.belag]:0;return {col:UCOL[typ]||'#1f6fd1',wt:(sm==1||sm==2)?5:3.4,op:(+v.belag===5?.35:1)}}return {col:'#8d9188',wt:3.4}}
 function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||'alle';const dim=(RD?.2:REVIEWING?.5:1);const C=coverage();
- for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const v=o.sv;
-  if(o.con){L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3,opacity:dim,interactive:false}).addTo(layer);continue}
+ for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const st=footStyle(o);
   L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
-  const dt=String(o.date||'').split('-').reverse().join('.');
-  if(v){// in der Prüfung bewertet: wie ein eigener Weg zeichnen
-   const typ=v.wo||v.typ||'begleit';const col=UCOL[typ]||'#1f6fd1';const sm=v.belag?BELAG_SM[v.belag]:0;
-   L.polyline(o.pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:dim*(+v.belag===5?.35:1)}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Abschnitt in der Prüfung öffnen</button>').openOn(map)).addTo(layer);
-   if(rosaOk(v))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}
-  else L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3.4,opacity:dim}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)).addTo(layer)}}
+  L.polyline(o.pts,{renderer:R,color:st.col,weight:st.wt,opacity:dim*(st.op||1),interactive:false}).addTo(layer);
+  if(!o.con&&rosaOk(o.sv))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}}
+function popFoot(o,ll){if(o.con){const k=o.ka&&o.ka[0]==='w'?o.ka:o.kb&&o.kb[0]==='w'?o.kb:null;if(k)return pop(P[+k.slice(1)],ll);const u=(o.ka||o.kb||'').slice(1);if(STORE.uways[u])return popU(u,ll);return}
+ const v=o.sv,dt=String(o.date||'').split('-').reverse().join('.');
+ if(v)L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
+ else L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)}
+// ---- Antippen: eine zentrale Erkennung statt Klicks auf einzelnen Zeichenflächen ----
+let LASTPOP=0,TAPHOOK=false;const UPTS=new WeakMap();
+function hookTap(){if(TAPHOOK)return;TAPHOOK=true;map.on('popupopen',()=>{LASTPOP=Date.now()});
+ map.on('click',ev=>{const t0=Date.now();setTimeout(()=>{if(SPLIT||REVIEWING||LASTPOP>=t0)return;tapAt(ev.latlng)},0)})}
+function tapAt(ll){const q=[ll.lat,ll.lng];const mpp=40075016*Math.cos(q[0]*Math.PI/180)/Math.pow(2,map.getZoom()+8);const tol=Math.max(5,18*mpp);let bd=tol,act=null;
+ const segs=(pts,fn)=>{for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(Math.abs(a[0]-q[0])>.02&&Math.abs(b[0]-q[0])>.02)continue;const d=segDist(q,a,b);if(d<bd){bd=d;act=fn}}};
+ for(const [id,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;let pts=UPTS.get(u);if(!pts){pts=dec(u.p);UPTS.set(u,pts)}segs(pts,()=>popU(id,ll))}
+ const f=(document.getElementById('seenBy')||{}).value||'alle';for(const o of coverage().foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;segs(o.pts,()=>popFoot(o,ll))}
+ const S=buildIdx();const x=Math.floor(q[0]/S.cell),y=Math.floor(q[1]/S.cell);const rr=Math.ceil(tol/200)+1;
+ for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==0)continue;const p=P[it[1]];if(!rideable(p))continue;const d=segDist(q,p.pts[it[2]],p.pts[it[2]+1]);if(d<bd*0.9){bd=d;act=()=>pop(p,ll)}}
+ if(!act)for(const [id,e] of Object.entries(STORE.spots)){const sp=e&&e.data;if(!sp||!sp.poly)continue;const g=dec(sp.poly);let ins=false;for(let i=0,j=g.length-1;i<g.length;j=i++){if(((g[i][0]>q[0])!==(g[j][0]>q[0]))&&(q[1]<(g[j][1]-g[i][1])*(q[0]-g[i][0])/(g[j][0]-g[i][0])+g[i][1]))ins=!ins}if(ins){act=()=>popS(id,ll);break}}
+ if(act)return act();if(map.getZoom()>=12)connPop(ll)}
 
 DB.collection('ratings').onSnapshot(snap=>{const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()});
 // GPX import

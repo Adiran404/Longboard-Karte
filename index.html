@@ -1391,9 +1391,9 @@ function segmentRide(r,A){const {pts,v,d,n}=A;const m=new Array(n);let pk=null;
 // ---- Infos zu einem Abschnitt ----
 function placeNear(q){let b=null,bd=1e9;for(const p of D.ctx.places){const dd=dist(q,[p[1],p[2]]);if(dd<bd){bd=dd;b=p}}return b&&bd<6000?b[0]:null}
 const KIND_LBL={1:'Radweg',2:'Feldweg mit Kfz-Verbot',3:'Feldweg',4:'Weg mit Kfz-Freigabe'};
-function secInfo(r,A,sec){const [kind,i0,i1,uid]=sec;const {pts,v,T,d}=A;const ids=new Set(),cods=[];
+function secInfo(r,A,sec){let secCnt=null;const [kind,i0,i1,uid]=sec;const {pts,v,T,d}=A;const ids=new Set(),cods=[];
  if(kind==='way'){const cnt=new Map();let pk=null,tot=0;const ms=[];for(let i=i0;i<=i1;i++){const mm=matchPt(pts[i],pk);if(mm.t!=='x')pk=mm.k;if(mm.t==='w'){cnt.set(mm.id,(cnt.get(mm.id)||0)+1);ms.push(mm);tot++}}
-  for(const [id,c] of cnt)if(c>=Math.max(3,tot*.25))ids.add(id);for(const mm of ms)if(ids.has(mm.id))cods.push(P[mm.pi].k[mm.si])}
+  for(const [id,c] of cnt)if(c>=Math.max(3,tot*.25))ids.add(id);secCnt=cnt;for(const mm of ms)if(ids.has(mm.id))cods.push(P[mm.pi].k[mm.si])}
  let rname=null;if(kind==='road'){const nc=(D.ctx.conn||[]).length;for(let i=i0;i<=i1&&!rname;i+=2){const mm=matchPt(pts[i]);if(mm.t==='r'&&mm.ri<nc)rname=D.ctx.conn[mm.ri][2]||null}}
  const L=d[i1]-d[i0];let vs=0,vn=0;for(let i=i0;i<=i1;i++)if(v[i]!=null&&v[i]>=2){vs+=v[i];vn++}
  const tm=T?(T[i0]+T[i1])/2:null;let w=null;if(r.wx&&r.wx.h&&tm){let b=null,bd=1e12;for(const x of r.wx.h){const dd=Math.abs(Date.parse(x[0])/1000-tm);if(dd<bd&&x[1]!=null){bd=dd;b=x}}if(b)w={ws:b[1],dir:b[3]}}
@@ -1402,7 +1402,7 @@ function secInfo(r,A,sec){const [kind,i0,i1,uid]=sec;const {pts,v,T,d}=A;const i
  const wm=wmap();const w0=ids.size?wm[[...ids][0]]:null;const nm=[...ids].map(id=>wm[id]&&wm[id][4]).find(x=>x);
  const a=placeNear(pts[i0]),b=placeNear(pts[i1]);const where=a&&b&&a!==b?'zwischen '+a+' und '+b:a?'bei '+a:'';
  let title=kind==='way'?(nm||KIND_LBL[w0&&w0[1]]||'Weg'):kind==='uway'?((STORE.uways[uid]&&STORE.uways[uid].data&&lbl2('typ',STORE.uways[uid].data.typ))||'Eigener Weg'):kind==='road'?(rname?rname+' (Straße)':'Straße mit Autoverkehr'):kind==='spot'?'Spot?':'Neuer Weg?';
- return {kind,i0,i1,uid,ids,L,vavg:vn?vs/vn:null,w,twa,windSec,shel,title,where,t0:T&&T[i0],t1:T&&T[i1],km0:d[i0]/1000,km1:d[i1]/1000,w0}}
+ return {kind,i0,i1,uid,ids,cnt:secCnt,L,vavg:vn?vs/vn:null,w,twa,windSec,shel,title,where,t0:T&&T[i0],t1:T&&T[i1],km0:d[i0]/1000,km1:d[i1]/1000,w0}}
 function lbl2(k,v){let o=(OPT[k]||ROPT[k]||[]).find(x=>x[0]===v);if(!o&&k==='typ')o=ROPT.wo.find(x=>x[0]===v);return o?o[1]:v}
 function twaTxt(t){return t==null?'':t<45?'Gegenwind':t<90?'am Wind':t<135?'Halbwind':'Rückenwind'}
 function prefill(r,I,k){const o={},src={};const sv=r.rv&&r.rv.vals&&k!=null?r.rv.vals[k]:null;
@@ -1494,7 +1494,7 @@ function startSplit(){const R_=REV;if(!R_)return;if(!SPLITHOOK){SPLITHOOK=true;m
  SPLIT=async ll=>{SPLIT=null;map.getContainer().style.cursor='';if(REV!==R_)return;const q=[ll.lat,ll.lng];let bi=-1,bd=80;
   for(let i=I.i0+2;i<=I.i1-2;i++){const dd=dist(q,R_.A.pts[i]);if(dd<bd){bd=dd;bi=i}}
   if(bi<0){showSec(R_.cur);document.getElementById('rvprog').textContent='Daneben getippt – nochmal „Hier teilen“';return}
-  if(R_.dirty){R_.dirty=false;await saveCur(R_)}const k=R_.cur,s=R_.rv.sec;const a=s[k];const b=[a[0],bi,a[2],a[3]];a[2]=bi;s.splice(k+1,0,b);
+  if(R_.dirty){R_.dirty=false;await saveCur(R_)}const k=R_.cur,s=R_.rv.sec;const a=s[k];const b=[a[0],bi,a[2],a[0]==='uway'?'u'+R_.id.slice(1)+'_'+bi:a[3]];a[2]=bi;s.splice(k+1,0,b);
   R_.rv.res=shiftKeys(R_.rv.res,k+1,1);R_.rv.vals=shiftKeys(R_.rv.vals,k+1,1);if(R_.rv.vals&&R_.rv.vals[k])R_.rv.vals[k+1]=Object.assign({},R_.rv.vals[k]);delete R_.rv.res[k];R_.rv.man=true;
   R_.infos.splice(k+1,0,secInfo(R_.r,R_.A,b));R_.infos[k]=secInfo(R_.r,R_.A,a);await saveRv(R_);showSec(k)}}
 function curSel(){const sel=Object.assign({},REV.sel);const nm=document.getElementById('rvname');if(nm&&nm.value.trim())sel.name=nm.value.trim();const nt=document.getElementById('rvnote');const note=((nt&&nt.value)||REV.note||'').trim();return {sel,note}}
@@ -1517,11 +1517,14 @@ async function applySec(R_,k,sel,note){const I=R_.infos[k];const day=R_.r.start?
    const o={p:encPl(seg),len:Math.round(I.L),typ:sel.wo||'fahrbahn',road:true,created:today(),from:R_.id};
    for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);
    await DB.collection('uways').doc('u'+R_.id.slice(1)+'_'+I.i0).set(o);return 'new'}
- if(I.kind==='way'){for(const id of I.ids){const o=Object.assign({},RAT['w'+id]||{});o.way=id;
+ if(I.kind==='way'){for(const id of I.ids){const my=I.cnt&&I.cnt.get(id)||0;if(R_.infos.some((J,k2)=>k2!==k&&J&&J.kind==='way'&&J.cnt&&(J.cnt.get(id)||0)>my&&R_.rv.vals&&R_.rv.vals[k2]&&Object.keys(R_.rv.vals[k2]).length))continue;const o=Object.assign({},RAT['w'+id]||{});o.way=id;
    for(const kk of ['belag','autos','wind','leute'])if(sel[kk]!=null)o[kk]=sel[kk];else delete o[kk];
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;else delete o.windDir;if(sel.board)o.board=sel.board;if(note)o.notiz=note;
    o.confirmed=day;o.updated=today();addA(o);await DB.collection('ratings').doc('w'+id).set(o)}return 'ok'}
- if(I.kind==='uway'){const e=STORE.uways[I.uid];const o=Object.assign({},e&&e.data||{});for(const kk of ['typ','belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wo)o.typ=sel.wo;if(note)o.notiz=note;
+ if(I.kind==='uway'){const e=STORE.uways[I.uid]&&STORE.uways[I.uid].data?STORE.uways[I.uid]:null;let base=null;if(!e){const pv=R_.rv.sec[k-1];base=pv&&pv[0]==='uway'&&STORE.uways[pv[3]]&&STORE.uways[pv[3]].data}
+   const o=Object.assign({},e?e.data:{road:base?!!base.road:true,typ:base&&base.typ||null,created:today(),from:R_.id});
+   if(!e||(o.from===R_.id&&String(I.uid).endsWith('_'+I.i0))){const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);o.p=encPl(seg);o.len=Math.round(I.L)}
+   if(!e)for(const kk of ['belag','autos','wind','leute','board','windDir','notiz','act','ridden','rides'])delete o[kk];for(const kk of ['typ','belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wo)o.typ=sel.wo;if(note)o.notiz=note;
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;addA(o);o.updated=today();await DB.collection('uways').doc(I.uid).set(o);return 'ok'}
  if(I.kind==='new'){const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);const o={p:encPl(seg),len:Math.round(I.L),typ:sel.typ||null,created:today(),from:R_.id};
    for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);
@@ -1559,6 +1562,26 @@ function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;
 function popS(id,ll){const s=STORE.spots[id]&&STORE.spots[id].data;if(!s)return;L.popup().setLatLng(ll).setContent('<b>Spot · '+esc(s.name||'')+'</b><br>'+vals(s,['belag','wind','zugang'])+(s.notiz?'<br>„'+esc(s.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(s)+'</span><br><button class="pbtn" onclick="delExtra(\'spots\',\''+id+'\')">Spot löschen</button>').openOn(map)}
 async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return;e.data=null;e.t=Date.now();e.dirty=true;await IDB.put(c+'/'+id,e);notify(c);GH.schedule()}
 
+// ---- Reparatur fertig geprüfter Fahrten: geteilte eigene Wege trennen, Wegbewertung vom Abschnitt mit den meisten Punkten ----
+let REPBUSY=false;
+async function repairRides(){if(REPBUSY||!P.length)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=1||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
+async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const A=rideArrays(r);const V=k=>rv.vals&&rv.vals[k]&&Object.keys(rv.vals[k]).length?rv.vals[k]:null;
+ const day=r.start?new Date(r.start).toLocaleDateString('sv-SE'):r.date;const ws=s=>{try{return secInfo(r,A,s).windSec}catch(e){return null}};
+ for(let k=1;k<rv.sec.length;k++){const s=rv.sec[k];if(s[0]!=='uway'||!s[3])continue;let f=k;while(f>0&&rv.sec[f-1][0]==='uway'&&rv.sec[f-1][3]===s[3]&&rv.sec[f-1][2]<=s[1]+1)f--;if(f===k)continue;
+  const src=STORE.uways[s[3]]&&STORE.uways[s[3]].data;if(!src)continue;const nid='u'+id.slice(1)+'_'+s[1];const v=V(k)||{};
+  const o={road:!!src.road,typ:v.wo||src.typ||null,created:src.created||today(),from:id,p:encPl(rdp(A.pts.slice(s[1],s[2]+1),3)),len:Math.round(A.d[s[2]]-A.d[s[1]])};
+  for(const kk of ['belag','autos','wind','leute','board'])if(v[kk]!=null)o[kk]=v[kk];if(v.wind!=null){const w=ws(s);if(w!=null)o.windDir=w}if(v.note)o.notiz=v.note;
+  o.act={[r.act||'board']:[day]};if((r.act||'board')==='board'){o.ridden=true;o.rides=[day]}o.updated=today();
+  await DB.collection('uways').doc(nid).set(o);s[3]=nid;
+  const fs=rv.sec[f];if(String(fs[3]).endsWith('_'+fs[1])&&src.from===id){const so=Object.assign({},src,{p:encPl(rdp(A.pts.slice(fs[1],fs[2]+1),3)),len:Math.round(A.d[fs[2]]-A.d[fs[1]])});await DB.collection('uways').doc(fs[3]).set(so)}}
+ const best=new Map();
+ rv.sec.forEach((s,k)=>{if(s[0]!=='way'||!V(k))return;let pk=null;const c=new Map();for(let i=s[1];i<=s[2];i++){const mm=matchPt(A.pts[i],pk);if(mm.t!=='x')pk=mm.k;if(mm.t==='w')c.set(W[P[mm.pi].w][0],(c.get(W[P[mm.pi].w][0])||0)+1)}
+  for(const [w,n] of c){const b=best.get(w);if(!b||n>b[1])best.set(w,[k,n])}});
+ for(const [w,[k]] of best){const rt=RAT['w'+w];if(!rt)continue;const used=(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
+  const v=V(k);const o=Object.assign({},rt);let ch=false;for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
+  if(v.wind!=null){const w2=ws(rv.sec[k]);if(w2!=null&&o.windDir!==w2){o.windDir=w2;ch=true}}if(ch){o.updated=today();await DB.collection('ratings').doc('w'+w).set(o)}}
+ rv.rep=1;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
+
 // ---- Fog of War aus den echten GPS-Spuren: aufgedeckt wird genau der befahrene Teil ----
 let COV=null,COVKEY='';const ABIT={board:1,fuss:2};
 function cumOf(p){if(p._cum)return p._cum;const c=[0];for(let i=0;i<p.segs.length;i++)c.push(c[i]+p.segs[i]);return p._cum=c}
@@ -1566,7 +1589,7 @@ function clipPts(p,a,b){const c=cumOf(p),P_=p.pts,out=[];const at=s=>{let i=0;wh
  const [ia,pa]=at(a),[ib,pb]=at(b);out.push(pa);for(let i=ia+1;i<=ib;i++)out.push(P_[i]);out.push(pb);return out}
 function mergeIv(L){L=L.slice().sort((x,y)=>x[0]-y[0]);const o=[];for(const v of L){const t=o[o.length-1];if(t&&v[0]<=t[1]+1)t[1]=Math.max(t[1],v[1]);else o.push(v.slice())}return o}
 function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.rides[id];return id+':'+(e&&e.data?(e.data.act||'b')+(e.data.p?e.data.p.length:0):'x')}).join(',')+'|'+Object.keys(STORE.uways).length;if(COV&&COVKEY===key)return COV;COVKEY=key;
- COV={iv:new Map(),foot:[],links:[]};const TOL=28,cell=0.0005,KM=111320;const ck=(la,lo)=>Math.floor(la/cell)+','+Math.floor(lo/cell);
+ COV={iv:new Map(),foot:[],links:[]};setTimeout(repairRides,50);const TOL=28,cell=0.0005,KM=111320;const ck=(la,lo)=>Math.floor(la/cell)+','+Math.floor(lo/cell);
  const T=new Map(),RS=[];
  for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||(r.act||'board')==='ignore')continue;const bit=ABIT[r.act||'board']||1;const pts=dec(r.p);
   let la0=90,la1=-90,lo0=180,lo1=-180;for(const q of pts){la0=Math.min(la0,q[0]);la1=Math.max(la1,q[0]);lo0=Math.min(lo0,q[1]);lo1=Math.max(lo1,q[1])}const sec=new Int16Array(pts.length).fill(-1);if(r.rv&&r.rv.sec)r.rv.sec.forEach((q,k)=>{for(let i=Math.max(0,q[1]);i<=Math.min(pts.length-1,q[2]);i++)sec[i]=k});
@@ -1588,24 +1611,30 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
    for(const r of runs){if(r[0]<15)r[0]=0;if(tot-r[1]<15)r[1]=tot}if(runs.length)res[bit]=runs}
   if(!res[1]&&!res[2])continue;COV.iv.set(pi,res);const all=mergeIv([...(res[1]||[]),...(res[2]||[])]);
   for(const sm of S)if(all.some(r=>sm[0]>=r[0]&&sm[0]<=r[1]))addE(sm[2],['w',pi,sm[3]])}
- for(const e of Object.values(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;const pts=dec(u.p);const tag=[u.road?'r':'u'];
+ for(const [uid,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;const pts=dec(u.p);const tag=[u.road?'r':'u',uid];
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const n=Math.max(1,Math.ceil(dist(a,b)/6));for(let j=0;j<=n;j++)addE([a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n],tag)}}
+ const tkey=t=>t[0]==='w'?'w'+t[1]:'u'+t[1];const nearSamp=(q,key)=>{const x=Math.floor(q[0]/cell),y=Math.floor(q[1]/cell);let b=null,bd=40;for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const arr=E.get((x+a)+','+(y+c));if(arr)for(const t of arr){if(tkey(t[2])!==key)continue;const d=dist(q,t);if(d<bd){bd=d;b=[t[0],t[1]]}}}return b};
  const hit=q=>{const x=Math.floor(q[0]/cell),y=Math.floor(q[1]/cell);let best=null,bd=22;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const arr=E.get((x+a)+','+(y+b));if(arr)for(const t of arr){const d=dist(q,t);if(d<bd){bd=d;best=t[2]}}}return best};
+ const snapEnds=seg=>{const g=seg.slice();for(const end of [0,1]){const q=end?g[g.length-1]:g[0];const x=Math.floor(q[0]/cell),y=Math.floor(q[1]/cell);let b=null,bd=26;for(let a=-1;a<=1;a++)for(let c=-1;c<=1;c++){const arr=E.get((x+a)+','+(y+c));if(arr)for(const t of arr){const d=dist(q,t);if(d<bd){bd=d;b=[t[0],t[1]]}}}if(b&&bd>1){if(end)g.push(b);else g.unshift(b)}}return g};
  const LK=new Set();
- for(const R_ of RS){const pts=R_.pts;let st=-1,Lun=0,last=null,gap=0;
-  const flush=i=>{if(st>=0&&Lun>35){const a0=Math.max(0,st-1),b0=Math.min(pts.length-1,i);let a=a0;
+ for(const R_ of RS){const pts=R_.pts;let st=-1,Lun=0,last=null,gap=0,lastQ=null,lastI=0;
+  const flush=i=>{if(st>=0&&(i-st>=2||Lun>8)){const a0=Math.max(0,st-1),b0=Math.min(pts.length-1,i);let a=a0;
     // nach Prüf-Abschnitten aufteilen, damit jedes Stück seine Bewertung aus der Prüfung trägt
     while(a<b0){const k=R_.sec[a+1<=b0?a+1:a];let b=a+1;while(b<b0&&R_.sec[b+1]===k)b++;
-     let sv=null;if(k>=0&&R_.rv){const res=R_.rv.res&&R_.rv.res[k];const v=R_.rv.vals&&R_.rv.vals[k];if(res!=='skip'&&res!=='del'&&v&&Object.keys(v).length)sv=v}
+     let sv=null,inh=false;if(k>=0&&R_.rv){const res=R_.rv.res&&R_.rv.res[k];if(res!=='skip'&&res!=='del'){for(let k2=k;k2>=0;k2--){const v=R_.rv.vals&&R_.rv.vals[k2];if(v&&Object.keys(v).length){sv=v;inh=k2!==k;break}if(k2<k&&R_.rv.sec[k2][2]<R_.rv.sec[k][1]-1)break}}}
      let wd=null;if(R_.T&&R_.wx&&R_.wx.h){const tm=(R_.T[a]+R_.T[b])/2;let bb=null,bd=1e12;for(const x of R_.wx.h){const dd=Math.abs(Date.parse(x[0])/1000-tm);if(dd<bd&&x[3]!=null){bd=dd;bb=x}}if(bb)wd=Math.round(bb[3]/45)%8}
      if(sv)sv=Object.assign({windDir:wd},sv);
-     const seg=pts.slice(a,b+1);if(seg.length>1)COV.foot.push({pts:seg,bit:R_.bit,date:R_.date,id:R_.id,sv,sk:k});a=b}}
+     const seg=pts.slice(a,b+1);if(seg.length>1)COV.foot.push({pts:snapEnds(seg),bit:R_.bit,date:R_.date,id:R_.id,sv,sk:k,inh});a=b}}
    st=-1;Lun=0};
   for(let i=0;i<pts.length;i++){const h=hit(pts[i]);const step=i?dist(pts[i-1],pts[i]):0;
    if(!h){if(st<0)st=i;else Lun+=step}else flush(i);
    // Verbindungen, die die Spur beweist (Brücke, Lücke im OSM-Netz): Wegstücke gelten als verbunden
-   if(h&&h[0]==='w'){if(last&&last[1]!==h[1]&&gap<=60){const k1=P[last[1]].base+last[2],k2=P[h[1]].base+h[2];const kk=k1<k2?k1+','+k2:k2+','+k1;if(!LK.has(kk)){LK.add(kk);COV.links.push([k1,k2])}}last=h;gap=0}
-   else if(h&&h[0]==='u'){}else gap+=step}
+   if(h){const hk=tkey(h);if(last&&tkey(last)!==hk&&gap<=60){
+     if(h[0]==='w'&&last[0]==='w'){const k1=P[last[1]].base+last[2],k2=P[h[1]].base+h[2];const kk=k1<k2?k1+','+k2:k2+','+k1;if(!LK.has(kk)){LK.add(kk);COV.links.push([k1,k2])}}
+     // berühren sich die gezeichneten Teile nicht, Lücke entlang der Spur schließen
+     const cb=nearSamp(pts[i],hk),ca=nearSamp(lastQ,tkey(last));if(ca&&cb){const ta=nearSamp(cb,tkey(last));if(!(ta&&dist(ta,cb)<5)&&dist(ca,cb)>3){const ck2=ca[0].toFixed(5)+cb[0].toFixed(5);if(!LK.has(ck2)){LK.add(ck2);COV.foot.push({pts:[ca,...pts.slice(lastI+1,i),cb],bit:R_.bit,date:R_.date,id:R_.id,sv:null,sk:-1,con:true})}}}}
+     last=h;lastQ=pts[i];lastI=i;gap=0}
+   else gap+=step}
   flush(pts.length)}
  return COV}
 // true = ganz aufgedeckt, Array = nur diese Abschnitte (Meter entlang des Stücks), null = Nebel
@@ -1617,11 +1646,12 @@ function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
 function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
 function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||'alle';const dim=(RD?.2:REVIEWING?.5:1);const C=coverage();
  for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const v=o.sv;
+  if(o.con){L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3,opacity:dim,interactive:false}).addTo(layer);continue}
   L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
   const dt=String(o.date||'').split('-').reverse().join('.');
   if(v){// in der Prüfung bewertet: wie ein eigener Weg zeichnen
    const typ=v.wo||v.typ||'begleit';const col=UCOL[typ]||'#1f6fd1';const sm=v.belag?BELAG_SM[v.belag]:0;
-   L.polyline(o.pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:dim*(+v.belag===5?.35:1)}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">Bewertet in der Prüfung der Fahrt. In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Abschnitt in der Prüfung öffnen</button>').openOn(map)).addTo(layer);
+   L.polyline(o.pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:dim*(+v.belag===5?.35:1)}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Abschnitt in der Prüfung öffnen</button>').openOn(map)).addTo(layer);
    if(rosaOk(v))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}
   else L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3.4,opacity:dim}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)).addTo(layer)}}
 

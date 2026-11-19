@@ -977,7 +977,7 @@ function draw(){
    if(v===2){let L0=0;for(let q=s;q<e;q++)L0+=p.segs[q];shown+=L0;const op=+(.33*fogOp).toFixed(3);add(H,op,{op},p.pts.slice(s,e+1));const o2=+(.33*fullOp).toFixed(3);ov(q=>add(H,o2,{op:o2},q),s,e)}
    if(v===2||!hide){const wt=(sm==1||sm==2)?5:rb===5?2:3.4,op=+((v===2?1:.85)*fogOp).toFixed(3);
     if(grade){let a=s;while(a<e){const g0=p.gr[a],c=gcls(g0);let z=a;while(z<e&&gcls(p.gr[z])===c)z++;const col=gcol(g0);add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(a,z+1));const o2=+((v===2?1:.85)*fullOp).toFixed(3);ov(q=>add(G,col+'|'+wt+'|'+o2+'|'+dash,{col,wt,op:o2,dash},q),a,z);a=z}}
-    else{const col=COL[w[1]];add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(s,e+1));const o2=+((v===2?1:.85)*fullOp).toFixed(3);ov(q=>add(G,col+'|'+wt+'|'+o2+'|'+dash,{col,wt,op:o2,dash},q),s,e)}}
+    else{const col=wcolOf(w,rt);add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(s,e+1));const o2=+((v===2?1:.85)*fullOp).toFixed(3);ov(q=>add(G,col+'|'+wt+'|'+o2+'|'+dash,{col,wt,op:o2,dash},q),s,e)}}
    s=e}}
  for(const g of byCell(REV_))L.polyline(g,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
  const hw=map.getZoom()>=14?11:map.getZoom()>=12?8:5;for(const k in H)L.polyline(H[k].ls,{renderer:R,color:"#ff3fd2",weight:hw,opacity:H[k].st.op,interactive:false,smoothFactor:1.5}).addTo(halo);
@@ -1005,7 +1005,7 @@ function pop(p,ll){
  if(wind>=0){const from=wind*45;let off=Math.abs(((p.br-from)%180+180)%180);off=Math.min(off,180-off);
   dirTxt=off<45?'<br><b>Achtung:</b> liegt fast in Windrichtung – nur Richtung '+DIRS[Math.round(((from+180)%360)/45)%8]+' fahrbar (mit dem Wind).':'<br>Liegt quer genug zum Wind – in beide Richtungen fahrbar.'}
  const la=ll.lat.toFixed(5),lo=ll.lng.toFixed(5);
- L.popup().setLatLng(ll).setContent('<b>'+CNAME[w[1]]+'</b>'+(w[4]?'<br>'+w[4]:'')+
+ L.popup().setLatLng(ll).setContent('<b>'+wName(w)+'</b>'+(w[4]?'<br>'+w[4]:'')+
   '<br><i>An dieser Stelle: '+reasonAt(p,ll)+'</i>'+
   (myBelag(w[0])?'<br>Belag laut dir: <b>'+(OPT.belag.find(o=>o[0]===myBelag(w[0]))||[0,'?'])[1]+'</b><br><span style="color:#777">OSM: '+SNAME[w[2]]+', Glätte '+MNAME[w[3]]+'</span>':'<br>Belag: '+SNAME[w[2]]+'<br>Glätte: '+MNAME[w[3]])+
   gradeHtml(p)+
@@ -1332,9 +1332,10 @@ const ROPT=Object.assign({},null,{
  typ:[['radweg','Radweg'],['feldweg','Feldweg'],['strasse','Straße'],['schotter','Schotter/Wald'],['pfad','Pfad']],
  zugang:[['offen','öffentlich'],['erlaubnis','mit Erlaubnis'],['privat','privat']],
  board:[['ja','ja'],['nein','nein']],
- wo:[['fahrbahn','Fahrbahn'],['begleit','Radweg daneben'],['gehweg','Gehweg']]});
+ wo:[['fahrbahn','Fahrbahn'],['begleit','Radweg daneben'],['gehweg','Gehweg']],
+ art:[['radweg','Radweg'],['feldweg','Feldweg'],['strasse','Straße'],['schotter','Schotter'],['pfad','Pfad']]});
 const WOSET={fahrbahn:1,begleit:1,gehweg:1};
-const RQN={wo:'Wo?',belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',zugang:'Zugang',board:'Boardbar?'};
+const RQN={wo:'Wo?',belag:'Belag',autos:'Autos',wind:'Wind',leute:'Leute',typ:'Wegart',art:'Wegart',zugang:'Zugang',board:'Boardbar?'};
 const UCOL={fahrbahn:'#d23c3c',begleit:'#1f6fd1',gehweg:'#5b8fd6',radweg:'#1f6fd1',feldweg:'#1a9e4a',strasse:'#8a8a8a',schotter:'#9b6b3d',pfad:'#9b6b3d'};
 let WMAP=null,SIDX=null;
 LIS.uways.push(()=>{SIDX=null;redrawSoon()});LIS.spots.push(()=>redrawSoon());
@@ -1393,7 +1394,7 @@ function placeNear(q){let b=null,bd=1e9;for(const p of D.ctx.places){const dd=di
 const KIND_LBL={1:'Radweg',2:'Feldweg mit Kfz-Verbot',3:'Feldweg',4:'Weg mit Kfz-Freigabe'};
 function secInfo(r,A,sec){let secCnt=null;const [kind,i0,i1,uid]=sec;const {pts,v,T,d}=A;const ids=new Set(),cods=[];
  if(kind==='way'){const cnt=new Map();let pk=null,tot=0;const ms=[];for(let i=i0;i<=i1;i++){const mm=matchPt(pts[i],pk);if(mm.t!=='x')pk=mm.k;if(mm.t==='w'){cnt.set(mm.id,(cnt.get(mm.id)||0)+1);ms.push(mm);tot++}}
-  for(const [id,c] of cnt)if(c>=Math.max(3,tot*.25))ids.add(id);secCnt=cnt;for(const mm of ms)if(ids.has(mm.id))cods.push(P[mm.pi].k[mm.si])}
+  for(const [id,c] of cnt)if(c>=3)ids.add(id);secCnt=cnt;for(const mm of ms)if(ids.has(mm.id))cods.push(P[mm.pi].k[mm.si])}
  let rname=null;if(kind==='road'){const nc=(D.ctx.conn||[]).length;for(let i=i0;i<=i1&&!rname;i+=2){const mm=matchPt(pts[i]);if(mm.t==='r'&&mm.ri<nc)rname=D.ctx.conn[mm.ri][2]||null}}
  const L=d[i1]-d[i0];let vs=0,vn=0;for(let i=i0;i<=i1;i++)if(v[i]!=null&&v[i]>=2){vs+=v[i];vn++}
  const tm=T?(T[i0]+T[i1])/2:null;let w=null;if(r.wx&&r.wx.h&&tm){let b=null,bd=1e12;for(const x of r.wx.h){const dd=Math.abs(Date.parse(x[0])/1000-tm);if(dd<bd&&x[1]!=null){bd=dd;b=x}}if(b)w={ws:b[1],dir:b[3]}}
@@ -1406,8 +1407,11 @@ function secInfo(r,A,sec){let secCnt=null;const [kind,i0,i1,uid]=sec;const {pts,
 function lbl2(k,v){let o=(OPT[k]||ROPT[k]||[]).find(x=>x[0]===v);if(!o&&k==='typ')o=ROPT.wo.find(x=>x[0]===v);return o?o[1]:v}
 function twaTxt(t){return t==null?'':t<45?'Gegenwind':t<90?'am Wind':t<135?'Halbwind':'Rückenwind'}
 function prefill(r,I,k){const o={},src={};const sv=r.rv&&r.rv.vals&&k!=null?r.rv.vals[k]:null;
- if(sv){for(const q in sv)if(q!=='note'&&sv[q]!=null){o[q]=sv[q];src[q]='du'}return {o,src,note:sv.note||''}}
+ if(sv){for(const q in sv)if(q!=='note'&&sv[q]!=null){o[q]=sv[q];src[q]='du'}
+  if(I.kind==='way'&&o.art==null){const rt=[...(I.ids||[])].map(id=>RAT['w'+id]).find(x=>x&&x.typ);if(rt){o.art=rt.typ;src.art='du'}else if(I.w0){const a={1:'radweg',2:'feldweg',3:'feldweg',4:'strasse'}[I.w0[1]];if(a){o.art=a;src.art='OSM'}}}
+  return {o,src,note:sv.note||''}}
  if(I.kind==='way'){const rt=[...I.ids].map(id=>RAT['w'+id]).find(x=>x)||{};for(const k of ['belag','autos','wind','leute'])if(rt[k]!=null){o[k]=rt[k];src[k]='du'}
+  if(rt.typ){o.art=rt.typ;src.art='du'}else if(I.w0){const a={1:'radweg',2:'feldweg',3:'feldweg',4:'strasse'}[I.w0[1]];if(a){o.art=a;src.art='OSM'}}
   const w=I.w0;if(o.belag==null&&w&&w[3]>=1&&w[3]<=4){o.belag=w[3];src.belag='OSM'}
   if(o.autos==null&&w&&(w[1]===1||w[1]===2)){o.autos='schild';src.autos='OSM'}
   if(o.wind==null&&I.shel!=null){o.wind=I.shel>.7?'windschatten':I.shel<.25?'frei':'teilweise';src.wind='berechnet'}}
@@ -1416,7 +1420,7 @@ function prefill(r,I,k){const o={},src={};const sv=r.rv&&r.rv.vals&&k!=null?r.rv
 
 // ---- Prüf-Ansicht ----
 let REV=null,REVIEWING=false,revLayer=null;
-function exitReview(){SPLIT=null;document.body.classList.remove('reviewing');if(!REVIEWING)return;REVIEWING=false;REV=null;if(revLayer)revLayer.clearLayers();redrawSoon()}
+function exitReview(){SPLIT=null;document.body.classList.remove('reviewing');if(!REVIEWING)return;REVIEWING=false;REV=null;if(revLayer)revLayer.clearLayers();redrawSoon();setTimeout(repairRides,400)}
 async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)await new Promise(s=>setTimeout(s,250));
  const r=RIDES.find(x=>x.id===id);const body=document.getElementById('rvbody');if(!r){body.innerHTML='<div class="card">Fahrt nicht gefunden.</div>';return}
  const A=rideArrays(r);let rv=r.rv&&r.rv.sec&&(r.rv.v===REV_VER||r.rv.fin)?r.rv:null;
@@ -1449,7 +1453,7 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  const real=rv.sec.map((s,i)=>i).filter(i=>rv.sec[i][0]!=='road');const done=real.filter(i=>rv.res[i]).length;
  document.getElementById('rvprog').textContent=(I.kind==='road'?'Straßenstück':'Abschnitt '+(real.indexOf(REV.cur)+1)+'/'+real.length)+' · '+done+' erledigt';
  const pf=prefill(r,I,REV.cur);REV.sel=Object.assign({},pf.o);REV.src=pf.src;REV.dirty=false;REV.note=pf.note||'';const st=rv.res[REV.cur];
- let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='uway')qs=WOSET[REV.sel.wo]?['wo','belag','autos','wind','leute']:['typ','belag','autos','wind','leute'];else if(I.kind==='way')qs=['belag','autos','wind','leute'];else if(I.kind==='road')qs=['wo','belag','autos','wind','leute'];
+ let qs=[];if(I.kind==='new')qs=['typ','belag','autos','wind','leute'];else if(I.kind==='spot')qs=['belag','wind','zugang'];else if(I.kind==='uway')qs=WOSET[REV.sel.wo]?['wo','belag','autos','wind','leute']:['typ','belag','autos','wind','leute'];else if(I.kind==='way')qs=['art','belag','autos','wind','leute'];else if(I.kind==='road')qs=['wo','belag','autos','wind','leute'];
  if((r.act||'board')==='fuss'&&I.kind!=='road'&&I.kind!=='spot')qs.push('board');
  const tool=(id,txt,on)=>'<button class="tbtn'+(on?' on':'')+'" id="'+id+'">'+txt+'</button>';
  let h='<div class="rvtools">'+(REV.cur>0&&I.kind!=='spot'?tool('rvsame','⟲ Wie vorher'):'')+tool('rvsplit','✂ Teilen')+(REV.cur+1<REV.infos.length?tool('rvmerge','⊕ Verbinden'):'')+tool('rvnotebtn','✎ Notiz',!!REV.note)
@@ -1477,7 +1481,7 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  if($('rvtospot'))$('rvtospot').onclick=()=>{REV.rv.sec[REV.cur][0]='spot';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  if($('rvtonew'))$('rvtonew').onclick=()=>{REV.rv.sec[REV.cur][0]='new';REV.infos[REV.cur]=secInfo(REV.r,REV.A,REV.rv.sec[REV.cur]);showSec(REV.cur)};
  $('rvrest').onclick=acceptRest;$('rvsplit').onclick=startSplit;if($('rvmerge'))$('rvmerge').onclick=mergeNext;
- if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['belag','autos','wind','leute','wo'])if(qs.includes(q)){if(PV[q]!=null)REV.sel[q]=PV[q];else delete REV.sel[q]}
+ if($('rvsame'))$('rvsame').onclick=()=>{const pk=REV.cur-1;const PV=prefill(REV.r,REV.infos[pk],pk).o;REV.dirty=true;for(const q of ['art','belag','autos','wind','leute','wo'])if(qs.includes(q)){if(PV[q]!=null)REV.sel[q]=PV[q];else delete REV.sel[q]}
   document.querySelectorAll('#rvbody .chips2').forEach(c=>{const q=c.dataset.k;c.querySelectorAll('.chip').forEach(b=>b.classList.toggle('on',REV.sel[q]!=null&&b.dataset.v==String(REV.sel[q])))});$('rvok').textContent=okTxt()};
  $('rvtl').onclick=ev=>{const rc=ev.currentTarget.getBoundingClientRect();const f=(ev.clientX-rc.left)/rc.width;const dd=f*REV.A.d[REV.A.n-1];const k=REV.infos.findIndex(J=>REV.A.d[J.i0]<=dd&&REV.A.d[J.i1]>=dd);if(k>=0)goSec(k)};
  revDraw();const seg=REV.A.pts.slice(I.i0,I.i1+1);map.invalidateSize();if(seg.length>1){const b=L.latLngBounds(seg);const tz=Math.min(16,map.getBoundsZoom(b,false,L.point(60,60)));
@@ -1519,6 +1523,7 @@ async function applySec(R_,k,sel,note){const I=R_.infos[k];const day=R_.r.start?
    await DB.collection('uways').doc('u'+R_.id.slice(1)+'_'+I.i0).set(o);return 'new'}
  if(I.kind==='way'){for(const id of I.ids){const my=I.cnt&&I.cnt.get(id)||0;if(R_.infos.some((J,k2)=>k2!==k&&J&&J.kind==='way'&&J.cnt&&(J.cnt.get(id)||0)>my&&R_.rv.vals&&R_.rv.vals[k2]&&Object.keys(R_.rv.vals[k2]).length))continue;const o=Object.assign({},RAT['w'+id]||{});o.way=id;
    for(const kk of ['belag','autos','wind','leute'])if(sel[kk]!=null)o[kk]=sel[kk];else delete o[kk];
+   if(sel.art)o.typ=sel.art;
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;else delete o.windDir;if(sel.board)o.board=sel.board;if(note)o.notiz=note;
    o.confirmed=day;o.updated=today();addA(o);await DB.collection('ratings').doc('w'+id).set(o)}return 'ok'}
  if(I.kind==='uway'){const e=STORE.uways[I.uid]&&STORE.uways[I.uid].data?STORE.uways[I.uid]:null;let base=null;if(!e){const pv=R_.rv.sec[k-1];base=pv&&pv[0]==='uway'&&STORE.uways[pv[3]]&&STORE.uways[pv[3]].data}
@@ -1533,7 +1538,7 @@ async function applySec(R_,k,sel,note){const I=R_.infos[k];const day=R_.r.start?
    const o={poly:encPl(hl),c:[+(la/seg.length).toFixed(5),+(lo/seg.length).toFixed(5)],name:sel.name||'Spot',created:today(),from:R_.id};
    for(const kk of ['belag','wind','zugang'])if(sel[kk]!=null)o[kk]=sel[kk];if(note)o.notiz=note;addA(o);
    await DB.collection('spots').doc('s'+R_.id.slice(1)+'_'+I.i0).set(o);return 'spot'}}
-async function saveRv(R_){R_.rv.fin=!R_.rv.sec.some((s,i)=>!R_.rv.res[i]);const nr=Object.assign({},R_.r,{rv:R_.rv});R_.r=nr;await DB.collection('rides').doc(R_.id).set(nr)}
+async function saveRv(R_){delete R_.rv.rep;R_.rv.fin=!R_.rv.sec.some((s,i)=>!R_.rv.res[i]);const nr=Object.assign({},R_.r,{rv:R_.rv});R_.r=nr;await DB.collection('rides').doc(R_.id).set(nr)}
 async function acceptSec(){const R_=REV;if(!R_)return;R_.dirty=false;await saveCur(R_);if(REV!==R_)return;
  if(R_.cur+1<R_.infos.length)showSec(R_.cur+1);else if(R_.rv.fin){revDraw();showDone()}else{const k=R_.rv.sec.findIndex((s,i)=>!R_.rv.res[i]);showSec(k)}}
 async function markSec(st,R_){R_=R_||REV;if(!R_)return;const rv=R_.rv;rv.res[R_.cur]=st;await saveRv(R_);if(REV!==R_)return;
@@ -1564,7 +1569,7 @@ async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return
 
 // ---- Reparatur fertig geprüfter Fahrten: geteilte eigene Wege trennen, Wegbewertung vom Abschnitt mit den meisten Punkten ----
 let REPBUSY=false;
-async function repairRides(){if(REPBUSY||!P.length)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=1||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
+async function repairRides(){if(REPBUSY||!P.length||REVIEWING)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=4||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
 async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const A=rideArrays(r);const V=k=>rv.vals&&rv.vals[k]&&Object.keys(rv.vals[k]).length?rv.vals[k]:null;
  const day=r.start?new Date(r.start).toLocaleDateString('sv-SE'):r.date;const ws=s=>{try{return secInfo(r,A,s).windSec}catch(e){return null}};
  for(let k=1;k<rv.sec.length;k++){const s=rv.sec[k];if(s[0]!=='uway'||!s[3])continue;let f=k;while(f>0&&rv.sec[f-1][0]==='uway'&&rv.sec[f-1][3]===s[3]&&rv.sec[f-1][2]<=s[1]+1)f--;if(f===k)continue;
@@ -1577,10 +1582,16 @@ async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const 
  const best=new Map();
  rv.sec.forEach((s,k)=>{if(s[0]!=='way'||!V(k))return;let pk=null;const c=new Map();for(let i=s[1];i<=s[2];i++){const mm=matchPt(A.pts[i],pk);if(mm.t!=='x')pk=mm.k;if(mm.t==='w')c.set(W[P[mm.pi].w][0],(c.get(W[P[mm.pi].w][0])||0)+1)}
   for(const [w,n] of c){const b=best.get(w);if(!b||n>b[1])best.set(w,[k,n])}});
- for(const [w,[k]] of best){const rt=RAT['w'+w];if(!rt)continue;const used=(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
-  const v=V(k);const o=Object.assign({},rt);let ch=false;for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
+ for(const [w,[k,n]] of best){const rt=RAT['w'+w];const act=r.act||'board';if(!rt&&n<3)continue;const used=!rt||(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
+  const v=V(k);const o=Object.assign({},rt||{way:+w,confirmed:day,act:{[act]:[day]}},(!rt&&act==='board')?{ridden:true,rides:[day]}:{});let ch=!rt;if(v.art&&o.typ!==v.art){o.typ=v.art;ch=true}for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
   if(v.wind!=null){const w2=ws(rv.sec[k]);if(w2!=null&&o.windDir!==w2){o.windDir=w2;ch=true}}if(ch){o.updated=today();await DB.collection('ratings').doc('w'+w).set(o)}}
- rv.rep=1;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
+ // aufgedeckte, aber noch unbewertete Wegstücke bekommen die Werte des Abschnitts, an dem sie liegen
+ const C=coverage(),done=new Set(best.keys());
+ for(const [pi] of C.iv){const w=W[P[pi].w][0];const r0=RAT['w'+w];if(done.has(w)||(r0&&['belag','autos','wind','leute'].some(k=>r0[k]!=null)))continue;const p=P[pi];const m=p.pts[Math.floor(p.pts.length/2)];let bi=-1,bd=30;for(let i=0;i<A.n;i+=2){const d=dist(m,A.pts[i]);if(d<bd){bd=d;bi=i}}if(bi<0)continue;
+  let k=rv.sec.findIndex(s=>bi>=s[1]&&bi<=s[2]);let v=null;for(let k2=k;k2>=0&&!v;k2--)v=V(k2);if(!v)continue;done.add(w);
+  const act=r.act||'board';const o=Object.assign({},r0||{},{way:+w,confirmed:day,updated:today()});const AA=Object.assign({},o.act||{});AA[act]=(AA[act]||[]).filter(x=>x!==day).concat(day);o.act=AA;if(act==='board'){o.ridden=true;o.rides=[day]}for(const kk of ['belag','autos','wind','leute'])if(v[kk]!=null)o[kk]=v[kk];if(v.art)o.typ=v.art;
+  await DB.collection('ratings').doc('w'+w).set(o)}
+ rv.rep=4;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
 
 // ---- Fog of War aus den echten GPS-Spuren: aufgedeckt wird genau der befahrene Teil ----
 let COV=null,COVKEY='';const ABIT={board:1,fuss:2};
@@ -1644,7 +1655,9 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
 function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
-function elStyle(key){if(!key)return null;if(key[0]==='w'){const p=P[+key.slice(1)];if(!p)return null;const w=W[p.w],rt=RAT['w'+w[0]];const rb=rt&&rt.belag?+rt.belag:0;const sm=rb?BELAG_SM[rb]:w[3];return {col:cmode()==='grade'?'#888':COL[w[1]],wt:(sm==1||sm==2)?5:3.4}}
+function wcolOf(w,rt){const t=rt&&rt.typ;if(t)return ({radweg:COL[1],feldweg:COL[2],strasse:COL[4]})[t]||UCOL[t]||COL[w[1]];return COL[w[1]]}
+function wName(w){const rt=RAT['w'+w[0]];return rt&&rt.typ?lbl2('art',rt.typ)+' <span style="font-weight:normal;color:#777">(von dir)</span>':CNAME[w[1]]}
+function elStyle(key){if(!key)return null;if(key[0]==='w'){const p=P[+key.slice(1)];if(!p)return null;const w=W[p.w],rt=RAT['w'+w[0]];const rb=rt&&rt.belag?+rt.belag:0;const sm=rb?BELAG_SM[rb]:w[3];return {col:cmode()==='grade'?'#888':wcolOf(w,rt),wt:(sm==1||sm==2)?5:3.4}}
  const u=STORE.uways[key.slice(1)]&&STORE.uways[key.slice(1)].data;if(!u)return null;const sm=u.belag?BELAG_SM[u.belag]:0;return {col:UCOL[u.typ]||'#1a9e4a',wt:(sm==1||sm==2)?5:3.4}}
 function footStyle(o){const v=o.sv;if(o.con){const a=elStyle(o.ka),b=elStyle(o.kb);const x=a&&b?(a.wt>=b.wt?a:b):(a||b);return x||{col:'#8d9188',wt:3.4}}
  if(v){const typ=v.wo||v.typ||'begleit';const sm=v.belag?BELAG_SM[v.belag]:0;return {col:UCOL[typ]||'#1f6fd1',wt:(sm==1||sm==2)?5:3.4,op:(+v.belag===5?.35:1)}}return {col:'#8d9188',wt:3.4}}

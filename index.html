@@ -845,7 +845,7 @@ html.dark .tbadge{background:#633806;color:#fac775}html.dark .abadge{background:
 </style></head><body>
 <div id="map"></div>
 <div id="legbox" class="legbox" style="display:none"><div class="legh"><b>Legende</b><button id="legclose" aria-label="Legende schließen">✕</button></div>
-<div class="lg2"><span class="carleg"><i class="sw2" style="border-top:4px solid #1f6fd1;opacity:1"></i>Radweg, autofrei</span><span class="carleg"><i class="sw2" style="border-top:4px solid #1a9e4a;opacity:1"></i>Feldweg, Kfz-Verbot</span><span class="carleg"><i class="sw2" style="border-top:4px solid #d89614;opacity:1"></i>Sperrung unklar</span><span class="carleg"><i class="sw2" style="border-top:4px solid #d23c3c;opacity:1"></i>Kfz frei (Anlieger)</span><span class=""><i class="sw2" style="border-top:7px solid #555;opacity:1"></i>dick = glatt</span><span class=""><i class="sw2" style="border-top:4px dashed #555;opacity:1"></i>Belag unklar</span><span class=""><i class="sw2" style="border-top:4px dotted #555;opacity:1"></i>keine Angabe</span><span class=""><i class="sw2" style="border-top:10px solid #ff3fd2;opacity:0.45"></i>rosa = wingbar</span><span class=""><i class="sw2" style="border-top:8px solid #1d1f1a;opacity:0.85"></i>aufgedeckt</span><span class=""><i class="sw2" style="border-top:3px solid #5f5f5f;opacity:1"></i>Bundesstraße</span><span class=""><i class="sw2" style="border-top:2px solid #cfcfcf;opacity:1"></i>Ortsstraße</span><span><b style="color:#7a1f8a;width:22px;text-align:center;flex:none">●</b>Bahnhalt</span></div>
+<div class="lg2"><span class="carleg"><i class="sw2" style="border-top:4px solid #1f6fd1;opacity:1"></i>Radweg, autofrei</span><span class="carleg"><i class="sw2" style="border-top:4px solid #1a9e4a;opacity:1"></i>Feldweg, Kfz-Verbot</span><span class="carleg"><i class="sw2" style="border-top:4px solid #d89614;opacity:1"></i>Sperrung unklar</span><span class="carleg"><i class="sw2" style="border-top:4px solid #d23c3c;opacity:1"></i>Kfz frei (Anlieger)</span><span class="carleg"><i class="sw2" style="border-top:4px solid #5b8fd6;opacity:1"></i>Gehweg (eigener Eintrag)</span><span class="carleg"><i class="sw2" style="border-top:4px solid #8d9188;opacity:1"></i>gefahren, noch ohne Bewertung</span><span class=""><i class="sw2" style="border-top:7px solid #555;opacity:1"></i>dick = glatt</span><span class=""><i class="sw2" style="border-top:4px dashed #555;opacity:1"></i>Belag unklar</span><span class=""><i class="sw2" style="border-top:4px dotted #555;opacity:1"></i>keine Angabe</span><span class=""><i class="sw2" style="border-top:10px solid #ff3fd2;opacity:0.45"></i>rosa = wingbar</span><span class=""><i class="sw2" style="border-top:8px solid #1d1f1a;opacity:0.85"></i>aufgedeckt</span><span class=""><i class="sw2" style="border-top:3px solid #5f5f5f;opacity:1"></i>Bundesstraße</span><span class=""><i class="sw2" style="border-top:2px solid #cfcfcf;opacity:1"></i>Ortsstraße</span><span><b style="color:#7a1f8a;width:22px;text-align:center;flex:none">●</b>Bahnhalt</span></div>
 <div class="lg2" id="gleg" style="display:none"><span class=""><i class="sw2" style="border-top:4px solid #2e9e44;opacity:1"></i>flach ≤2 %</span><span class=""><i class="sw2" style="border-top:4px solid #9ccc3c;opacity:1"></i>2–4 %</span><span class=""><i class="sw2" style="border-top:4px solid #f0c419;opacity:1"></i>4–6 %</span><span class=""><i class="sw2" style="border-top:4px solid #f08c19;opacity:1"></i>6–9 %</span><span class=""><i class="sw2" style="border-top:4px solid #d6301f;opacity:1"></i>über 9 %</span></div>
 <details class="small" style="margin-top:6px"><summary>Was heißt das genau?</summary><div class="small">Alle befestigten Feld- und Radwege ohne Autoverkehr laut OpenStreetMap. Rosa hinterlegt sind die Stücke, die bei der gewählten Windrichtung frei angeströmt sind (kein Wald, keine Hecke, keine Bebauung bis 80 m auf der Windseite, mind. 75 m weg von Haupt-/Kreisstraßen). Antippen zeigt, warum ein Stück nicht rosa ist.</div>
 <div>Steigung aus dem Copernicus-Höhenmodell (30 m, mit Bäumen/Dächern) – an Waldrändern und in Orten ungenau, nördlich von 49,0° keine Daten.</div></details></div>
@@ -1549,7 +1549,7 @@ for(const [id,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)c
   const col=UCOL[u.typ]||'#1a9e4a';const dash=u.typ==='pfad'?'2 6':u.typ==='schotter'?'8 5':null;const sm=u.belag?BELAG_SM[u.belag]:0;
   if(seenOk(u))L.polyline(pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*(RD?.2:1),interactive:false}).addTo(reveal);
   L.polyline(pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:(RD?.2:1)*(u.belag===5?.35:1),dashArray:dash}).on('click',ev=>popU(id,ev.latlng)).addTo(layer);
-  if(u.wind==='frei')L.polyline(pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*(RD?.2:1),interactive:false}).addTo(halo)}
+  if(rosaOk(u))L.polyline(pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*(RD?.2:1),interactive:false}).addTo(halo)}
  for(const [id,e] of Object.entries(STORE.spots)){const s=e&&e.data;if(!s||!s.poly)continue;
   L.polygon(dec(s.poly),{renderer:R,color:'#7a3fd1',weight:2,fillColor:'#7a3fd1',fillOpacity:.18*(RD?.3:1),opacity:RD?.3:1}).on('click',ev=>popS(id,ev.latlng)).addTo(layer)}}
 function seenOk(o){const f=(document.getElementById('seenBy')||{}).value||'alle';if(f==='alle')return true;return !!(o&&o.act&&o.act[f]&&o.act[f].length)||(f==='board'&&o&&o.ridden)}
@@ -1570,7 +1570,8 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
  const T=new Map(),RS=[];
  for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||(r.act||'board')==='ignore')continue;const bit=ABIT[r.act||'board']||1;const pts=dec(r.p);
   let la0=90,la1=-90,lo0=180,lo1=-180;for(const q of pts){la0=Math.min(la0,q[0]);la1=Math.max(la1,q[0]);lo0=Math.min(lo0,q[1]);lo1=Math.max(lo1,q[1])}const sec=new Int16Array(pts.length).fill(-1);if(r.rv&&r.rv.sec)r.rv.sec.forEach((q,k)=>{for(let i=Math.max(0,q[1]);i<=Math.min(pts.length-1,q[2]);i++)sec[i]=k});
-  RS.push({pts,bit,date:r.date,id:r.id,rv:r.rv||null,sec,bb:[la0-.01,la1+.01,lo0-.015,lo1+.015]});
+  let T_=null;try{T_=rideArrays(r).T}catch(e){}
+  RS.push({pts,bit,date:r.date,id:r.id,rv:r.rv||null,sec,T:T_,wx:r.wx||null,bb:[la0-.01,la1+.01,lo0-.015,lo1+.015]});
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const k=Math.cos(a[0]*Math.PI/180)*KM;const dx=(b[1]-a[1])*k,dy=(b[0]-a[0])*KM,d=Math.hypot(dx,dy);if(d<0.5)continue;
    const n=Math.ceil(d/6);for(let j=0;j<=n;j++){const q=[a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n,dx/d,dy/d,bit];const kk=ck(q[0],q[1]);let arr=T.get(kk);if(!arr)T.set(kk,arr=[]);arr.push(q)}}}
  if(!RS.length)return COV;
@@ -1596,6 +1597,8 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
     // nach Prüf-Abschnitten aufteilen, damit jedes Stück seine Bewertung aus der Prüfung trägt
     while(a<b0){const k=R_.sec[a+1<=b0?a+1:a];let b=a+1;while(b<b0&&R_.sec[b+1]===k)b++;
      let sv=null;if(k>=0&&R_.rv){const res=R_.rv.res&&R_.rv.res[k];const v=R_.rv.vals&&R_.rv.vals[k];if(res!=='skip'&&res!=='del'&&v&&Object.keys(v).length)sv=v}
+     let wd=null;if(R_.T&&R_.wx&&R_.wx.h){const tm=(R_.T[a]+R_.T[b])/2;let bb=null,bd=1e12;for(const x of R_.wx.h){const dd=Math.abs(Date.parse(x[0])/1000-tm);if(dd<bd&&x[3]!=null){bd=dd;bb=x}}if(bb)wd=Math.round(bb[3]/45)%8}
+     if(sv)sv=Object.assign({windDir:wd},sv);
      const seg=pts.slice(a,b+1);if(seg.length>1)COV.foot.push({pts:seg,bit:R_.bit,date:R_.date,id:R_.id,sv,sk:k});a=b}}
    st=-1;Lun=0};
   for(let i=0;i<pts.length;i++){const h=hit(pts[i]);const step=i?dist(pts[i-1],pts[i]):0;
@@ -1611,6 +1614,7 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  const e=coverage().iv.get(pi);if(!e)return null;const L_=f==='alle'?mergeIv([...(e[1]||[]),...(e[2]||[])]):(e[ABIT[f]]||[]);
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
+function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
 function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||'alle';const dim=(RD?.2:REVIEWING?.5:1);const C=coverage();
  for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const v=o.sv;
   L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
@@ -1618,7 +1622,7 @@ function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||
   if(v){// in der Prüfung bewertet: wie ein eigener Weg zeichnen
    const typ=v.wo||v.typ||'begleit';const col=UCOL[typ]||'#1f6fd1';const sm=v.belag?BELAG_SM[v.belag]:0;
    L.polyline(o.pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:dim*(+v.belag===5?.35:1)}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">Bewertet in der Prüfung der Fahrt. In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Abschnitt in der Prüfung öffnen</button>').openOn(map)).addTo(layer);
-   if(v.wind==='frei')L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}
+   if(rosaOk(v))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}
   else L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3.4,opacity:dim}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)).addTo(layer)}}
 
 DB.collection('ratings').onSnapshot(snap=>{const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()});

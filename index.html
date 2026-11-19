@@ -1012,7 +1012,7 @@ function pop(p,ll){
   '<br>Dieses Stück: '+(len/1000).toFixed(2)+' km, davon offen: '+Math.round(100*ol/len)+' %'+
   (cl>0?'<br>Zusammenhängend offen (mit Nachbarwegen): <b>'+(cl/1000).toFixed(1)+' km</b>':'')+dirTxt+
   rtHtml(w[0])+
-  '<br><a href="https://www.google.com/maps/@'+la+','+lo+',400m/data=!3m1!1e3" target="_blank" rel="noopener">Satellit</a> · <a href="https://www.mapillary.com/app/?lat='+la+'&lng='+lo+'&z=17" target="_blank" rel="noopener">Fotos (Mapillary)</a> · <a href="https://www.openstreetmap.org/way/'+w[0]+'" target="_blank" rel="noopener">OSM</a>'+(DB?'<br><button class="pbtn" onclick="openSheet('+w[0]+')">'+(RAT['w'+w[0]]?'Bewertung ändern':'Bewerten')+'</button>':'')).openOn(map);
+  '<br><a href="https://www.google.com/maps/@'+la+','+lo+',400m/data=!3m1!1e3" target="_blank" rel="noopener">Satellit</a> · <a href="https://www.mapillary.com/app/?lat='+la+'&lng='+lo+'&z=17" target="_blank" rel="noopener">Fotos (Mapillary)</a> · <a href="https://www.openstreetmap.org/way/'+w[0]+'" target="_blank" rel="noopener">OSM</a>'+(DB?'<br><button class="pbtn" onclick="openEdit(\'w\','+w[0]+')">'+(RAT['w'+w[0]]?'Bewertung ändern':'Bewerten')+'</button>':'')).openOn(map);
 }
 
 const OPT={belag:[[1,'spiegelglatt'],[2,'gut'],[3,'rau'],[4,'grob/Flickwerk'],[5,'unfahrbar']],
@@ -1563,7 +1563,7 @@ for(const [id,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)c
 function seenOk(o){const f=(document.getElementById('seenBy')||{}).value||'alle';if(f==='alle')return true;return !!(o&&o.act&&o.act[f]&&o.act[f].length)||(f==='board'&&o&&o.ridden)}
 function actLine(o){if(!o)return '';const p=[];const A=o.act||{};if(!A.board&&o.ridden&&o.rides)A.board=o.rides;for(const k in A)if(A[k]&&A[k].length)p.push((ACT_LBL[k]||k)+' '+A[k].length+'× (zuletzt '+A[k][A[k].length-1].split('-').reverse().join('.')+')');return p.join(', ')}
 function vals(o,keys){return keys.filter(k=>o[k]!=null).map(k=>RQN[k]+': '+lbl2(k,o[k])).join('<br>')}
-function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;L.popup().setLatLng(ll).setContent('<b>'+(u.road?'Straße':'Eigener Weg')+(u.typ?' · '+lbl2('typ',u.typ):'')+'</b><br>'+(u.len?(u.len/1000).toFixed(2)+' km · ':'')+'eingetragen '+String(u.created||'').split('-').reverse().join('.')+'<br>'+vals(u,['belag','autos','wind','leute','board'])+(u.notiz?'<br>„'+esc(u.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(u)+'</span><br><button class="pbtn" onclick="delExtra(\'uways\',\''+id+'\')">Weg löschen</button>').openOn(map)}
+function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;L.popup().setLatLng(ll).setContent('<b>'+(u.road?'Straße':'Eigener Weg')+(u.typ?' · '+lbl2('typ',u.typ):'')+'</b><br>'+(u.len?(u.len/1000).toFixed(2)+' km · ':'')+'eingetragen '+String(u.created||'').split('-').reverse().join('.')+'<br>'+vals(u,['belag','autos','wind','leute','board'])+(u.notiz?'<br>„'+esc(u.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(u)+'</span><br><button class="pbtn" onclick="openEdit(\'u\',\''+id+'\')">Bewertung ändern</button> <button class="pbtn" onclick="delExtra(\'uways\',\''+id+'\')">Weg löschen</button>').openOn(map)}
 function popS(id,ll){const s=STORE.spots[id]&&STORE.spots[id].data;if(!s)return;L.popup().setLatLng(ll).setContent('<b>Spot · '+esc(s.name||'')+'</b><br>'+vals(s,['belag','wind','zugang'])+(s.notiz?'<br>„'+esc(s.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(s)+'</span><br><button class="pbtn" onclick="delExtra(\'spots\',\''+id+'\')">Spot löschen</button>').openOn(map)}
 async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return;e.data=null;e.t=Date.now();e.dirty=true;await IDB.put(c+'/'+id,e);notify(c);GH.schedule()}
 
@@ -1681,8 +1681,8 @@ function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||
   if(!o.con&&rosaOk(o.sv))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}}
 function popFoot(o,ll){if(o.con){const k=o.ka&&o.ka[0]==='w'?o.ka:o.kb&&o.kb[0]==='w'?o.kb:null;if(k)return pop(P[+k.slice(1)],ll);const u=(o.ka||o.kb||'').slice(1);if(STORE.uways[u])return popU(u,ll);return}
  const v=o.sv,dt=String(o.date||'').split('-').reverse().join('.');
- if(v)L.popup().setLatLng(ll).setContent('<b>'+(v.art?lbl2('art',v.art):v.wo?lbl2('wo',v.wo):'Gefahren')+'</b> <span style="color:#777">· '+dt+'</span><br>'+vals(v,['belag','autos','wind','leute','board'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
- else L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)}
+ if(v)L.popup().setLatLng(ll).setContent('<b>'+(v.art?lbl2('art',v.art):v.wo?lbl2('wo',v.wo):'Gefahren')+'</b> <span style="color:#777">· '+dt+'</span><br>'+vals(v,['belag','autos','wind','leute','board'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="openEdit(\'f\',\''+o.id+'\','+o.sk+')">Bewertung ändern</button> <button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
+ else L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br><br><button class="pbtn" onclick="openEdit(\'f\',\''+o.id+'\','+o.sk+')">Bewerten</button>').openOn(map)}
 // ---- Antippen: eine zentrale Erkennung statt Klicks auf einzelnen Zeichenflächen ----
 let LASTPOP=0,LASTCLOSE=0,TAPHOOK=false;const UPTS=new WeakMap();
 function hookTap(){if(TAPHOOK)return;TAPHOOK=true;map.on('popupopen',()=>{LASTPOP=Date.now()});map.on('popupclose',()=>{LASTCLOSE=Date.now()});
@@ -1699,6 +1699,32 @@ function tapAt(ll){const q=[ll.lat,ll.lng];const mpp=40075016*Math.cos(q[0]*Math
  // Straßen mit Autoverkehr
  const CN=D.ctx.conn||[];let rb=-1,rd=tol;for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==1||it[1]>=CN.length)continue;const g=S.RDS[it[1]];const d=segDist(q,g[it[2]],g[it[2]+1]);if(d<rd){rd=d;rb=it[1]}}
  if(rb>=0){const r=CN[rb];L.popup().setLatLng(ll).setContent('<b>Straße'+(r[2]?' – '+esc(r[2]):'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">In OSM ansehen</a>').openOn(map)}}
+
+// ---- Bewertung direkt im Infofeld ändern: OSM-Weg ('w'), eigener Weg ('u'), Spurstück einer Fahrt ('f') ----
+let EDIT=null;
+function openEdit(kind,id,k){map.closePopup();let o={},title='',keys=['art','belag','autos','wind','leute','board'];
+ if(kind==='w'){const r=RAT['w'+id]||{};o=Object.assign({},r);if(r.typ)o.art=r.typ;title='Weg bewerten'}
+ else if(kind==='u'){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;o=Object.assign({},u);keys=[u.road?'wo':'typ','belag','autos','wind','leute','board'];if(u.road)o.wo=u.typ;title=u.road?'Straße (eigener Eintrag)':'Eigener Weg'}
+ else{const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv)return;let v=r.rv.vals&&r.rv.vals[k];if(!v||!Object.keys(v).length){for(let k2=k-1;k2>=0;k2--){const w=r.rv.vals&&r.rv.vals[k2];if(w&&Object.keys(w).length){v=w;break}}}o=Object.assign({},v||{});if(o.note)o.notiz=o.note;title='Stück vom '+String(r.date||'').split('-').reverse().join('.')}
+ EDIT={kind,id,k,o,keys};const sh=document.getElementById('sheet');
+ let h='<h2>'+esc(title)+'</h2><div class="small">Alles optional. Nochmal tippen hebt eine Auswahl auf.</div>';
+ for(const q of keys){const opts=(q==='belag'?OPT.belag:null)||ROPT[q]||OPT[q]||[];h+='<div class="q">'+(RQN[q]||q)+(q==='wind'&&wind>=0?' <span class="small">(bei Wind aus '+DIRS[wind]+')</span>':'')+'</div><div class="chips" data-k="'+q+'">';
+  for(const [v,t] of opts)h+='<button data-v="'+v+'" class="'+(o[q]!=null&&String(o[q])===String(v)?'on':'')+'">'+t+'</button>';h+='</div>'}
+ h+='<div class="q">Notiz</div><textarea id="enotiz" maxlength="500">'+esc(o.notiz||'')+'</textarea><div class="small" id="emsg"></div>';
+ h+='<div class="acts"><button class="btns" id="ecancel">Abbrechen</button><button class="btnp" id="esave">Speichern</button></div>';
+ sh.innerHTML=h;sh.style.display='block';
+ sh.querySelectorAll('.chips').forEach(c=>c.querySelectorAll('button').forEach(b=>b.onclick=()=>{const q=c.dataset.k;const was=b.classList.contains('on');c.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+  if(was)delete EDIT.o[q];else{b.classList.add('on');const raw=b.dataset.v;EDIT.o[q]=/^\d+$/.test(raw)?+raw:raw}}));
+ document.getElementById('ecancel').onclick=()=>{sh.style.display='none'};document.getElementById('esave').onclick=saveEdit}
+async function saveEdit(){const E_=EDIT;if(!E_)return;const o=E_.o;const nt=document.getElementById('enotiz').value.trim();const btn=document.getElementById('esave');btn.disabled=true;btn.textContent='Speichere …';
+ try{const F=['belag','autos','wind','leute','board'];
+  if(E_.kind==='w'){const r=Object.assign({},RAT['w'+E_.id]||{});for(const q of F){if(o[q]!=null)r[q]=o[q];else delete r[q]}if(o.art)r.typ=o.art;else delete r.typ;
+   if(r.wind){if(wind>=0)r.windDir=wind}else delete r.windDir;if(nt)r.notiz=nt;else delete r.notiz;r.way=+E_.id;r.updated=today();await DB.collection('ratings').doc('w'+E_.id).set(r)}
+  else if(E_.kind==='u'){const u=Object.assign({},STORE.uways[E_.id].data);for(const q of F){if(o[q]!=null)u[q]=o[q];else delete u[q]}const tk=E_.keys[0];if(o[tk]!=null)u.typ=o[tk];
+   if(u.wind&&wind>=0)u.windDir=wind;if(nt)u.notiz=nt;else delete u.notiz;u.updated=today();await DB.collection('uways').doc(E_.id).set(u)}
+  else{const r=JSON.parse(JSON.stringify(STORE.rides[E_.id].data));const v={};for(const q of ['art',...F])if(o[q]!=null)v[q]=o[q];if(nt)v.note=nt;r.rv.vals=r.rv.vals||{};r.rv.vals[E_.k]=v;r.rv.res=r.rv.res||{};if(!r.rv.res[E_.k])r.rv.res[E_.k]='ok';await DB.collection('rides').doc(E_.id).set(r)}
+  document.getElementById('sheet').style.display='none';COV=null;COVKEY='';redrawSoon()}
+ catch(e){btn.disabled=false;btn.textContent='Speichern';document.getElementById('emsg').textContent='Speichern fehlgeschlagen. Bitte nochmal versuchen.'}}
 
 DB.collection('ratings').onSnapshot(snap=>{const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()});
 // GPX import

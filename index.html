@@ -898,20 +898,18 @@ function restoreUI(){const u=cfg().ui;if(!u)return;if(u.wind!=null)wind=u.wind;
 function saveUI(){setCfg({ui:{wind,minRun:document.getElementById('minRun').value,hideSh:document.getElementById('hideSh').checked,unk:document.getElementById('unk').checked,fog:document.getElementById('fog').checked,seenBy:document.getElementById('seenBy').value,cm:cmode()}})}
 const BELAG_SM={1:1,2:2,3:3,4:4,5:4};
 function myBelag(id){const r=RAT['w'+id];return r&&r.belag?+r.belag:0}
-const CELL=(ll)=>Math.floor(ll[0]/0.03)+','+Math.floor(ll[1]/0.045);
-function byCell(lines,first){const M={};for(const l of lines){if(!l||!l.length)continue;const f=first?first(l):l[0];const k=CELL(f);(M[k]||(M[k]=[])).push(l)}return Object.values(M)}
 function init(){restoreUI();
  map=L.map('map',{preferCanvas:true}).setView([48.86,10.2],10);
  map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('Daten © OpenStreetMap-Mitwirkende (ODbL)');
- const R=L.canvas({padding:.15,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.15});ctxFill=L.layerGroup().addTo(map);window.CTXL=ctx;
- const mp=a=>(a||[]).map(dec);
- for(const [arr,col,op] of [[D.ctx.forest,"#cfe0c4",.8],[D.ctx.built,"#e2dbd0",.9],[D.ctx.water,"#a9d1ee",1]])for(const g of byCell((arr||[]).map(p=>[dec(p)]),x=>x[0][0]))L.polygon(g,{renderer:RF,stroke:false,fillColor:col,fillOpacity:op,interactive:false}).addTo(ctxFill);
- for(const g of byCell(mp(D.ctx.streams)))L.polyline(g,{renderer:RF,color:"#9fc9e8",weight:1,interactive:false}).addTo(ctxFill);
- for(const g of byCell(mp(D.ctx.rivers)))L.polyline(g,{renderer:RF,color:"#7fb6df",weight:2.4,interactive:false}).addTo(ctxFill);
- window.CONN=D.ctx.conn.map(r=>dec(r[1]));
- for(const g of byCell(CONN))L.polyline(g,{renderer:R,color:"#c4c4c4",weight:1.6}).on('click',ev=>connPop(ev.latlng)).addTo(ctx);
- for(const g of byCell(mp(D.ctx.rail)))L.polyline(g,{renderer:R,color:"#777",weight:1.5,dashArray:"6 4",interactive:false}).addTo(ctx);
- for(const [c,col,wt] of [[1,"#5f5f5f",3.2],[2,"#808080",2.4],[0,"#a3a3a3",1.8]]){const ls=D.ctx.roads.filter(r=>c?r[0]==c:(r[0]!=1&&r[0]!=2)).map(r=>dec(r[1]));for(const g of byCell(ls))L.polyline(g,{renderer:R,color:col,weight:wt,interactive:false}).addTo(ctx)}
+ const R=L.canvas({padding:.5,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.5});ctxFill=L.layerGroup().addTo(map);window.CTXL=ctx;
+ for(const p of D.ctx.forest) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#cfe0c4",fillOpacity:.8,interactive:false}).addTo(ctxFill);
+ for(const p of D.ctx.built) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#e2dbd0",fillOpacity:.9,interactive:false}).addTo(ctxFill);
+ for(const p of D.ctx.water||[]) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#a9d1ee",fillOpacity:1,interactive:false}).addTo(ctxFill);
+ for(const r of D.ctx.streams||[]) L.polyline(dec(r),{renderer:RF,color:"#9fc9e8",weight:1,interactive:false}).addTo(ctxFill);
+ for(const r of D.ctx.rivers||[]) L.polyline(dec(r),{renderer:RF,color:"#7fb6df",weight:2.4,interactive:false}).addTo(ctxFill);
+ for(const r of D.ctx.conn) L.polyline(dec(r[1]),{renderer:R,color:"#c4c4c4",weight:1.6}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Straße'+(r[2]?' – '+r[2]:'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br>Falls dort in echt ein Verbotsschild steht: bitte melden bzw. in OSM eintragen.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">OSM</a>').openOn(map)).addTo(ctx);
+ for(const r of D.ctx.rail) L.polyline(dec(r),{renderer:R,color:"#777",weight:1.5,dashArray:"6 4",interactive:false}).addTo(ctx);
+ for(const r of D.ctx.roads) L.polyline(dec(r[1]),{renderer:R,color:r[0]==1?"#5f5f5f":r[0]==2?"#808080":"#a3a3a3",weight:r[0]==1?3.2:r[0]==2?2.4:1.8,interactive:false}).addTo(ctx);
  W=D.ways;
  for(const p of D.pieces){const pts=dec(p[3]);const k=deck(p[4]);const segs=new Float32Array(k.length);for(let i=0;i<k.length;i++)segs[i]=dist(pts[i],pts[i+1]);
   const gr=new Int8Array(k.length);const gs=p[5]||'';for(let i=0;i<k.length;i++){const ch=gs.charCodeAt(i);gr[i]=(!ch||gs[i]==='~')?-128:ch-79}
@@ -953,41 +951,31 @@ function computeComps(){
  for(let i=0;i<segCount;i++)if(op[i]){comp[i]=find(i);tot[comp[i]]+=segW[i]}else comp[i]=-1;
  for(let i=0;i<segCount;i++)compLen[i]=op[i]?tot[comp[i]]:0;
 }
-let NETR=null;
 function draw(){
  document.querySelectorAll('#wind button').forEach(b=>b.classList.toggle('on',+b.dataset.d===wind));
  document.getElementById('wlabel').textContent=wind<0?'– (kein Windfilter, nur Straßennähe)':DIRS[wind];
  saveUI();computeComps();
- layer.clearLayers();halo.clearLayers();reveal.clearLayers();if(!NETR)NETR=L.canvas({padding:.15,tolerance:8});const R=NETR;
- const hide=document.getElementById('hideSh').checked,minRun=+document.getElementById('minRun').value,fog=document.getElementById('fog').checked,grade=cmode()==='grade';
- const dim=(RD?.2:REVIEWING?.5:1);const G={},H={},REV_=[];const add=(M,key,st,pts)=>{key=key+'@'+CELL(pts[0]);let g=M[key];if(!g)M[key]=g={st,ls:[]};g.ls.push(pts)};
+ layer.clearLayers();halo.clearLayers();reveal.clearLayers();if(!window.NETR)window.NETR=L.canvas({padding:.5,tolerance:8});const R=NETR;
+ const hide=document.getElementById('hideSh').checked,minRun=+document.getElementById('minRun').value,fog=document.getElementById('fog').checked;
  let shown=0;
  for(const p of P){if(!rideable(p))continue;const w=W[p.w];const n=p.k.length;
   const st=new Uint8Array(n);for(let i=0;i<n;i++){const g=p.base+i;st[i]=comp[g]<0?0:(compLen[g]>=minRun?2:1)}
   const rt=RAT['w'+w[0]];const known=!!rt&&seenOk(rt);
   const rb=rt&&rt.belag?+rt.belag:0;if(rb===5)st.fill(0);
   if(rt&&rt.wind&&wind>=0&&rt.windDir===wind){if(rt.wind==='windschatten')st.fill(0);else if(rt.wind==='frei')st.fill(2)}
-  if(known)REV_.push(p.pts);
-  const fogOp=((fog&&!known)?.25:1)*dim*(rb===5?.35:1);
+  if(known)L.polyline(p.pts,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85,interactive:false}).addTo(reveal);
+  const fogOp=((fog&&!known)?.25:1)*(RD?.2:REVIEWING?.5:1)*(rb===5?.35:1);
   const dash=rb?null:w[2]===4?"7 5":w[2]===6?"2 5":null;const sm=rb?BELAG_SM[rb]:w[3];
-  let s=0;while(s<n){const v=st[s];let e=s;while(e<n&&st[e]===v)e++;
-   if(v===2){let L0=0;for(let q=s;q<e;q++)L0+=p.segs[q];shown+=L0;const op=+(.33*fogOp).toFixed(3);add(H,op,{op},p.pts.slice(s,e+1))}
-   if(v===2||!hide){const wt=(sm==1||sm==2)?5:rb===5?2:3.4,op=+((v===2?1:.85)*fogOp).toFixed(3);
-    if(grade){let a=s;while(a<e){const g0=p.gr[a],c=gcls(g0);let z=a;while(z<e&&gcls(p.gr[z])===c)z++;const col=gcol(g0);add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(a,z+1));a=z}}
-    else{const col=COL[w[1]];add(G,col+'|'+wt+'|'+op+'|'+dash,{col,wt,op,dash},p.pts.slice(s,e+1))}}
+  let s=0;while(s<n){const v=st[s];let e=s;while(e<n&&st[e]===v)e++;const pts=p.pts.slice(s,e+1);
+   if(v===2){let L0=0;for(let q=s;q<e;q++)L0+=p.segs[q];shown+=L0;
+    L.polyline(pts,{renderer:R,color:"#ff3fd2",weight:11,opacity:.33*fogOp,interactive:false}).addTo(halo)}
+   if(v===2||!hide){const wt=(sm==1||sm==2)?5:rb===5?2:3.4,op=(v===2?1:.85)*fogOp;
+    if(cmode()==='grade'){let a=s;while(a<e){const c=gcls(p.gr[a]);let z=a;while(z<e&&gcls(p.gr[z])===c)z++;
+      L.polyline(p.pts.slice(a,z+1),{renderer:R,color:gcol(p.gr[a]),weight:wt,opacity:op,dashArray:dash,lineCap:dash?"butt":"round"}).on('click',ev=>pop(p,ev.latlng)).addTo(layer);a=z}}
+    else L.polyline(pts,{renderer:R,color:COL[w[1]],weight:wt,opacity:op,dashArray:dash,lineCap:dash?"butt":"round"}).on('click',ev=>pop(p,ev.latlng)).addTo(layer)}
    s=e}}
- for(const g of byCell(REV_))L.polyline(g,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
- for(const k in H)L.polyline(H[k].ls,{renderer:R,color:"#ff3fd2",weight:11,opacity:H[k].st.op,interactive:false}).addTo(halo);
- const keys=Object.keys(G).sort((a,b)=>(G[a].st.dash?0:1)-(G[b].st.dash?0:1));
- for(const k of keys){const st=G[k].st;L.polyline(G[k].ls,{renderer:R,color:st.col,weight:st.wt,opacity:st.op,dashArray:st.dash,lineCap:st.dash?"butt":"round"}).on('click',ev=>netClick(ev.latlng)).addTo(layer)}
  drawExtras(R,fog);document.getElementById('stat').textContent=(shown/1000).toFixed(0)+' km rosa (wing-taugliche) Wegstücke';
 }
-function netClick(ll){const S=buildIdx();const q=[ll.lat,ll.lng];const x=Math.floor(q[0]/S.cell),y=Math.floor(q[1]/S.cell);let best=null,bd=40;
- for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==0)continue;const p=P[it[1]];if(!rideable(p))continue;const d=segDist(q,p.pts[it[2]],p.pts[it[2]+1]);if(d<bd){bd=d;best=p}}
- if(best)pop(best,ll)}
-function connPop(ll){const q=[ll.lat,ll.lng];let bi=-1,bd=40;for(let i=0;i<CONN.length;i++){const pts=CONN[i];for(let j=0;j<pts.length-1;j++){const a=pts[j],b=pts[j+1];
-   if(Math.abs(a[0]-q[0])>.003&&Math.abs(b[0]-q[0])>.003)continue;const d=segDist(q,a,b);if(d<bd){bd=d;bi=i}}}
- if(bi<0)return;const r=D.ctx.conn[bi];L.popup().setLatLng(ll).setContent('<b>Straße'+(r[2]?' – '+r[2]:'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br>Falls dort in echt ein Verbotsschild steht: bitte melden bzw. in OSM eintragen.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">OSM</a>').openOn(map)}
 function reasonAt(p,ll){let bi=0,bd=1e9;for(let i=0;i<p.k.length;i++){const a=p.pts[i],b=p.pts[i+1];const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];const d=dist(m,[ll.lat,ll.lng]);if(d<bd){bd=d;bi=i}}
  const c=p.k[bi],r=[];if(!rideable(p))return 'ausgeblendet';
  if(c&256)r.push('näher als 75 m an einer Haupt-/Kreisstraße oder Autobahn');
@@ -1340,7 +1328,7 @@ function buildIdx(){if(SIDX)return SIDX;const cell=0.002,G=new Map();
  const put=(a,b,it)=>{const x0=Math.floor(Math.min(a[0],b[0])/cell),x1=Math.floor(Math.max(a[0],b[0])/cell),y0=Math.floor(Math.min(a[1],b[1])/cell),y1=Math.floor(Math.max(a[1],b[1])/cell);
   for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++){const k=x+','+y;let arr=G.get(k);if(!arr)G.set(k,arr=[]);arr.push(it)}};
  P.forEach((p,pi)=>{for(let i=0;i<p.k.length;i++)put(p.pts[i],p.pts[i+1],[0,pi,i])});
- const RDS=(window.CONN||(D.ctx.conn||[]).map(r=>dec(r[1]))).slice();for(const r of D.ctx.roads||[])RDS.push(dec(r[1]));
+ const RDS=[];for(const r of D.ctx.conn||[])RDS.push(dec(r[1]));for(const r of D.ctx.roads||[])RDS.push(dec(r[1]));
  RDS.forEach((pts,ri)=>{for(let i=0;i<pts.length-1;i++)put(pts[i],pts[i+1],[1,ri,i])});
  const U={};for(const [id,e] of Object.entries(STORE.uways))if(e&&e.data&&e.data.p){const pts=dec(e.data.p);U[id]=pts;for(let i=0;i<pts.length-1;i++)put(pts[i],pts[i+1],[2,id,i])}
  return SIDX={G,cell,RDS,U}}
@@ -1419,7 +1407,7 @@ async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)
  REV={id,r,A,rv,infos:rv.sec.map(s=>secInfo(r,A,s)),cur:0,sel:null};if(rv.fin&&!r.rv)rv.fin=false;REVIEWING=true;document.body.classList.add('reviewing');
  const started=rv.sec.some((s,i)=>s[0]!=='road'&&rv.res[i]);const first=rv.sec.findIndex((s,i)=>!rv.res[i]);REV.cur=!started||first<0?0:first;
  if(!revLayer)revLayer=L.layerGroup().addTo(map);draw();showSec(REV.cur)}
-let REVR=null;function revDraw(){if(!REV)return;revLayer.clearLayers();if(!REVR)REVR=L.canvas({padding:.5,tolerance:8,padding:.15,pane:ridePane()});const R=REVR;const {pts}=REV.A;
+let REVR=null;function revDraw(){if(!REV)return;revLayer.clearLayers();if(!REVR)REVR=L.canvas({padding:.5,tolerance:8,pane:ridePane()});const R=REVR;const {pts}=REV.A;
  L.polyline(pts,{renderer:R,color:THEME.dark?'#cfd3cc':'#7d8178',weight:3,opacity:.5,interactive:false}).addTo(revLayer);
  REV.infos.forEach((I,k)=>{const seg=pts.slice(I.i0,I.i1+1);if(seg.length<2)return;const st=REV.rv.res[k];const isCur=k===REV.cur;
   const col=isCur?'#1f6fd1':st==='ok'||st==='new'||st==='spot'?'#2e9e44':st==='del'?'#b0b0b0':I.kind==='road'?'#9a9a9a':'#f0a030';
@@ -1724,7 +1712,7 @@ function rideColor(m,x){if(x==null)return '#9a9a9a';
  const t=Math.max(0,Math.min(1,(x-RD.emin)/Math.max(1,RD.emax-RD.emin)));const c=[[59,111,216],[46,158,68],[224,180,0],[240,140,25],[214,48,31]];const k=Math.min(3,Math.floor(t*4)),f=t*4-k;
  return 'rgb('+c[k].map((v,j)=>Math.round(v+(c[k+1][j]-v)*f)).join(',')+')'}
 function rideCls(m,x){if(x==null)return -1;if(m==='v')return VCLS(x);if(m==='w')return x<45?0:x<90?1:x<135?2:3;if(m==='h')return x<120?0:x<140?1:x<160?2:x<175?3:4;return Math.round((x-RD.emin)/Math.max(1,RD.emax-RD.emin)*12)}
-let RIDER=null;function drawRideTrack(){if(!RD)return;rideLayer.clearLayers();if(!RIDER)RIDER=L.canvas({padding:.15,tolerance:6,pane:ridePane()});const R=RIDER;const arr=rMetric==='v'?RD.v:rMetric==='h'?RD.h:rMetric==='w'?RD.wind.map(x=>x.twa):RD.e;
+let RIDER=null;function drawRideTrack(){if(!RD)return;rideLayer.clearLayers();if(!RIDER)RIDER=L.canvas({padding:.5,tolerance:6,pane:ridePane()});const R=RIDER;const arr=rMetric==='v'?RD.v:rMetric==='h'?RD.h:rMetric==='w'?RD.wind.map(x=>x.twa):RD.e;
  let a=0;const n=RD.pts.length;while(a<n-1){const c=rideCls(rMetric,arr[a]);let z=a+1;while(z<n-1&&rideCls(rMetric,arr[z])===c)z++;
   L.polyline(RD.pts.slice(a,z+1),{renderer:R,color:'#fff',weight:9,opacity:1,interactive:false}).addTo(rideLayer);a=a;
   L.polyline(RD.pts.slice(a,z+1),{renderer:R,color:rideColor(rMetric,arr[a]),weight:5,opacity:1}).on('click',ev=>{const i=nearestIdx(ev.latlng);setCursor(i)}).addTo(rideLayer);a=z}

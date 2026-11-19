@@ -808,7 +808,7 @@ html.dark .leaflet-popup-content-wrapper,html.dark .leaflet-popup-tip{background
 html.dark .leaflet-popup-content a{color:#6aa5ff}
 html.darkmap .leaflet-container,html.darkmap #map{background:#1a1c1e}
 html.dark #gpxlbl{background:#2c3033;color:#eceee8}
-html.darkmap .leaflet-fill-pane canvas{filter:invert(1) hue-rotate(180deg) brightness(1.15) saturate(.7)}
+
 html.darkmap .leaflet-container:not(.sat) .leaflet-tile-pane{filter:invert(1) hue-rotate(180deg) brightness(.85) contrast(.9)}
 html.darkmap .lbl{color:#d6d8d2;text-shadow:0 0 3px #000,0 0 3px #000,0 0 3px #000}html.darkmap .lbl.st{color:#d9a6e4}
 html.dark .leaflet-control-attribution{background:rgba(29,32,35,.8)!important;color:#9da198}html.dark .leaflet-control-attribution a{color:#6aa5ff}
@@ -901,7 +901,7 @@ function myBelag(id){const r=RAT['w'+id];return r&&r.belag?+r.belag:0}
 function init(){restoreUI();
  map=L.map('map',{preferCanvas:true}).setView([48.86,10.2],10);
  map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('Daten © OpenStreetMap-Mitwirkende (ODbL)');
- const R=L.canvas({padding:.5,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.5});ctxFill=L.layerGroup().addTo(map);window.CTXL=ctx;
+ const R=L.canvas({padding:.1,tolerance:8}), ctx=L.layerGroup().addTo(map);map.createPane('fillPane').style.zIndex=250;const RF=L.canvas({pane:'fillPane',padding:.1});ctxFill=L.layerGroup().addTo(map);window.CTXL=ctx;window.NETR=R;
  for(const p of D.ctx.forest) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#cfe0c4",fillOpacity:.8,interactive:false}).addTo(ctxFill);
  for(const p of D.ctx.built) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#e2dbd0",fillOpacity:.9,interactive:false}).addTo(ctxFill);
  for(const p of D.ctx.water||[]) L.polygon(dec(p),{renderer:RF,stroke:false,fillColor:"#a9d1ee",fillOpacity:1,interactive:false}).addTo(ctxFill);
@@ -955,7 +955,7 @@ function draw(){
  document.querySelectorAll('#wind button').forEach(b=>b.classList.toggle('on',+b.dataset.d===wind));
  document.getElementById('wlabel').textContent=wind<0?'– (kein Windfilter, nur Straßennähe)':DIRS[wind];
  saveUI();computeComps();
- layer.clearLayers();halo.clearLayers();reveal.clearLayers();if(!window.NETR)window.NETR=L.canvas({padding:.5,tolerance:8});const R=NETR;
+ layer.clearLayers();halo.clearLayers();reveal.clearLayers();if(!window.NETR)window.NETR=L.canvas({padding:.1,tolerance:8});const R=NETR;
  const hide=document.getElementById('hideSh').checked,minRun=+document.getElementById('minRun').value,fog=document.getElementById('fog').checked;
  let shown=0;
  for(const p of P){if(!rideable(p))continue;const w=W[p.w];const n=p.k.length;
@@ -1292,6 +1292,8 @@ function applyTheme(){const t=cfg().theme||'auto';const d=t==='dark'||(t==='auto
  document.documentElement.classList.toggle('darkmap',dm);document.querySelectorAll('#mapThemeSel button').forEach(b=>b.classList.toggle('on',b.dataset.m===mt));
  document.documentElement.classList.toggle('dark',d);Object.assign(THEME,d?{chartBg:'#25282a',chartTx:'#a9ada4',cur:'#f2f3ee'}:{chartBg:'#f4f5f0',chartTx:'#555',cur:'#1d1f1a'});
  const DK={'#a3a3a3':'#4b4f53','#c4c4c4':'#44484c','#808080':'#62666a','#5f5f5f':'#7d8186','#777':'#5a5d60'};
+ const DKF={'#cfe0c4':'#1e2a1f','#e2dbd0':'#2b2926','#a9d1ee':'#1c3347','#9fc9e8':'#2b4c66','#7fb6df':'#355b7c'};
+ if(ctxFill&&ctxFill.eachLayer&&THEME._dm!==dm){THEME._dm=dm;ctxFill.eachLayer(l=>{const o=l.options;if(!o)return;if(o._f==null){o._f=o.fillColor||'';o._c2=o.color||''}const st={};if(o._f)st.fillColor=dm?(DKF[o._f]||o._f):o._f;if(o._c2&&o.stroke!==false)st.color=dm?(DKF[o._c2]||o._c2):o._c2;l.setStyle(st)})}
  if(window.CTXL)CTXL.eachLayer(l=>{if(!l.options)return;if(l.options._c==null)l.options._c=l.options.color;const c=dm?(DK[l.options._c]||l.options._c):l.options._c;if(l.options.color!==c)l.setStyle({color:c})});
  const mc=document.querySelector('meta[name=theme-color]');if(mc)mc.content=d?'#16181a':'#1f6fd1';
  document.querySelectorAll('#themeSel button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));try{if(RD){drawCharts();setCursor(RD.ci||0)}}catch(e){}}
@@ -1407,7 +1409,7 @@ async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)
  REV={id,r,A,rv,infos:rv.sec.map(s=>secInfo(r,A,s)),cur:0,sel:null};if(rv.fin&&!r.rv)rv.fin=false;REVIEWING=true;document.body.classList.add('reviewing');
  const started=rv.sec.some((s,i)=>s[0]!=='road'&&rv.res[i]);const first=rv.sec.findIndex((s,i)=>!rv.res[i]);REV.cur=!started||first<0?0:first;
  if(!revLayer)revLayer=L.layerGroup().addTo(map);draw();showSec(REV.cur)}
-let REVR=null;function revDraw(){if(!REV)return;revLayer.clearLayers();if(!REVR)REVR=L.canvas({padding:.5,tolerance:8,pane:ridePane()});const R=REVR;const {pts}=REV.A;
+let REVR=null;function revDraw(){if(!REV)return;revLayer.clearLayers();if(!REVR)REVR=L.canvas({padding:.5,tolerance:8,padding:.1,pane:ridePane()});const R=REVR;const {pts}=REV.A;
  L.polyline(pts,{renderer:R,color:THEME.dark?'#cfd3cc':'#7d8178',weight:3,opacity:.5,interactive:false}).addTo(revLayer);
  REV.infos.forEach((I,k)=>{const seg=pts.slice(I.i0,I.i1+1);if(seg.length<2)return;const st=REV.rv.res[k];const isCur=k===REV.cur;
   const col=isCur?'#1f6fd1':st==='ok'||st==='new'||st==='spot'?'#2e9e44':st==='del'?'#b0b0b0':I.kind==='road'?'#9a9a9a':'#f0a030';
@@ -1712,7 +1714,7 @@ function rideColor(m,x){if(x==null)return '#9a9a9a';
  const t=Math.max(0,Math.min(1,(x-RD.emin)/Math.max(1,RD.emax-RD.emin)));const c=[[59,111,216],[46,158,68],[224,180,0],[240,140,25],[214,48,31]];const k=Math.min(3,Math.floor(t*4)),f=t*4-k;
  return 'rgb('+c[k].map((v,j)=>Math.round(v+(c[k+1][j]-v)*f)).join(',')+')'}
 function rideCls(m,x){if(x==null)return -1;if(m==='v')return VCLS(x);if(m==='w')return x<45?0:x<90?1:x<135?2:3;if(m==='h')return x<120?0:x<140?1:x<160?2:x<175?3:4;return Math.round((x-RD.emin)/Math.max(1,RD.emax-RD.emin)*12)}
-let RIDER=null;function drawRideTrack(){if(!RD)return;rideLayer.clearLayers();if(!RIDER)RIDER=L.canvas({padding:.5,tolerance:6,pane:ridePane()});const R=RIDER;const arr=rMetric==='v'?RD.v:rMetric==='h'?RD.h:rMetric==='w'?RD.wind.map(x=>x.twa):RD.e;
+let RIDER=null;function drawRideTrack(){if(!RD)return;rideLayer.clearLayers();if(!RIDER)RIDER=L.canvas({padding:.1,tolerance:6,pane:ridePane()});const R=RIDER;const arr=rMetric==='v'?RD.v:rMetric==='h'?RD.h:rMetric==='w'?RD.wind.map(x=>x.twa):RD.e;
  let a=0;const n=RD.pts.length;while(a<n-1){const c=rideCls(rMetric,arr[a]);let z=a+1;while(z<n-1&&rideCls(rMetric,arr[z])===c)z++;
   L.polyline(RD.pts.slice(a,z+1),{renderer:R,color:'#fff',weight:9,opacity:1,interactive:false}).addTo(rideLayer);a=a;
   L.polyline(RD.pts.slice(a,z+1),{renderer:R,color:rideColor(rMetric,arr[a]),weight:5,opacity:1}).on('click',ev=>{const i=nearestIdx(ev.latlng);setCursor(i)}).addTo(rideLayer);a=z}

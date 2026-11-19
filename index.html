@@ -1016,7 +1016,7 @@ function pop(p,ll){
 }
 
 const OPT={belag:[[1,'spiegelglatt'],[2,'gut'],[3,'rau'],[4,'grob/Flickwerk'],[5,'unfahrbar']],
- autos:[['schild','Kfz-Verbot (Schild)'],['keine','keine gesehen'],['vereinzelt','vereinzelt'],['oft','oft']],
+ autos:[['schild','Kfz-Verbot (Schild)'],['keine','keine gesehen'],['vereinzelt','vereinzelt'],['oft','oft'],['uhrzeit','je nach Uhrzeit']],
  wind:[['frei','frei angeströmt'],['teilweise','teilweise'],['windschatten','Windschatten']],
  leute:[['leer','leer'],['wenig','wenig los'],['viel','viel los']]};
 const QN={belag:'Belag',autos:'Autos / Traktoren',wind:'Wind',leute:'Fußgänger / Radler'};
@@ -1427,7 +1427,22 @@ async function startReview(id){await storeReady;for(let i=0;i<80&&!P.length;i++)
  if(!rv){const sec=segmentRide(r,A);const res={};sec.forEach((s,i)=>{if(s[0]==='road')res[i]='ok'});rv={v:REV_VER,sec,res,fin:!sec.some(s=>s[0]!=='road')};await DB.collection('rides').doc(r.id).set(Object.assign({},r,{rv}))}
  REV={id,r,A,rv,infos:rv.sec.map(s=>secInfo(r,A,s)),cur:0,sel:null};if(rv.fin&&!r.rv)rv.fin=false;REVIEWING=true;document.body.classList.add('reviewing');
  const started=rv.sec.some((s,i)=>s[0]!=='road'&&rv.res[i]);const first=rv.sec.findIndex((s,i)=>!rv.res[i]);REV.cur=!started||first<0?0:first;
- if(!revLayer)revLayer=L.layerGroup().addTo(map);draw();showSec(REV.cur)}
+ if(!revLayer)revLayer=L.layerGroup().addTo(map);draw();
+ if(!started&&!rv.fin){const kn=knownSecs(REV);if(kn.length){showChoice(kn);return}}
+ showSec(REV.cur)}
+// Abschnitte, die schon vollständig bewertet sind (Heimstrecke): Wege mit eigenen Werten oder eigene Wege
+function secKnown(R_,k){const I=R_.infos[k];if(!I||R_.rv.res[k])return false;const has=o=>o&&['belag','autos','wind','leute'].some(q=>o[q]!=null);
+ if(I.kind==='way')return I.ids&&I.ids.size>0&&[...I.ids].every(id=>has(RAT['w'+id]));if(I.kind==='uway')return has(STORE.uways[I.uid]&&STORE.uways[I.uid].data);return false}
+function knownSecs(R_){return R_.rv.sec.map((s,k)=>k).filter(k=>secKnown(R_,k))}
+function showChoice(kn){const R_=REV;const open=R_.rv.sec.filter((s,k)=>!R_.rv.res[k]&&!kn.includes(k)).length;const L_=kn.reduce((a,k)=>a+R_.infos[k].L,0);
+ document.getElementById('rvprog').textContent=R_.rv.sec.length+' Abschnitte';revDraw();map.fitBounds(L.latLngBounds(R_.A.pts),{padding:[30,30]});
+ document.getElementById('rvbody').innerHTML='<div class="card"><div class="rvt">Wie willst du prüfen?</div><div class="muted">'+kn.length+' Abschnitte ('+(L_/1000).toFixed(1)+' km) kennst du schon und hast sie bewertet. '+(open?open+' sind neu oder unbewertet.':'Nichts Neues dabei.')+'</div>'
+  +'<div class="btnrow" style="flex-direction:column;align-items:stretch;gap:8px;margin-top:10px"><button class="btn" id="rvnew">'+(open?'Nur Neues bewerten ('+open+')':'Alles übernehmen')+'</button><button class="btn sec" id="rvall">Alles durchgehen</button></div>'
+  +'<div class="muted" style="margin-top:8px">Bei „Nur Neues“ bleiben deine bisherigen Bewertungen unverändert, die Fahrt wird nur als gefahren vermerkt. Einzelne Abschnitte kannst du danach jederzeit über die Zeitleiste oder „Bewertung ändern“ im Infofeld anpassen.</div></div>';
+ document.getElementById('rvall').onclick=()=>showSec(0);
+ document.getElementById('rvnew').onclick=async()=>{const b=document.getElementById('rvnew');b.disabled=true;b.textContent='Übernehme …';
+  R_.rv.vals=R_.rv.vals||{};for(const k of kn){if(REV!==R_)return;const pf=prefill(R_.r,R_.infos[k],k);const sel=Object.assign({},pf.o);R_.rv.res[k]=await applySec(R_,k,sel,'')||'ok';R_.rv.vals[k]=sel}
+  await saveRv(R_);if(REV!==R_)return;const f=R_.rv.sec.findIndex((s,i)=>!R_.rv.res[i]);if(f<0){revDraw();showDone()}else showSec(f)}}
 let REVR=null;function revDraw(){if(!REV)return;revLayer.clearLayers();if(!REVR)REVR=L.canvas({padding:.5,tolerance:8,padding:.1,pane:ridePane()});const R=REVR;const {pts}=REV.A;
  L.polyline(pts,{renderer:R,color:THEME.dark?'#cfd3cc':'#7d8178',weight:3,opacity:.5,interactive:false}).addTo(revLayer);
  REV.infos.forEach((I,k)=>{const seg=pts.slice(I.i0,I.i1+1);if(seg.length<2)return;const st=REV.rv.res[k];const isCur=k===REV.cur;

@@ -1683,9 +1683,10 @@ function popFoot(o,ll){if(o.con){const k=o.ka&&o.ka[0]==='w'?o.ka:o.kb&&o.kb[0]=
  if(v)L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
  else L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)}
 // ---- Antippen: eine zentrale Erkennung statt Klicks auf einzelnen Zeichenflächen ----
-let LASTPOP=0,TAPHOOK=false;const UPTS=new WeakMap();
-function hookTap(){if(TAPHOOK)return;TAPHOOK=true;map.on('popupopen',()=>{LASTPOP=Date.now()});
- map.on('click',ev=>{const t0=Date.now();setTimeout(()=>{if(SPLIT||REVIEWING||LASTPOP>=t0)return;tapAt(ev.latlng)},0)})}
+let LASTPOP=0,LASTCLOSE=0,TAPHOOK=false;const UPTS=new WeakMap();
+function hookTap(){if(TAPHOOK)return;TAPHOOK=true;map.on('popupopen',()=>{LASTPOP=Date.now()});map.on('popupclose',()=>{LASTCLOSE=Date.now()});
+ map.on('click',ev=>{const t0=Date.now();if(t0-LASTCLOSE<400)return;// Tippen zum Schließen eines Infofelds öffnet nichts Neues
+  setTimeout(()=>{if(SPLIT||REVIEWING||LASTPOP>=t0)return;tapAt(ev.latlng)},0)})}
 function tapAt(ll){const q=[ll.lat,ll.lng];const mpp=40075016*Math.cos(q[0]*Math.PI/180)/Math.pow(2,map.getZoom()+8);const tol=Math.max(5,18*mpp);let bd=tol,act=null;
  const segs=(pts,fn)=>{for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];if(Math.abs(a[0]-q[0])>.02&&Math.abs(b[0]-q[0])>.02)continue;const d=segDist(q,a,b);if(d<bd){bd=d;act=fn}}};
  for(const [id,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;let pts=UPTS.get(u);if(!pts){pts=dec(u.p);UPTS.set(u,pts)}segs(pts,()=>popU(id,ll))}
@@ -1693,7 +1694,10 @@ function tapAt(ll){const q=[ll.lat,ll.lng];const mpp=40075016*Math.cos(q[0]*Math
  const S=buildIdx();const x=Math.floor(q[0]/S.cell),y=Math.floor(q[1]/S.cell);const rr=Math.ceil(tol/200)+1;
  for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==0)continue;const p=P[it[1]];if(!rideable(p))continue;const d=segDist(q,p.pts[it[2]],p.pts[it[2]+1]);if(d<bd*0.9){bd=d;act=()=>pop(p,ll)}}
  if(!act)for(const [id,e] of Object.entries(STORE.spots)){const sp=e&&e.data;if(!sp||!sp.poly)continue;const g=dec(sp.poly);let ins=false;for(let i=0,j=g.length-1;i<g.length;j=i++){if(((g[i][0]>q[0])!==(g[j][0]>q[0]))&&(q[1]<(g[j][1]-g[i][1])*(q[0]-g[i][0])/(g[j][0]-g[i][0])+g[i][1]))ins=!ins}if(ins){act=()=>popS(id,ll);break}}
- if(act)return act();if(map.getZoom()>=12)connPop(ll)}
+ if(act)return act();if(map.getZoom()<12)return;
+ // Straßen mit Autoverkehr
+ const CN=D.ctx.conn||[];let rb=-1,rd=tol;for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==1||it[1]>=CN.length)continue;const g=S.RDS[it[1]];const d=segDist(q,g[it[2]],g[it[2]+1]);if(d<rd){rd=d;rb=it[1]}}
+ if(rb>=0){const r=CN[rb];L.popup().setLatLng(ll).setContent('<b>Straße'+(r[2]?' – '+esc(r[2]):'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">In OSM ansehen</a>').openOn(map)}}
 
 DB.collection('ratings').onSnapshot(snap=>{const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()});
 // GPX import

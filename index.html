@@ -1016,13 +1016,13 @@ function pop(p,ll){
 }
 
 const OPT={belag:[[1,'spiegelglatt'],[2,'gut'],[3,'rau'],[4,'grob/Flickwerk'],[5,'unfahrbar']],
- autos:[['schild','Kfz-Verbot (Schild)'],['keine','keine gesehen'],['vereinzelt','vereinzelt'],['oft','oft'],['uhrzeit','je nach Uhrzeit']],
+ autos:[['schild','Kfz-Verbot (Schild)'],['keine','keine'],['vereinzelt','wenige'],['oft','viele']],
  wind:[['frei','frei angeströmt'],['teilweise','teilweise'],['windschatten','Windschatten']],
  leute:[['leer','leer'],['wenig','wenig los'],['viel','viel los']]};
 const QN={belag:'Belag',autos:'Autos / Traktoren',wind:'Wind',leute:'Fußgänger / Radler'};
 function lbl(k,v){const o=OPT[k].find(x=>x[0]===v);return o?o[1]:v}
-function rtHtml(id){const r=RAT['w'+id];if(!r)return DB?'<br><span style="color:#777">Noch nicht von dir aufgedeckt.</span>':'';
- const parts=[];if(r.typ)parts.push('Wegart: '+lbl2('art',r.typ));for(const k of ['belag','autos','wind','leute'])if(r[k]!=null)parts.push(QN[k]+': '+lbl(k,r[k])+(k==='wind'&&r.windDir!=null?' (bei Wind aus '+DIRS[r.windDir]+')':''));if(r.board)parts.push('Boardbar: '+lbl2('board',r.board));
+function rtHtml0(id){const r=RAT['w'+id];if(!r)return DB?'<br><span style="color:#777">Noch nicht von dir aufgedeckt.</span>':'';
+ const parts=[];if(r.typ)parts.push('Wegart: '+lbl2('art',r.typ));for(const k of ['belag','wind','leute'])if(r[k]!=null)parts.push(QN[k]+': '+lbl(k,r[k])+(k==='wind'&&r.windDir!=null?' (bei Wind aus '+DIRS[r.windDir]+')':''));if(r.board)parts.push('Boardbar: '+lbl2('board',r.board));
  return '<br><b>Deine Einträge</b>'+(actLine(r)?'<br><span style="color:#777">'+actLine(r)+'</span>':'')+(parts.length?'<br>'+parts.join('<br>'):'')+(r.notiz?'<br>„'+r.notiz.replace(/[<>&]/g,'')+'“':'')}
 let cur=null;
 function openSheet(id){map.closePopup();const r=Object.assign({},RAT['w'+id]||{});cur={id,r};
@@ -1478,13 +1478,13 @@ function showSec(k){if(!REV)return;REV.cur=Math.max(0,Math.min(REV.infos.length-
  if(I.kind==='road')h+='<div class="rvh">Straße mit Autoverkehr – nur ausfüllen, wenn du hier auf Gehweg, Radweg oder Fahrbahn unterwegs warst.</div>';
  if(I.kind==='new')h+='<div class="rvh">Liegt auf keinem bekannten Weg.</div>';
  if(I.kind==='spot')h+='<div class="qrow"><span class="ql">Name</span><input id="rvname" class="rvin" placeholder="z. B. Parkplatz Sportplatz"></div>';
- for(const q of qs)h+='<div class="qrow"><span class="ql">'+RQN[q]+(REV.src[q]&&REV.src[q]!=='du'?'<i>'+REV.src[q]+'</i>':(q==='art'&&REV.sel.art==null&&I.w0&&KIND_LBL[I.w0[1]]?'<i>OSM: '+esc(KIND_LBL[I.w0[1]])+'</i>':''))+'</span>'+chips(q,REV.sel[q])+'</div>';
+ for(const q of qs)h+='<div class="qrow"><span class="ql">'+(q==='autos'?'Autos gesehen':RQN[q])+(REV.src[q]&&REV.src[q]!=='du'?'<i>'+REV.src[q]+'</i>':(q==='art'&&REV.sel.art==null&&I.w0&&KIND_LBL[I.w0[1]]?'<i>OSM: '+esc(KIND_LBL[I.w0[1]])+'</i>':''))+'</span>'+chips(q,REV.sel[q])+'</div>';
  h+='<div class="rvnotebox" id="rvnotebox" style="display:none"><div class="ch">Notiz</div><textarea id="rvnote" maxlength="500">'+esc(REV.note)+'</textarea><div class="btnrow"><button class="btn" id="rvnoteok">Fertig</button></div></div>';
  const body=document.getElementById('rvbody');body.innerHTML=h;body.scrollTop=0;
  const okTxt=()=>I.kind==='road'?(Object.keys(REV.sel).length?'Übernehmen':'Weiter'):I.kind==='new'?'Als Weg übernehmen':I.kind==='spot'?'Als Spot übernehmen':'Passt, weiter';
  document.getElementById('rvbar').innerHTML='<button class="btn sec" id="rvprev" aria-label="Voriger Abschnitt">‹</button><button class="btn" id="rvok">'+okTxt()+'</button><button class="btn sec" id="rvskip" aria-label="Nächster Abschnitt">›</button>';
  body.querySelectorAll('.chips2').forEach(c=>c.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{const q=c.dataset.k;let v=b.dataset.v;if(q==='belag')v=+v;
-   REV.dirty=true;if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}document.getElementById('rvok').textContent=okTxt()}));
+   REV.dirty=true;if(q==='autos'){REV.tAut=REV.tAut||{};REV.tAut[REV.cur]=true}if(REV.sel[q]==v){delete REV.sel[q];b.classList.remove('on')}else{REV.sel[q]=v;c.querySelectorAll('.chip').forEach(x=>x.classList.toggle('on',x===b))}document.getElementById('rvok').textContent=okTxt()}));
  const $=id=>document.getElementById(id);
  $('rvprev').onclick=()=>goSec(REV.cur-1);$('rvskip').onclick=()=>goSec(REV.cur+1);$('rvok').onclick=()=>acceptSec();
  const nmI=$('rvname');if(nmI){if(pf.o.name)nmI.value=pf.o.name;nmI.oninput=()=>{REV.dirty=true}}
@@ -1532,20 +1532,21 @@ function hull(pts){const P_=pts.map(p=>[p[1],p[0]]).sort((a,b)=>a[0]-b[0]||a[1]-
  return lo.slice(0,-1).concat(up.slice(0,-1)).map(p=>[p[1],p[0]])}
 async function applySec(R_,k,sel,note){const I=R_.infos[k];const day=R_.r.start?new Date(R_.r.start).toLocaleDateString('sv-SE'):R_.r.date;const act=R_.r.act||'board';
  const addA=o=>{const A=Object.assign({},o.act||{});A[act]=(A[act]||[]).filter(x=>x!==day).concat(day).slice(-50);o.act=A;if(act==='board'){o.ridden=true;const rs=(o.rides||[]).filter(x=>x!==day);rs.push(day);o.rides=rs.slice(-50)}return o};
+ const tsec=I.t0&&I.t1&&R_.tAut&&R_.tAut[k]?(I.t0+I.t1)/2:null;
  if(I.kind==='road'){if(!Object.keys(sel).filter(k=>k!=='name').length&&!note)return 'ok';const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);
    const o={p:encPl(seg),len:Math.round(I.L),typ:sel.wo||'fahrbahn',road:true,created:today(),from:R_.id};
-   for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);
+   for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);obsPush(o,tsec,sel.autos,R_.id);
    await DB.collection('uways').doc('u'+R_.id.slice(1)+'_'+I.i0).set(o);return 'new'}
  if(I.kind==='way'){for(const id of I.ids){const my=I.cnt&&I.cnt.get(id)||0;if(R_.infos.some((J,k2)=>k2!==k&&J&&J.kind==='way'&&J.cnt&&(J.cnt.get(id)||0)>my&&R_.rv.vals&&R_.rv.vals[k2]&&Object.keys(R_.rv.vals[k2]).length))continue;const o=Object.assign({},RAT['w'+id]||{});o.way=id;
    for(const kk of ['belag','autos','wind','leute'])if(sel[kk]!=null)o[kk]=sel[kk];else delete o[kk];
    if(sel.art)o.typ=sel.art;
    if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;else delete o.windDir;if(sel.board)o.board=sel.board;if(note)o.notiz=note;
-   o.confirmed=day;o.updated=today();addA(o);await DB.collection('ratings').doc('w'+id).set(o)}return 'ok'}
+   o.confirmed=day;o.updated=today();addA(o);obsPush(o,tsec,sel.autos,R_.id);await DB.collection('ratings').doc('w'+id).set(o)}return 'ok'}
  if(I.kind==='uway'){const e=STORE.uways[I.uid]&&STORE.uways[I.uid].data?STORE.uways[I.uid]:null;let base=null;if(!e){const pv=R_.rv.sec[k-1];base=pv&&pv[0]==='uway'&&STORE.uways[pv[3]]&&STORE.uways[pv[3]].data}
    const o=Object.assign({},e?e.data:{road:base?!!base.road:true,typ:base&&base.typ||null,created:today(),from:R_.id});
    if(!e||(o.from===R_.id&&String(I.uid).endsWith('_'+I.i0))){const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);o.p=encPl(seg);o.len=Math.round(I.L)}
    if(!e)for(const kk of ['belag','autos','wind','leute','board','windDir','notiz','act','ridden','rides'])delete o[kk];for(const kk of ['typ','belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wo)o.typ=sel.wo;if(note)o.notiz=note;
-   if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;addA(o);o.updated=today();await DB.collection('uways').doc(I.uid).set(o);return 'ok'}
+   if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;addA(o);obsPush(o,tsec,sel.autos,R_.id);o.updated=today();await DB.collection('uways').doc(I.uid).set(o);return 'ok'}
  if(I.kind==='new'){const seg=rdp(R_.A.pts.slice(I.i0,I.i1+1),3);const o={p:encPl(seg),len:Math.round(I.L),typ:sel.typ||null,created:today(),from:R_.id};
    for(const kk of ['belag','autos','wind','leute','board'])if(sel[kk]!=null)o[kk]=sel[kk];if(sel.wind!=null&&I.windSec!=null)o.windDir=I.windSec;if(note)o.notiz=note;addA(o);
    await DB.collection('uways').doc('u'+R_.id.slice(1)+'_'+I.i0).set(o);return 'new'}
@@ -1567,18 +1568,18 @@ function showDone(){if(!REV)return;const rv=REV.rv;const c=v=>Object.keys(rv.res
  map.fitBounds(L.latLngBounds(REV.A.pts),{padding:[30,30]})}
 
 // ---- eigene Wege und Spots auf der Karte ----
-function drawExtras(R,fog){hookTap();try{drawFoot(R,fog)}catch(e){console.error(e)}
+function drawExtras(R,fog){hookTap();hookTimeSel();try{drawFoot(R,fog)}catch(e){console.error(e)}
 for(const [id,e] of Object.entries(STORE.uways)){const u=e&&e.data;if(!u||!u.p)continue;const pts=dec(u.p);
   const col=UCOL[u.typ]||'#1a9e4a';const dash=u.typ==='pfad'?'2 6':u.typ==='schotter'?'8 5':null;const sm=u.belag?BELAG_SM[u.belag]:0;
   if(seenOk(u))L.polyline(pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*(RD?.2:1),interactive:false}).addTo(reveal);
   L.polyline(pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:(RD?.2:1)*(u.belag===5?.35:1),dashArray:dash,interactive:false}).addTo(layer);
-  if(rosaOk(u))L.polyline(pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*(RD?.2:1),interactive:false}).addTo(halo)}
+  if(rosaOk(u,pts[Math.floor(pts.length/2)]))L.polyline(pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*(RD?.2:1),interactive:false}).addTo(halo)}
  for(const [id,e] of Object.entries(STORE.spots)){const s=e&&e.data;if(!s||!s.poly)continue;
   L.polygon(dec(s.poly),{renderer:R,color:'#7a3fd1',weight:2,fillColor:'#7a3fd1',fillOpacity:.18*(RD?.3:1),opacity:RD?.3:1,interactive:false}).addTo(layer)}}
 function seenOk(o){const f=(document.getElementById('seenBy')||{}).value||'alle';if(f==='alle')return true;return !!(o&&o.act&&o.act[f]&&o.act[f].length)||(f==='board'&&o&&o.ridden)}
 function actLine(o){if(!o)return '';const p=[];const A=o.act||{};if(!A.board&&o.ridden&&o.rides)A.board=o.rides;for(const k in A)if(A[k]&&A[k].length)p.push((ACT_LBL[k]||k)+' '+A[k].length+'× (zuletzt '+A[k][A[k].length-1].split('-').reverse().join('.')+')');return p.join(', ')}
 function vals(o,keys){return keys.filter(k=>o[k]!=null).map(k=>RQN[k]+': '+lbl2(k,o[k])).join('<br>')}
-function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;L.popup().setLatLng(ll).setContent('<b>'+(u.road?'Straße':'Eigener Weg')+(u.typ?' · '+lbl2('typ',u.typ):'')+'</b><br>'+(u.len?(u.len/1000).toFixed(2)+' km · ':'')+'eingetragen '+String(u.created||'').split('-').reverse().join('.')+'<br>'+vals(u,['belag','autos','wind','leute','board'])+(u.notiz?'<br>„'+esc(u.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(u)+'</span><br><button class="pbtn" onclick="openEdit(\'u\',\''+id+'\')">Bewertung ändern</button> <button class="pbtn" onclick="delExtra(\'uways\',\''+id+'\')">Weg löschen</button>').openOn(map)}
+function popU(id,ll){const u=STORE.uways[id]&&STORE.uways[id].data;if(!u)return;L.popup().setLatLng(ll).setContent('<b>'+(u.road?'Straße':'Eigener Weg')+(u.typ?' · '+lbl2('typ',u.typ):'')+'</b><br>'+(u.len?(u.len/1000).toFixed(2)+' km · ':'')+'eingetragen '+String(u.created||'').split('-').reverse().join('.')+'<br>'+vals(u,['belag','wind','leute','board'])+autosHtml(u,u.road?estNear(dec(u.p)[Math.floor(dec(u.p).length/2)]):estWay([0,3],tNow()))+(u.notiz?'<br>„'+esc(u.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(u)+'</span><br><button class="pbtn" onclick="openEdit(\'u\',\''+id+'\')">Bewertung ändern</button> <button class="pbtn" onclick="delExtra(\'uways\',\''+id+'\')">Weg löschen</button>').openOn(map)}
 function popS(id,ll){const s=STORE.spots[id]&&STORE.spots[id].data;if(!s)return;L.popup().setLatLng(ll).setContent('<b>Spot · '+esc(s.name||'')+'</b><br>'+vals(s,['belag','wind','zugang'])+(s.notiz?'<br>„'+esc(s.notiz)+'“':'')+'<br><span style="color:#777">'+actLine(s)+'</span><br><button class="pbtn" onclick="delExtra(\'spots\',\''+id+'\')">Spot löschen</button>').openOn(map)}
 async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return;e.data=null;e.t=Date.now();e.dirty=true;await IDB.put(c+'/'+id,e);notify(c);GH.schedule()}
 
@@ -1655,7 +1656,7 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
      let sv=null,inh=false;if(k>=0&&R_.rv){const res=R_.rv.res&&R_.rv.res[k];if(res!=='skip'&&res!=='del'){for(let k2=k;k2>=0;k2--){const v=R_.rv.vals&&R_.rv.vals[k2];if(v&&Object.keys(v).length){sv=v;inh=k2!==k;break}if(k2<k&&R_.rv.sec[k2][2]<R_.rv.sec[k][1]-1)break}}}
      let wd=null;if(R_.T&&R_.wx&&R_.wx.h){const tm=(R_.T[a]+R_.T[b])/2;let bb=null,bd=1e12;for(const x of R_.wx.h){const dd=Math.abs(Date.parse(x[0])/1000-tm);if(dd<bd&&x[3]!=null){bd=dd;bb=x}}if(bb)wd=Math.round(bb[3]/45)%8}
      if(sv)sv=Object.assign({windDir:wd},sv);
-     const seg=pts.slice(a,b+1);if(seg.length>1)COV.foot.push({pts:snapEnds(seg),bit:R_.bit,date:R_.date,id:R_.id,sv,sk:k,inh});a=b}}
+     const seg=pts.slice(a,b+1);if(seg.length>1)COV.foot.push({pts:snapEnds(seg),bit:R_.bit,date:R_.date,id:R_.id,sv,sk:k,inh,ts:R_.T?(R_.T[a]+R_.T[b])/2:null});a=b}}
    st=-1;Lun=0};
   for(let i=0;i<pts.length;i++){const h=hit(pts[i]);const step=i?dist(pts[i-1],pts[i]):0;
    if(!h){if(st<0)st=i;else Lun+=step}else flush(i);
@@ -1681,7 +1682,7 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  const e=coverage().iv.get(pi);if(!e)return null;const L_=f==='alle'?mergeIv([...(e[1]||[]),...(e[2]||[])]):(e[ABIT[f]]||[]);
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
-function rosaOk(v){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;return wind<0||v.windDir==null||v.windDir===wind}
+function rosaOk(v,q){if(!v||v.wind!=='frei'||+v.belag===5)return false;if(v.autos&&v.autos!=='keine'&&v.autos!=='schild')return false;if(!v.autos&&q&&(v.road||v.wo==='fahrbahn')){const e=estNear(q);if(e&&e.v>0)return false}return wind<0||v.windDir==null||v.windDir===wind}
 function artCol(a){return ({radweg:COL[1],gehweg:UCOL.gehweg,feldweg:COL[2],strasse:COL[4],schotter:UCOL.schotter,pfad:UCOL.pfad})[a]||null}
 function wcolOf(w,rt){const t=rt&&rt.typ;return (t&&artCol(t))||COL[w[1]]}
 function wName(w){const rt=RAT['w'+w[0]];return rt&&rt.typ?lbl2('art',rt.typ)+' <span style="font-weight:normal;color:#777">(von dir)</span>':CNAME[w[1]]}
@@ -1693,10 +1694,10 @@ function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||
  for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const st=footStyle(o);
   L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
   L.polyline(o.pts,{renderer:R,color:st.col,weight:st.wt,opacity:dim*(st.op||1),interactive:false}).addTo(layer);
-  if(!o.con&&rosaOk(o.sv))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}}
+  if(!o.con&&rosaOk(o.sv,o.pts[Math.floor(o.pts.length/2)]))L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}}
 function popFoot(o,ll){if(o.con){const k=o.ka&&o.ka[0]==='w'?o.ka:o.kb&&o.kb[0]==='w'?o.kb:null;if(k)return pop(P[+k.slice(1)],ll);const u=(o.ka||o.kb||'').slice(1);if(STORE.uways[u])return popU(u,ll);return}
  const v=o.sv,dt=String(o.date||'').split('-').reverse().join('.');
- if(v)L.popup().setLatLng(ll).setContent('<b>'+(v.art?lbl2('art',v.art):v.wo?lbl2('wo',v.wo):'Gefahren')+'</b> <span style="color:#777">· '+dt+'</span><br>'+vals(v,['belag','autos','wind','leute','board'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="openEdit(\'f\',\''+o.id+'\','+o.sk+')">Bewertung ändern</button> <button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
+ if(v)L.popup().setLatLng(ll).setContent('<b>'+(v.art?lbl2('art',v.art):v.wo?lbl2('wo',v.wo):'Gefahren')+'</b> <span style="color:#777">· '+dt+'</span><br>'+vals(v,['belag','wind','leute','board'])+autosHtml({autos:v.autos==='schild'?'schild':undefined,obs:v.autos&&v.autos!=='schild'&&o.ts?[[o.ts,v.autos]]:[]},estNear(o.pts[Math.floor(o.pts.length/2)]))+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">'+(o.inh?'Ohne eigene Werte bestätigt, Werte vom Abschnitt davor. ':'Bewertet in der Prüfung der Fahrt. ')+'In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="openEdit(\'f\',\''+o.id+'\','+o.sk+')">Bewertung ändern</button> <button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Fahrt prüfen</button>').openOn(map);
  else L.popup().setLatLng(ll).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br><br><button class="pbtn" onclick="openEdit(\'f\',\''+o.id+'\','+o.sk+')">Bewerten</button>').openOn(map)}
 // ---- Antippen: eine zentrale Erkennung statt Klicks auf einzelnen Zeichenflächen ----
 let LASTPOP=0,LASTCLOSE=0,TAPHOOK=false;const UPTS=new WeakMap();
@@ -1712,8 +1713,9 @@ function tapAt(ll){const q=[ll.lat,ll.lng];const mpp=40075016*Math.cos(q[0]*Math
  if(!act)for(const [id,e] of Object.entries(STORE.spots)){const sp=e&&e.data;if(!sp||!sp.poly)continue;const g=dec(sp.poly);let ins=false;for(let i=0,j=g.length-1;i<g.length;j=i++){if(((g[i][0]>q[0])!==(g[j][0]>q[0]))&&(q[1]<(g[j][1]-g[i][1])*(q[0]-g[i][0])/(g[j][0]-g[i][0])+g[i][1]))ins=!ins}if(ins){act=()=>popS(id,ll);break}}
  if(act)return act();if(map.getZoom()<12)return;
  // Straßen mit Autoverkehr
- const CN=D.ctx.conn||[];let rb=-1,rd=tol;for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==1||it[1]>=CN.length)continue;const g=S.RDS[it[1]];const d=segDist(q,g[it[2]],g[it[2]+1]);if(d<rd){rd=d;rb=it[1]}}
- if(rb>=0){const r=CN[rb];L.popup().setLatLng(ll).setContent('<b>Straße'+(r[2]?' – '+esc(r[2]):'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">In OSM ansehen</a>').openOn(map)}}
+ const CN=D.ctx.conn||[],RO=D.ctx.roads||[];let rb=-1,rd=tol;for(let a=-rr;a<=rr;a++)for(let b=-rr;b<=rr;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==1)continue;const g=S.RDS[it[1]];const d=segDist(q,g[it[2]],g[it[2]+1]);if(d<rd){rd=d;rb=it[1]}}
+ if(rb>=CN.length){const k=(RO[rb-CN.length]||[3])[0];L.popup().setLatLng(ll).setContent('<b>'+RKIND[k][0]+'</b>'+autosHtml(null,estRoad(k,tNow()))).openOn(map);return}
+ if(rb>=0){const r=CN[rb];L.popup().setLatLng(ll).setContent('<b>'+(RKIND[r[3]||'r']||RKIND.r)[0]+(r[2]?' – '+esc(r[2]):'')+'</b>'+autosHtml(null,estRoad(r[3]||'r',tNow()))+'<br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">In OSM ansehen</a>').openOn(map)}}
 
 // ---- Bewertung direkt im Infofeld ändern: OSM-Weg ('w'), eigener Weg ('u'), Spurstück einer Fahrt ('f') ----
 let EDIT=null;
@@ -1740,6 +1742,44 @@ async function saveEdit(){const E_=EDIT;if(!E_)return;const o=E_.o;const nt=docu
   else{const r=JSON.parse(JSON.stringify(STORE.rides[E_.id].data));const v={};for(const q of ['art',...F])if(o[q]!=null)v[q]=o[q];if(nt)v.note=nt;r.rv.vals=r.rv.vals||{};r.rv.vals[E_.k]=v;r.rv.res=r.rv.res||{};if(!r.rv.res[E_.k])r.rv.res[E_.k]='ok';await DB.collection('rides').doc(E_.id).set(r)}
   document.getElementById('sheet').style.display='none';COV=null;COVKEY='';redrawSoon()}
  catch(e){btn.disabled=false;btn.textContent='Speichern';document.getElementById('emsg').textContent='Speichern fehlgeschlagen. Bitte nochmal versuchen.'}}
+
+// ---- Autos: Schätzung aus Straßenart, Uhrzeit und Jahreszeit; deine Beobachtungen haben Vorrang ----
+const AUTO_LV=['kaum','wenige','mittel','viele'];const ALV={keine:0,wenige:1,vereinzelt:1,mittel:2,viele:3,oft:3};
+let TSEL=null;
+function tNow(){if(TSEL)return Object.assign({m:new Date().getMonth()+1},TSEL);const d=new Date(),g=d.getDay();return {wd:g>=1&&g<=5,h:d.getHours()+d.getMinutes()/60,m:d.getMonth()+1}}
+function tFac(t){const h=t.h;if(t.wd){if(h<5.5||h>=22)return .12;if(h<6.5)return .6;if(h<9)return 1.5;if(h<16)return 1;if(h<19)return 1.5;return .6}if(h<8||h>=22)return .15;if(h<10)return .5;if(h<19)return .8;return .5}
+function tLabel(t){return (t.wd?'werktags ':'am Wochenende ')+Math.floor(t.h)+' Uhr'}
+function lvlOf(x){return x<.4?0:x<1.1?1:x<2.4?2:3}
+const RKIND={1:['Hauptstraße',4],2:['Landesstraße',3.5],3:['Kreisstraße',3],u:['Verbindungsstraße',2],r:['Wohnstraße',1.0],l:['verkehrsberuhigt',.6]};
+function estRoad(kind,t){const k=RKIND[kind]||RKIND.r;return {v:lvlOf(k[1]*tFac(t)),why:k[0]}}
+let WIDX=null,WPC=null;const THR=new Map();
+function wayOf(id){if(!WIDX){WIDX=new Map();WPC=new Map();P.forEach((p,pi)=>{const w=W[p.w];WIDX.set(w[0],w);let a=WPC.get(w[0]);if(!a)WPC.set(w[0],a=[]);a.push(pi)})}return WIDX.get(+id)}
+function nearRoadKind(q,tol){const S=buildIdx(),CN=D.ctx.conn||[],RO=D.ctx.roads||[];const x=Math.floor(q[0]/S.cell),y=Math.floor(q[1]/S.cell);let best=null,bd=tol||20;
+ for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(const it of S.G.get((x+a)+','+(y+b))||[]){if(it[0]!==1)continue;const g=S.RDS[it[1]];const d=segDist(q,g[it[2]],g[it[2]+1]);if(d<bd){bd=d;best=it[1]<CN.length?(CN[it[1]][3]||'r'):(RO[it[1]-CN.length]||[3])[0]}}return best}
+function wayThrough(id){if(THR.has(id))return THR.get(id);wayOf(id);const pcs=WPC.get(+id)||[];const cnt=new Map();const key=q=>q[0].toFixed(5)+','+q[1].toFixed(5);
+ for(const pi of pcs){const g=P[pi].pts;for(const q of [g[0],g[g.length-1]]){const k=key(q);cnt.set(k,(cnt.get(k)||[0,q]));cnt.get(k)[0]++}}
+ const ends=[...cnt.values()].filter(e=>e[0]===1).map(e=>e[1]);let r=false;if(ends.length>=2){const nr=ends.filter(q=>nearRoadKind(q,25));if(nr.length>=2&&dist(nr[0],nr[nr.length-1])>150)r=true}THR.set(id,r);return r}
+function estWay(w,t){const c=w[1];if(c===1)return {v:0,why:'Rad-/Gehweg'};const thr=wayThrough(w[0]);let B={2:.12,3:.2,4:.45}[c]||.2;if(thr)B*=2.2;let x=B*tFac(t);
+ if(t.wd&&t.h>=7&&t.h<19){const se=[0,.5,.5,1,1.2,1.2,1,1.2,1.5,1.5,1.3,.6,.5][t.m||1];x+=.25*se}
+ return {v:lvlOf(x),why:(c===2?'Feldweg, nur Landwirtschaft':c===4?'Feldweg, für Autos frei':'Feldweg')+(thr?', Abkürzung zwischen Straßen':'')+(t.wd&&t.h>=7&&t.h<19&&[7,8,9,10].includes(t.m)?', Erntezeit':'')}}
+function estNear(q){const k=nearRoadKind(q,25);if(k)return estRoad(k,tNow());return null}
+function obsTxt(v){return v==='oft'?'viele':v==='vereinzelt'?'wenige':v}
+function autosNow(o,est,t){if(o&&o.autos==='schild')return {lv:0,txt:'Kfz-Verbot (Schild)',src:'du'};const obs=(o&&o.obs)||[];let best=null,bd=99;
+ for(const ob of obs){const d=new Date(ob[0]*1000),g=d.getDay();if((g>=1&&g<=5)!==t.wd)continue;const dh=Math.abs(d.getHours()+d.getMinutes()/60-t.h);if(dh<=2.5&&dh<bd){bd=dh;best=ob}}
+ if(best&&ALV[best[1]]!=null)return {lv:ALV[best[1]],src:'beob'};
+ if(o&&o.autos&&ALV[o.autos]!=null&&!obs.length)return {lv:ALV[o.autos],src:'du'};
+ return est?{lv:est.v,src:'est',why:est.why}:null}
+function fmtTs(ts){const d=new Date(ts*1000);return ['So','Mo','Di','Mi','Do','Fr','Sa'][d.getDay()]+' '+d.getHours()+':'+String(d.getMinutes()).padStart(2,'0')}
+function autosHtml(o,est){const t=tNow();const a=autosNow(o,est,t);if(!a)return '';
+ let h='<br>Autos '+(TSEL?tLabel(t):'jetzt')+': <b>'+(a.txt||AUTO_LV[a.lv])+'</b> <span style="color:#777">('+(a.src==='est'?'geschätzt: '+esc(a.why):a.src==='beob'?'deine Beobachtung zu dieser Zeit':'deine Angabe')+')</span>';
+ const obs=(o&&o.obs)||[];if(obs.length)h+='<br><span style="color:#777">Gesehen: '+obs.slice(-5).map(ob=>fmtTs(ob[0])+' '+obsTxt(ob[1])).join(' · ')+'</span>';return h}
+function autosWay(id){const w=wayOf(id);if(!w)return '';return autosHtml(RAT['w'+id]||{},estWay(w,tNow()))}
+function rtHtml(id){return rtHtml0(id)+autosWay(id)}
+function obsPush(o,ts,val,rid){if(!ts||!val||val==='schild')return o;o.obs=(o.obs||[]).filter(x=>x[2]!==rid).concat([[Math.round(ts),val,rid]]).slice(-20);return o}
+// Zeit-Auswahl im Filter
+function hookTimeSel(){const fg=document.getElementById('fog');if(!fg||document.getElementById('tsel'))return;const lab=fg.closest('label');const d=document.createElement('div');d.style.margin='6px 0';
+ d.innerHTML='<label>Autos-Schätzung für <select id="tsel"><option value="">jetzt</option><option value="1,7.5">werktags 7–9 Uhr</option><option value="1,12">werktags mittags</option><option value="1,17.5">werktags 17–19 Uhr</option><option value="1,21">abends</option><option value="0,14">Wochenende tagsüber</option></select></label>';
+ lab.parentNode.insertBefore(d,lab.nextSibling);document.getElementById('tsel').onchange=e=>{const v=e.target.value;TSEL=v?{wd:v[0]==='1',h:+v.split(',')[1]}:null;map.closePopup();redrawSoon()}}
 
 DB.collection('ratings').onSnapshot(snap=>{const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()});
 // GPX import

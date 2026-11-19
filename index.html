@@ -1569,7 +1569,8 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
  COV={iv:new Map(),foot:[],links:[]};const TOL=28,cell=0.0005,KM=111320;const ck=(la,lo)=>Math.floor(la/cell)+','+Math.floor(lo/cell);
  const T=new Map(),RS=[];
  for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||(r.act||'board')==='ignore')continue;const bit=ABIT[r.act||'board']||1;const pts=dec(r.p);
-  let la0=90,la1=-90,lo0=180,lo1=-180;for(const q of pts){la0=Math.min(la0,q[0]);la1=Math.max(la1,q[0]);lo0=Math.min(lo0,q[1]);lo1=Math.max(lo1,q[1])}RS.push({pts,bit,date:r.date,id:r.id,bb:[la0-.01,la1+.01,lo0-.015,lo1+.015]});
+  let la0=90,la1=-90,lo0=180,lo1=-180;for(const q of pts){la0=Math.min(la0,q[0]);la1=Math.max(la1,q[0]);lo0=Math.min(lo0,q[1]);lo1=Math.max(lo1,q[1])}const sec=new Int16Array(pts.length).fill(-1);if(r.rv&&r.rv.sec)r.rv.sec.forEach((q,k)=>{for(let i=Math.max(0,q[1]);i<=Math.min(pts.length-1,q[2]);i++)sec[i]=k});
+  RS.push({pts,bit,date:r.date,id:r.id,rv:r.rv||null,sec,bb:[la0-.01,la1+.01,lo0-.015,lo1+.015]});
   for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const k=Math.cos(a[0]*Math.PI/180)*KM;const dx=(b[1]-a[1])*k,dy=(b[0]-a[0])*KM,d=Math.hypot(dx,dy);if(d<0.5)continue;
    const n=Math.ceil(d/6);for(let j=0;j<=n;j++){const q=[a[0]+(b[0]-a[0])*j/n,a[1]+(b[1]-a[1])*j/n,dx/d,dy/d,bit];const kk=ck(q[0],q[1]);let arr=T.get(kk);if(!arr)T.set(kk,arr=[]);arr.push(q)}}}
  if(!RS.length)return COV;
@@ -1591,7 +1592,12 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
  const hit=q=>{const x=Math.floor(q[0]/cell),y=Math.floor(q[1]/cell);let best=null,bd=22;for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const arr=E.get((x+a)+','+(y+b));if(arr)for(const t of arr){const d=dist(q,t);if(d<bd){bd=d;best=t[2]}}}return best};
  const LK=new Set();
  for(const R_ of RS){const pts=R_.pts;let st=-1,Lun=0,last=null,gap=0;
-  const flush=i=>{if(st>=0&&Lun>35)COV.foot.push({pts:pts.slice(Math.max(0,st-1),Math.min(pts.length,i+1)),bit:R_.bit,date:R_.date,id:R_.id});st=-1;Lun=0};
+  const flush=i=>{if(st>=0&&Lun>35){const a0=Math.max(0,st-1),b0=Math.min(pts.length-1,i);let a=a0;
+    // nach Prüf-Abschnitten aufteilen, damit jedes Stück seine Bewertung aus der Prüfung trägt
+    while(a<b0){const k=R_.sec[a+1<=b0?a+1:a];let b=a+1;while(b<b0&&R_.sec[b+1]===k)b++;
+     let sv=null;if(k>=0&&R_.rv){const res=R_.rv.res&&R_.rv.res[k];const v=R_.rv.vals&&R_.rv.vals[k];if(res!=='skip'&&res!=='del'&&v&&Object.keys(v).length)sv=v}
+     const seg=pts.slice(a,b+1);if(seg.length>1)COV.foot.push({pts:seg,bit:R_.bit,date:R_.date,id:R_.id,sv,sk:k});a=b}}
+   st=-1;Lun=0};
   for(let i=0;i<pts.length;i++){const h=hit(pts[i]);const step=i?dist(pts[i-1],pts[i]):0;
    if(!h){if(st<0)st=i;else Lun+=step}else flush(i);
    // Verbindungen, die die Spur beweist (Brücke, Lücke im OSM-Netz): Wegstücke gelten als verbunden
@@ -1606,9 +1612,14 @@ function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'
  if(!L_.length)return null;if(L_.length===1&&L_[0][0]<=0&&L_[0][1]>=e.L-.5)return true;return L_}
 function pieceKnown(pi,rt){return !!knownIv(pi,rt)}
 function drawFoot(R,fog){const f=(document.getElementById('seenBy')||{}).value||'alle';const dim=(RD?.2:REVIEWING?.5:1);const C=coverage();
- for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;
+ for(const o of C.foot){if(f!=='alle'&&!(o.bit&ABIT[f]))continue;const v=o.sv;
   L.polyline(o.pts,{renderer:R,color:'#1d1f1a',weight:9,opacity:.85*dim,interactive:false}).addTo(reveal);
-  L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3.4,opacity:dim}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+String(o.date||'').split('-').reverse().join('.')+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur (Straße oder in OSM nicht eingetragen).<br>Bewerten kannst du das Stück in der Prüfung der Fahrt („＋ Eigener Weg“).').openOn(map)).addTo(layer)}}
+  const dt=String(o.date||'').split('-').reverse().join('.');
+  if(v){// in der Prüfung bewertet: wie ein eigener Weg zeichnen
+   const typ=v.wo||v.typ||'begleit';const col=UCOL[typ]||'#1f6fd1';const sm=v.belag?BELAG_SM[v.belag]:0;
+   L.polyline(o.pts,{renderer:R,color:col,weight:(sm==1||sm==2)?5:3.4,opacity:dim*(+v.belag===5?.35:1)}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+(v.wo?' · '+lbl2('wo',v.wo):'')+'</b><br>'+vals(v,['belag','autos','wind','leute'])+(v.note||v.notiz?'<br>„'+esc(v.note||v.notiz)+'“':'')+'<br><span style="color:#777">Bewertet in der Prüfung der Fahrt. In OSM liegt hier kein eigener Weg.</span><br><button class="pbtn" onclick="location.hash=\'#pruefen/'+o.id+'\'">Abschnitt in der Prüfung öffnen</button>').openOn(map)).addTo(layer);
+   if(v.wind==='frei')L.polyline(o.pts,{renderer:R,color:'#ff3fd2',weight:11,opacity:.33*dim,interactive:false}).addTo(halo)}
+  else L.polyline(o.pts,{renderer:R,color:'#8d9188',weight:3.4,opacity:dim}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Gefahren am '+dt+'</b><br>Hier liegt kein Weg aus der Karte unter deiner Spur und es gibt noch keine Bewertung.<br>Bewerten kannst du das Stück in der Prüfung der Fahrt.').openOn(map)).addTo(layer)}}
 
 DB.collection('ratings').onSnapshot(snap=>{const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()});
 // GPX import

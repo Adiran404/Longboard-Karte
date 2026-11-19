@@ -965,7 +965,7 @@ function draw(){
  let shown=0;
  for(let pi=0;pi<P.length;pi++){const p=P[pi];if(!rideable(p))continue;const w=W[p.w];const n=p.k.length;
   const st=new Uint8Array(n);for(let i=0;i<n;i++){const g=p.base+i;st[i]=comp[g]<0?0:(compLen[g]>=minRun?2:1)}
-  const rt=RAT['w'+w[0]];const kv=knownIv(pi,rt),known=kv===true;
+  const rt0=RAT['w'+w[0]];const kv=knownIv(pi,rt0),known=kv===true;const rt=kv?dispRat(pi,w):rt0;
   const rb=rt&&rt.belag?+rt.belag:0;if(rb===5)st.fill(0);
   if(rt&&rt.wind&&wind>=0&&rt.windDir===wind){if(rt.wind==='windschatten')st.fill(0);else if(rt.wind==='frei')st.fill(2)}
   if(kv===true)REV_.push(p.pts);else if(kv)for(const [a,b] of kv)REV_.push(clipPts(p,a,b));
@@ -1569,7 +1569,7 @@ async function delExtra(c,id){map.closePopup();const e=STORE[c][id];if(!e)return
 
 // ---- Reparatur fertig geprüfter Fahrten: geteilte eigene Wege trennen, Wegbewertung vom Abschnitt mit den meisten Punkten ----
 let REPBUSY=false;
-async function repairRides(){if(REPBUSY||!P.length||REVIEWING)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=4||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
+async function repairRides(){if(REPBUSY||!P.length||REVIEWING)return;REPBUSY=true;try{for(const id of Object.keys(STORE.rides)){const e=STORE.rides[id];const r=e&&e.data;if(!r||!r.rv||!r.rv.fin||(r.rv.rep|0)>=5||!r.p)continue;await repairRide(id,r)}}catch(err){console.error(err)}REPBUSY=false}
 async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const A=rideArrays(r);const V=k=>rv.vals&&rv.vals[k]&&Object.keys(rv.vals[k]).length?rv.vals[k]:null;
  const day=r.start?new Date(r.start).toLocaleDateString('sv-SE'):r.date;const ws=s=>{try{return secInfo(r,A,s).windSec}catch(e){return null}};
  for(let k=1;k<rv.sec.length;k++){const s=rv.sec[k];if(s[0]!=='uway'||!s[3])continue;let f=k;while(f>0&&rv.sec[f-1][0]==='uway'&&rv.sec[f-1][3]===s[3]&&rv.sec[f-1][2]<=s[1]+1)f--;if(f===k)continue;
@@ -1582,16 +1582,10 @@ async function repairRide(id,r){const rv=JSON.parse(JSON.stringify(r.rv));const 
  const best=new Map();
  rv.sec.forEach((s,k)=>{if(s[0]!=='way'||!V(k))return;let pk=null;const c=new Map();for(let i=s[1];i<=s[2];i++){const mm=matchPt(A.pts[i],pk);if(mm.t!=='x')pk=mm.k;if(mm.t==='w')c.set(W[P[mm.pi].w][0],(c.get(W[P[mm.pi].w][0])||0)+1)}
   for(const [w,n] of c){const b=best.get(w);if(!b||n>b[1])best.set(w,[k,n])}});
- for(const [w,[k,n]] of best){const rt=RAT['w'+w];const act=r.act||'board';if(!rt&&n<3)continue;const used=!rt||(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
-  const v=V(k);const o=Object.assign({},rt||{way:+w,confirmed:day,act:{[act]:[day]}},(!rt&&act==='board')?{ridden:true,rides:[day]}:{});let ch=!rt;if(v.art&&o.typ!==v.art){o.typ=v.art;ch=true}for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
+ for(const [w,[k,n]] of best){const rt=RAT['w'+w];if(!rt||!['belag','autos','wind','leute'].some(q=>rt[q]!=null))continue;const used=(rt.rides||[]).includes(day)||Object.values(rt.act||{}).some(a=>a.includes(day));if(!used)continue;
+  const v=V(k);const o=Object.assign({},rt);let ch=false;if(v.art&&o.typ!==v.art){o.typ=v.art;ch=true}for(const kk of ['belag','autos','wind','leute']){if(v[kk]!=null&&o[kk]!==v[kk]){o[kk]=v[kk];ch=true}}
   if(v.wind!=null){const w2=ws(rv.sec[k]);if(w2!=null&&o.windDir!==w2){o.windDir=w2;ch=true}}if(ch){o.updated=today();await DB.collection('ratings').doc('w'+w).set(o)}}
- // aufgedeckte, aber noch unbewertete Wegstücke bekommen die Werte des Abschnitts, an dem sie liegen
- const C=coverage(),done=new Set(best.keys());
- for(const [pi] of C.iv){const w=W[P[pi].w][0];const r0=RAT['w'+w];if(done.has(w)||(r0&&['belag','autos','wind','leute'].some(k=>r0[k]!=null)))continue;const p=P[pi];const m=p.pts[Math.floor(p.pts.length/2)];let bi=-1,bd=30;for(let i=0;i<A.n;i+=2){const d=dist(m,A.pts[i]);if(d<bd){bd=d;bi=i}}if(bi<0)continue;
-  let k=rv.sec.findIndex(s=>bi>=s[1]&&bi<=s[2]);let v=null;for(let k2=k;k2>=0&&!v;k2--)v=V(k2);if(!v)continue;done.add(w);
-  const act=r.act||'board';const o=Object.assign({},r0||{},{way:+w,confirmed:day,updated:today()});const AA=Object.assign({},o.act||{});AA[act]=(AA[act]||[]).filter(x=>x!==day).concat(day);o.act=AA;if(act==='board'){o.ridden=true;o.rides=[day]}for(const kk of ['belag','autos','wind','leute'])if(v[kk]!=null)o[kk]=v[kk];if(v.art)o.typ=v.art;
-  await DB.collection('ratings').doc('w'+w).set(o)}
- rv.rep=4;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
+ rv.rep=5;await DB.collection('rides').doc(id).set(Object.assign({},r,{rv}))}
 
 // ---- Fog of War aus den echten GPS-Spuren: aufgedeckt wird genau der befahrene Teil ----
 let COV=null,COVKEY='';const ABIT={board:1,fuss:2};
@@ -1648,6 +1642,13 @@ function coverage(){const key=Object.keys(STORE.rides).map(id=>{const e=STORE.ri
    else gap+=step}
   flush(pts.length)}
  return COV}
+const DISP=new Map();let DISPKEY='';
+function dispRat(pi,w){const rt=RAT['w'+w[0]];if(rt&&['belag','autos','wind','leute'].some(q=>rt[q]!=null))return rt;
+ const C=coverage();if(DISPKEY!==COVKEY){DISP.clear();DISPKEY=COVKEY}if(!C.iv.has(pi))return rt;if(DISP.has(pi))return DISP.get(pi)||rt;
+ const p=P[pi],iv=C.iv.get(pi);const L_=mergeIv([...(iv[1]||[]),...(iv[2]||[])]);const g=clipPts(p,L_[0][0],L_[0][1]);const m=g[Math.floor(g.length/2)];let best=null,bd=30;
+ for(const e of Object.values(STORE.rides)){const r=e&&e.data;if(!r||!r.p||!r.rv||!r.rv.sec)continue;const pts=dec(r.p);let bi=-1;for(let i=0;i<pts.length;i+=2){const d=dist(m,pts[i]);if(d<bd){bd=d;bi=i}}
+  if(bi<0)continue;const k=r.rv.sec.findIndex(s=>bi>=s[1]&&bi<=s[2]);for(let k2=k;k2>=0;k2--){const v=r.rv.vals&&r.rv.vals[k2];if(v&&Object.keys(v).length){best=v;break}}}
+ const o=best?Object.assign({},rt||{},{belag:best.belag,autos:best.autos,wind:best.wind,leute:best.leute,virt:true}):null;DISP.set(pi,o);return o||rt}
 // true = ganz aufgedeckt, Array = nur diese Abschnitte (Meter entlang des Stücks), null = Nebel
 function knownIv(pi,rt){const f=(document.getElementById('seenBy')||{}).value||'alle';
  if(f==='alle'&&rt&&!rt.ridden&&!(rt.act&&Object.keys(rt.act).length))return true;

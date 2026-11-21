@@ -4,5 +4,5 @@
 - `app.js`, `review.js` – App-Logik (Speicher/Sync, Seiten, Prüfung, Fog of War, Antippen, Autos-Schätzung)
 - `build.py` – baut daraus `index.html` (schrittweise Ersetzungen)
 
-Eingefrorener Stand: Git-Tag `stabil-2026-11-22`.
-Zurück auf diesen Stand: `index.html`, `sw.js` und `data.json` aus dem Tag nehmen und den Cache-Namen in `sw.js` erhöhen.
+Eingefrorener Stand: Git-Branch `stabil-2026-11-22` (in Longboard-Karte und Longboard-Daten).
+Zurück auf diesen Stand: `index.html`, `sw.js` und `data.json` aus diesem Branch nehmen und den Cache-Namen in `sw.js` erhöhen.

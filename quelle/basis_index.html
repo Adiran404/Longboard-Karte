@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Parawing-Wege Ostalb &amp; Ries</title>
+<style>
+/* required styles */
+
+.leaflet-pane,
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-tile-container,
+.leaflet-pane > svg,
+.leaflet-pane > canvas,
+.leaflet-zoom-box,
+.leaflet-image-layer,
+.leaflet-layer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	}
+.leaflet-container {
+	overflow: hidden;
+	}
+.leaflet-tile,
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none;
+	  -webkit-user-drag: none;
+	}
+/* Prevents IE11 from highlighting tiles in blue */
+.leaflet-tile::selection {
+	background: transparent;
+}
+/* Safari renders non-retina tile on retina better with this, but Chrome is worse */
+.leaflet-safari .leaflet-tile {
+	image-rendering: -webkit-optimize-contrast;
+	}
+/* hack that prevents hw layers "stretching" when loading new tiles */
+.leaflet-safari .leaflet-tile-container {
+	width: 1600px;
+	height: 1600px;
+	-webkit-transform-origin: 0 0;
+	}
+.leaflet-marker-icon,
+.leaflet-marker-shadow {
+	display: block;
+	}
+/* .leaflet-container svg: reset svg max-width decleration shipped in Joomla! (joomla.org) 3.x */
+/* .leaflet-container img: map is broken in FF if you have max-width: 100% on tiles */
+.leaflet-container .leaflet-overlay-pane svg {
+	max-width: none !important;
+	max-height: none !important;
+	}
+.leaflet-container .leaflet-marker-pane img,
+.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,
+.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile {
+	max-width: none !important;
+	max-height: none !important;
+	width: auto;
+	padding: 0;
+	}
+
+.leaflet-container img.leaflet-tile {
+	/* See: https://bugs.chromium.org/p/chromium/issues/detail?id=600120 */
+	mix-blend-mode: plus-lighter;
+}
+
+.leaflet-container.leaflet-touch-zoom {
+	-ms-touch-action: pan-x pan-y;
+	touch-action: pan-x pan-y;
+	}
+.leaflet-container.leaflet-touch-drag {
+	-ms-touch-action: pinch-zoom;
+	/* Fallback for FF which doesn't support pinch-zoom */
+	touch-action: none;
+	touch-action: pinch-zoom;
+}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom {
+	-ms-touch-action: none;
+	touch-action: none;
+}
+.leaflet-container {
+	-webkit-tap-highlight-color: transparent;
+}
+.leaflet-container a {
+	-webkit-tap-highlight-color: rgba(51, 181, 229, 0.4);
+}
+.leaflet-tile {
+	filter: inherit;
+	visibility: hidden;
+	}
+.leaflet-tile-loaded {
+	visibility: inherit;
+	}
+.leaflet-zoom-box {
+	width: 0;
+	height: 0;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	z-index: 800;
+	}
+/* workaround for https://bugzilla.mozilla.org/show_bug.cgi?id=888319 */
+.leaflet-overlay-pane svg {
+	-moz-user-select: none;
+	}
+
+.leaflet-pane         { z-index: 400; }
+
+.leaflet-tile-pane    { z-index: 200; }
+.leaflet-overlay-pane { z-index: 400; }
+.leaflet-shadow-pane  { z-index: 500; }
+.leaflet-marker-pane  { z-index: 600; }
+.leaflet-tooltip-pane   { z-index: 650; }
+.leaflet-popup-pane   { z-index: 700; }
+
+.leaflet-map-pane canvas { z-index: 100; }
+.leaflet-map-pane svg    { z-index: 200; }
+
+.leaflet-vml-shape {
+	width: 1px;
+	height: 1px;
+	}
+.lvml {
+	behavior: url(#default#VML);
+	display: inline-block;
+	position: absolute;
+	}
+
+
+/* control positioning */
+
+.leaflet-control {
+	position: relative;
+	z-index: 800;
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+.leaflet-top,
+.leaflet-bottom {
+	position: absolute;
+	z-index: 1000;
+	pointer-events: none;
+	}
+.leaflet-top {
+	top: 0;
+	}
+.leaflet-right {
+	right: 0;
+	}
+.leaflet-bottom {
+	bottom: 0;
+	}
+.leaflet-left {
+	left: 0;
+	}
+.leaflet-control {
+	float: left;
+	clear: both;
+	}
+.leaflet-right .leaflet-control {
+	float: right;
+	}
+.leaflet-top .leaflet-control {
+	margin-top: 10px;
+	}
+.leaflet-bottom .leaflet-control {
+	margin-bottom: 10px;
+	}
+.leaflet-left .leaflet-control {
+	margin-left: 10px;
+	}
+.leaflet-right .leaflet-control {
+	margin-right: 10px;
+	}
+
+
+/* zoom and fade animations */
+
+.leaflet-fade-anim .leaflet-popup {
+	opacity: 0;
+	-webkit-transition: opacity 0.2s linear;
+	   -moz-transition: opacity 0.2s linear;
+	        transition: opacity 0.2s linear;
+	}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup {
+	opacity: 1;
+	}
+.leaflet-zoom-animated {
+	-webkit-transform-origin: 0 0;
+	    -ms-transform-origin: 0 0;
+	        transform-origin: 0 0;
+	}
+svg.leaflet-zoom-animated {
+	will-change: transform;
+}
+
+.leaflet-zoom-anim .leaflet-zoom-animated {
+	-webkit-transition: -webkit-transform 0.25s cubic-bezier(0,0,0.25,1);
+	   -moz-transition:    -moz-transform 0.25s cubic-bezier(0,0,0.25,1);
+	        transition:         transform 0.25s cubic-bezier(0,0,0.25,1);
+	}
+.leaflet-zoom-anim .leaflet-tile,
+.leaflet-pan-anim .leaflet-tile {
+	-webkit-transition: none;
+	   -moz-transition: none;
+	        transition: none;
+	}
+
+.leaflet-zoom-anim .leaflet-zoom-hide {
+	visibility: hidden;
+	}
+
+
+/* cursors */
+
+.leaflet-interactive {
+	cursor: pointer;
+	}
+.leaflet-grab {
+	cursor: -webkit-grab;
+	cursor:    -moz-grab;
+	cursor:         grab;
+	}
+.leaflet-crosshair,
+.leaflet-crosshair .leaflet-interactive {
+	cursor: crosshair;
+	}
+.leaflet-popup-pane,
+.leaflet-control {
+	cursor: auto;
+	}
+.leaflet-dragging .leaflet-grab,
+.leaflet-dragging .leaflet-grab .leaflet-interactive,
+.leaflet-dragging .leaflet-marker-draggable {
+	cursor: move;
+	cursor: -webkit-grabbing;
+	cursor:    -moz-grabbing;
+	cursor:         grabbing;
+	}
+
+/* marker & overlays interactivity */
+.leaflet-marker-icon,
+.leaflet-marker-shadow,
+.leaflet-image-layer,
+.leaflet-pane > svg path,
+.leaflet-tile-container {
+	pointer-events: none;
+	}
+
+.leaflet-marker-icon.leaflet-interactive,
+.leaflet-image-layer.leaflet-interactive,
+.leaflet-pane > svg path.leaflet-interactive,
+svg.leaflet-image-layer.leaflet-interactive path {
+	pointer-events: visiblePainted; /* IE 9-10 doesn't have auto */
+	pointer-events: auto;
+	}
+
+/* visual tweaks */
+
+.leaflet-container {
+	background: #ddd;
+	outline-offset: 1px;
+	}
+.leaflet-container a {
+	color: #0078A8;
+	}
+.leaflet-zoom-box {
+	border: 2px dotted #38f;
+	background: rgba(255,255,255,0.5);
+	}
+
+
+/* general typography */
+.leaflet-container {
+	font-family: "Helvetica Neue", Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	}
+
+
+/* general toolbar styles */
+
+.leaflet-bar {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.65);
+	border-radius: 4px;
+	}
+.leaflet-bar a {
+	background-color: #fff;
+	border-bottom: 1px solid #ccc;
+	width: 26px;
+	height: 26px;
+	line-height: 26px;
+	display: block;
+	text-align: center;
+	text-decoration: none;
+	color: black;
+	}
+.leaflet-bar a,
+.leaflet-control-layers-toggle {
+	background-position: 50% 50%;
+	background-repeat: no-repeat;
+	display: block;
+	}
+.leaflet-bar a:hover,
+.leaflet-bar a:focus {
+	background-color: #f4f4f4;
+	}
+.leaflet-bar a:first-child {
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	}
+.leaflet-bar a:last-child {
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom: none;
+	}
+.leaflet-bar a.leaflet-disabled {
+	cursor: default;
+	background-color: #f4f4f4;
+	color: #bbb;
+	}
+
+.leaflet-touch .leaflet-bar a {
+	width: 30px;
+	height: 30px;
+	line-height: 30px;
+	}
+.leaflet-touch .leaflet-bar a:first-child {
+	border-top-left-radius: 2px;
+	border-top-right-radius: 2px;
+	}
+.leaflet-touch .leaflet-bar a:last-child {
+	border-bottom-left-radius: 2px;
+	border-bottom-right-radius: 2px;
+	}
+
+/* zoom control */
+
+.leaflet-control-zoom-in,
+.leaflet-control-zoom-out {
+	font: bold 18px 'Lucida Console', Monaco, monospace;
+	text-indent: 1px;
+	}
+
+.leaflet-touch .leaflet-control-zoom-in, .leaflet-touch .leaflet-control-zoom-out  {
+	font-size: 22px;
+	}
+
+
+/* layers control */
+
+.leaflet-control-layers {
+	box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+	background: #fff;
+	border-radius: 5px;
+	}
+.leaflet-control-layers-toggle {
+	background-image: url(images/layers.png);
+	width: 36px;
+	height: 36px;
+	}
+.leaflet-retina .leaflet-control-layers-toggle {
+	background-image: url(images/layers-2x.png);
+	background-size: 26px 26px;
+	}
+.leaflet-touch .leaflet-control-layers-toggle {
+	width: 44px;
+	height: 44px;
+	}
+.leaflet-control-layers .leaflet-control-layers-list,
+.leaflet-control-layers-expanded .leaflet-control-layers-toggle {
+	display: none;
+	}
+.leaflet-control-layers-expanded .leaflet-control-layers-list {
+	display: block;
+	position: relative;
+	}
+.leaflet-control-layers-expanded {
+	padding: 6px 10px 6px 6px;
+	color: #333;
+	background: #fff;
+	}
+.leaflet-control-layers-scrollbar {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	padding-right: 5px;
+	}
+.leaflet-control-layers-selector {
+	margin-top: 2px;
+	position: relative;
+	top: 1px;
+	}
+.leaflet-control-layers label {
+	display: block;
+	font-size: 13px;
+	font-size: 1.08333em;
+	}
+.leaflet-control-layers-separator {
+	height: 0;
+	border-top: 1px solid #ddd;
+	margin: 5px -10px 5px -6px;
+	}
+
+/* Default icon URLs */
+.leaflet-default-icon-path { /* used only in path-guessing heuristic, see L.Icon.Default */
+	background-image: url(images/marker-icon.png);
+	}
+
+
+/* attribution and scale controls */
+
+.leaflet-container .leaflet-control-attribution {
+	background: #fff;
+	background: rgba(255, 255, 255, 0.8);
+	margin: 0;
+	}
+.leaflet-control-attribution,
+.leaflet-control-scale-line {
+	padding: 0 5px;
+	color: #333;
+	line-height: 1.4;
+	}
+.leaflet-control-attribution a {
+	text-decoration: none;
+	}
+.leaflet-control-attribution a:hover,
+.leaflet-control-attribution a:focus {
+	text-decoration: underline;
+	}
+.leaflet-attribution-flag {
+	display: inline !important;
+	vertical-align: baseline !important;
+	width: 1em;
+	height: 0.6669em;
+	}
+.leaflet-left .leaflet-control-scale {
+	margin-left: 5px;
+	}
+.leaflet-bottom .leaflet-control-scale {
+	margin-bottom: 5px;
+	}
+.leaflet-control-scale-line {
+	border: 2px solid #777;
+	border-top: none;
+	line-height: 1.1;
+	padding: 2px 5px 1px;
+	white-space: nowrap;
+	-moz-box-sizing: border-box;
+	     box-sizing: border-box;
+	background: rgba(255, 255, 255, 0.8);
+	text-shadow: 1px 1px #fff;
+	}
+.leaflet-control-scale-line:not(:first-child) {
+	border-top: 2px solid #777;
+	border-bottom: none;
+	margin-top: -2px;
+	}
+.leaflet-control-scale-line:not(:first-child):not(:last-child) {
+	border-bottom: 2px solid #777;
+	}
+
+.leaflet-touch .leaflet-control-attribution,
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	box-shadow: none;
+	}
+.leaflet-touch .leaflet-control-layers,
+.leaflet-touch .leaflet-bar {
+	border: 2px solid rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	}
+
+
+/* popup */
+
+.leaflet-popup {
+	position: absolute;
+	text-align: center;
+	margin-bottom: 20px;
+	}
+.leaflet-popup-content-wrapper {
+	padding: 1px;
+	text-align: left;
+	border-radius: 12px;
+	}
+.leaflet-popup-content {
+	margin: 13px 24px 13px 20px;
+	line-height: 1.3;
+	font-size: 13px;
+	font-size: 1.08333em;
+	min-height: 1px;
+	}
+.leaflet-popup-content p {
+	margin: 17px 0;
+	margin: 1.3em 0;
+	}
+.leaflet-popup-tip-container {
+	width: 40px;
+	height: 20px;
+	position: absolute;
+	left: 50%;
+	margin-top: -1px;
+	margin-left: -20px;
+	overflow: hidden;
+	pointer-events: none;
+	}
+.leaflet-popup-tip {
+	width: 17px;
+	height: 17px;
+	padding: 1px;
+
+	margin: -10px auto 0;
+	pointer-events: auto;
+
+	-webkit-transform: rotate(45deg);
+	   -moz-transform: rotate(45deg);
+	    -ms-transform: rotate(45deg);
+	        transform: rotate(45deg);
+	}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+	background: white;
+	color: #333;
+	box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+	}
+.leaflet-container a.leaflet-popup-close-button {
+	position: absolute;
+	top: 0;
+	right: 0;
+	border: none;
+	text-align: center;
+	width: 24px;
+	height: 24px;
+	font: 16px/24px Tahoma, Verdana, sans-serif;
+	color: #757575;
+	text-decoration: none;
+	background: transparent;
+	}
+.leaflet-container a.leaflet-popup-close-button:hover,
+.leaflet-container a.leaflet-popup-close-button:focus {
+	color: #585858;
+	}
+.leaflet-popup-scrolled {
+	overflow: auto;
+	}
+
+.leaflet-oldie .leaflet-popup-content-wrapper {
+	-ms-zoom: 1;
+	}
+.leaflet-oldie .leaflet-popup-tip {
+	width: 24px;
+	margin: 0 auto;
+
+	-ms-filter: "progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678)";
+	filter: progid:DXImageTransform.Microsoft.Matrix(M11=0.70710678, M12=0.70710678, M21=-0.70710678, M22=0.70710678);
+	}
+
+.leaflet-oldie .leaflet-control-zoom,
+.leaflet-oldie .leaflet-control-layers,
+.leaflet-oldie .leaflet-popup-content-wrapper,
+.leaflet-oldie .leaflet-popup-tip {
+	border: 1px solid #999;
+	}
+
+
+/* div icon */
+
+.leaflet-div-icon {
+	background: #fff;
+	border: 1px solid #666;
+	}
+
+
+/* Tooltip */
+/* Base styles for the element that has a tooltip */
+.leaflet-tooltip {
+	position: absolute;
+	padding: 6px;
+	background-color: #fff;
+	border: 1px solid #fff;
+	border-radius: 3px;
+	color: #222;
+	white-space: nowrap;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	pointer-events: none;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+	}
+.leaflet-tooltip.leaflet-interactive {
+	cursor: pointer;
+	pointer-events: auto;
+	}
+.leaflet-tooltip-top:before,
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	position: absolute;
+	pointer-events: none;
+	border: 6px solid transparent;
+	background: transparent;
+	content: "";
+	}
+
+/* Directions */
+
+.leaflet-tooltip-bottom {
+	margin-top: 6px;
+}
+.leaflet-tooltip-top {
+	margin-top: -6px;
+}
+.leaflet-tooltip-bottom:before,
+.leaflet-tooltip-top:before {
+	left: 50%;
+	margin-left: -6px;
+	}
+.leaflet-tooltip-top:before {
+	bottom: 0;
+	margin-bottom: -12px;
+	border-top-color: #fff;
+	}
+.leaflet-tooltip-bottom:before {
+	top: 0;
+	margin-top: -12px;
+	margin-left: -6px;
+	border-bottom-color: #fff;
+	}
+.leaflet-tooltip-left {
+	margin-left: -6px;
+}
+.leaflet-tooltip-right {
+	margin-left: 6px;
+}
+.leaflet-tooltip-left:before,
+.leaflet-tooltip-right:before {
+	top: 50%;
+	margin-top: -6px;
+	}
+.leaflet-tooltip-left:before {
+	right: 0;
+	margin-right: -12px;
+	border-left-color: #fff;
+	}
+.leaflet-tooltip-right:before {
+	left: 0;
+	margin-left: -12px;
+	border-right-color: #fff;
+	}
+
+/* Printing */
+
+@media print {
+	/* Prevent printers from removing background-images of controls. */
+	.leaflet-control {
+		-webkit-print-color-adjust: exact;
+		print-color-adjust: exact;
+		}
+	}
+
+html,body{margin:0;height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:#f3f4ef;color:#1d1f1a}
+#map{position:absolute;inset:0;background:#f1f2ec}
+.panel{position:absolute;z-index:1000;left:10px;top:10px;background:rgba(255,255,255,.97);border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.18);padding:10px 12px;max-width:310px;font-size:13px;max-height:calc(100% - 40px);overflow:auto}
+.panel h1{font-size:15px;margin:0 0 4px}
+.wind{display:grid;grid-template-columns:repeat(3,46px);gap:4px;margin:6px 0}
+.wind button{height:34px;border:1px solid #c9ccc2;background:#fff;border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;color:#1d1f1a}
+.wind button.on{background:#1d1f1a;color:#fff;border-color:#1d1f1a}
+.wind .mid{font-size:11px;font-weight:500}
+.row{display:flex;align-items:center;gap:8px;margin:6px 0;flex-wrap:wrap}
+.leg{display:grid;grid-template-columns:34px 1fr;gap:3px 8px;align-items:center;margin-top:6px}
+.sw{height:0;border-top:4px solid}
+.small{font-size:11px;color:#555;line-height:1.35}
+#toggle{position:absolute;z-index:1001;right:10px;top:10px;border:0;border-radius:10px;padding:8px 12px;background:#1d1f1a;color:#fff;font-weight:600}
+.panel.hide{display:none}
+@media (max-width:600px){.panel{max-width:calc(100% - 100px);font-size:12px}}
+.leaflet-popup-content{font-size:13px;line-height:1.45;margin:10px 12px}
+.lbl{background:transparent;border:0;box-shadow:none;font-size:11px;font-weight:600;color:#333;text-shadow:0 0 3px #fff,0 0 3px #fff,0 0 3px #fff}
+.lbl.st{color:#7a1f8a}
+.leaflet-tooltip.lbl:before{display:none}
+#stat{font-weight:600}
+#sheet{position:absolute;z-index:1100;left:0;right:0;bottom:0;background:#fff;border-radius:14px 14px 0 0;box-shadow:0 -2px 14px rgba(0,0,0,.25);padding:12px 14px 16px;max-height:75%;overflow:auto;display:none;font-size:13px}
+#sheet h2{font-size:15px;margin:0 0 6px}
+.q{margin:8px 0 2px;font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{border:1px solid #c9ccc2;background:#fff;border-radius:16px;padding:6px 10px;font-size:13px;cursor:pointer}
+.chips button.on{background:#1d1f1a;color:#fff;border-color:#1d1f1a}
+#sheet textarea{width:100%;box-sizing:border-box;min-height:48px;font:inherit;border:1px solid #c9ccc2;border-radius:8px;padding:6px}
+.acts{display:flex;gap:8px;margin-top:10px}
+.acts button{flex:1;padding:10px;border-radius:10px;border:0;font-weight:600;font-size:14px}
+.btnp{background:#1d1f1a;color:#fff}.btns{background:#eceee7;color:#1d1f1a}
+.pbtn{margin-top:6px;padding:6px 10px;border-radius:8px;border:0;background:#1d1f1a;color:#fff;font-weight:600;cursor:pointer}
+#gpxlbl{display:inline-block;padding:6px 10px;border-radius:8px;background:#eceee7;cursor:pointer;font-weight:600}
+.ride{padding:5px 6px;border-radius:6px;cursor:pointer;margin:2px 0;background:#f4f5f0}.ride.on{background:#1d1f1a;color:#fff}
+#chartbox{position:absolute;z-index:1050;left:0;right:0;bottom:0;background:rgba(255,255,255,.98);box-shadow:0 -2px 12px rgba(0,0,0,.2);border-radius:12px 12px 0 0;padding:8px 10px 6px;display:none;font-size:12px}
+.chhead{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}#chclose{border:0;background:#eceee7;border-radius:8px;padding:4px 9px;font-size:14px}
+.mb{border:1px solid #c9ccc2;background:#fff;border-radius:14px;padding:3px 9px;font-size:12px}.mb.on{background:#1d1f1a;color:#fff;border-color:#1d1f1a}
+#chart{width:100%;height:190px;display:block;touch-action:none}#chval{font-weight:600;margin:2px 0}
+#busy{position:absolute;z-index:1002;left:50%;top:50%;transform:translate(-50%,-50%);background:#fff;padding:10px 14px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,.2);font-size:13px}
+</style></head><body>
+<div id="map"></div>
+<div id="busy">Lade Kartendaten …</div>
+<div id="sheet"></div>
+<div id="chartbox"><div class="chhead"><div id="chtitle"></div><button id="chclose" onclick="showRide('')">✕</button></div>
+<div class="row" style="margin:4px 0">Linie färben nach: <button class="mb" data-m="v">Tempo</button><button class="mb" data-m="h">Puls</button><button class="mb" data-m="e">Höhe</button><button class="mb" data-m="w">Wind zur Fahrtrichtung</button></div>
+<div id="chwx" class="small"></div><div id="chpause" class="small"></div>
+<div id="wleg" class="small" style="display:none"><span style="color:#2e9e44">■</span> Rückenwind <span style="color:#9ccc3c">■</span> halber Wind/raum <span style="color:#f08c19">■</span> am Wind <span style="color:#d6301f">■</span> gegen den Wind (±45°)</div><div id="chval" class="small"></div><canvas id="chart"></canvas></div>
+<button id="toggle">Filter</button>
+<div class="panel" id="panel">
+<h1>Parawing-Wege Ostalb &amp; Ries</h1>
+<div class="small">Alle befestigten Feld- und Radwege ohne Autoverkehr laut OpenStreetMap. Rosa hinterlegt sind die Stücke, die bei der gewählten Windrichtung frei angeströmt sind (kein Wald, keine Hecke, keine Bebauung bis 80 m auf der Windseite, mind. 75 m weg von Haupt-/Kreisstraßen). Antippen zeigt, warum ein Stück nicht rosa ist.</div>
+<div class="row"><b>Linienfarbe:</b><label><input type="radio" name="cm" value="car" checked> Autofrei</label><label><input type="radio" name="cm" value="grade"> Steigung</label></div>
+<div class="leg" id="gleg" style="display:none;margin-bottom:4px">
+<div class="sw" style="border-color:#2e9e44"></div><div>flach (bis 2 %)</div>
+<div class="sw" style="border-color:#9ccc3c"></div><div>leicht (2–4 %)</div>
+<div class="sw" style="border-color:#f0c419"></div><div>mittel (4–6 %)</div>
+<div class="sw" style="border-color:#f08c19"></div><div>steil (6–9 %)</div>
+<div class="sw" style="border-color:#d6301f"></div><div>sehr steil (über 9 %)</div>
+<div class="small" style="grid-column:1/3">Aus dem Copernicus-Höhenmodell (30 m, mit Bäumen/Dächern) – an Waldrändern und in Orten ungenau, nördlich von 49,0° keine Daten.</div>
+</div>
+<div class="row"><b>Wind aus:</b> <span id="wlabel"></span></div>
+<div class="wind" id="wind"></div>
+<div class="row">Rosa nur, wenn zusammenhängend ab <select id="minRun"><option value="0">0 m</option><option value="500">500 m</option><option value="1000" selected>1 km</option><option value="2000">2 km</option><option value="5000">5 km</option><option value="10000">10 km</option></select></div>
+<div class="row"><label><input type="checkbox" id="hideSh"> Nur rosa Stücke zeigen</label></div>
+<div class="row"><label><input type="checkbox" id="unk" checked> Wege ohne Belag-Eintrag zeigen</label></div>
+<div class="leg">
+<div class="sw carleg" style="border-color:#1f6fd1"></div><div class="carleg">Rad-/Gehweg – sicher ohne Autos</div>
+<div class="sw carleg" style="border-color:#1a9e4a"></div><div class="carleg">Feldweg, Kfz-Verbot eingetragen</div>
+<div class="sw carleg" style="border-color:#d89614"></div><div class="carleg">Feldweg, Sperrung nicht eingetragen</div>
+<div class="sw carleg" style="border-color:#d23c3c"></div><div class="carleg">Weg mit Kfz-Freigabe (Anlieger etc.)</div>
+<div class="sw" style="border-color:#555;border-top-width:7px"></div><div>dick = Glätte gut/sehr gut eingetragen</div>
+<div class="sw" style="border-color:#555;border-top-style:dashed"></div><div>gestrichelt = „fester Weg“, Belag nicht eingetragen</div>
+<div class="sw" style="border-color:#555;border-top-style:dotted"></div><div>gepunktet = gar keine Angabe (kann auch Schotter sein)</div>
+<div class="sw" style="border-color:#ff3fd2;border-top-width:11px;opacity:.4"></div><div><b>rosa Schimmer = gut fürs Wingen</b> bei dieser Windrichtung (frei angeströmt, weg von Hauptstraßen, zusammenhängend)</div>
+<div class="sw" style="border-color:#1d1f1a;border-top-width:9px;opacity:.85"></div><div>schwarz umrandet = von dir aufgedeckt (befahren/bewertet)</div>
+<div class="sw" style="border-color:#5f5f5f;border-top-width:3px"></div><div>Bundesstraße / Autobahn</div>
+<div class="sw" style="border-color:#cfcfcf;border-top-width:2px"></div><div>Ortsstraße / Verbindungsstraße</div>
+<div style="text-align:center;color:#7a1f8a;font-weight:700">●</div><div>Bahnhalt · ○ ohne Regelverkehr</div>
+</div>
+<div class="row"><label><input type="checkbox" id="fog"> Fog of War (Unentdecktes abdunkeln)</label></div>
+<div class="row"><button id="drivebtn" class="pbtn" style="display:none" onclick="pullDrive()">Neue Fahrten aus Drive holen</button><label id="gpxlbl">Datei importieren (GPX/FIT/TCX)<input type="file" id="gpx" multiple accept=".gpx,.fit,.tcx,application/gpx+xml,application/octet-stream" style="display:none"></label></div>
+<div class="row small" id="dbstat">Bewertungen: verbinde …</div>
+<div class="q" style="margin-top:8px"><b>Deine Fahrten</b></div><div id="rides" class="small"></div>
+<div class="leg" id="vleg" style="display:none">
+<div class="sw" style="border-color:#3b6fd8"></div><div>unter 10 km/h</div>
+<div class="sw" style="border-color:#2e9e44"></div><div>10–20 km/h</div>
+<div class="sw" style="border-color:#e0b400"></div><div>20–30 km/h</div>
+<div class="sw" style="border-color:#f08c19"></div><div>30–40 km/h</div>
+<div class="sw" style="border-color:#d6301f"></div><div>über 40 km/h</div></div>
+<div class="row small" id="stat"></div>
+<div class="small">Weg antippen: Details, zusammenhängende Länge, Fahrtrichtung bei diesem Wind, Links zu Satellitenbild, Mapillary-Fotos und OSM. Datenstand OSM <span id="dstand"></span>.</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
+<script>
+const DIRS=["N","NO","O","SO","S","SW","W","NW"];
+const A64='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_';const AI={};for(let i=0;i<64;i++)AI[A64[i]]=i;
+let D,wind=5,map,layer,halo,reveal,DB=null,RAT={},W=[],P=[],segCount=0,segW,comp,compLen,ctxLabels,villageLayer;
+function dec(str){let idx=0,lat=0,lng=0,out=[];while(idx<str.length){let b,sh=0,res=0;do{b=str.charCodeAt(idx++)-63;res|=(b&31)<<sh;sh+=5}while(b>=32);lat+=(res&1)?~(res>>1):(res>>1);sh=0;res=0;do{b=str.charCodeAt(idx++)-63;res|=(b&31)<<sh;sh+=5}while(b>=32);lng+=(res&1)?~(res>>1):(res>>1);out.push([lat/1e5,lng/1e5])}return out}
+function deck(s){const o=new Uint16Array(s.length/2);for(let i=0;i<o.length;i++)o[i]=AI[s[2*i]]*64+AI[s[2*i+1]];return o}
+const COL={1:"#1f6fd1",2:"#1a9e4a",3:"#d89614",4:"#d23c3c"};
+const CNAME={1:"Rad-/Gehweg (sicher ohne Autos)",2:"Feldweg, Kfz-Verbot eingetragen",3:"Feldweg – ob für Autos gesperrt, ist nicht eingetragen",4:"Weg mit Kfz-Freigabe (z. B. Anlieger frei)"};
+const SNAME={1:"Asphalt",2:"Beton",3:"befestigt (Art nicht angegeben)",4:"nicht eingetragen – nur als „fester Weg“ (grade1) markiert",5:"Pflaster",6:"gar keine Angabe – kann auch Schotter sein"};
+const MNAME={0:"nicht eingetragen",1:"sehr gut",2:"gut",3:"mittel",4:"schlecht"};
+function dist(a,b){const k=Math.cos(a[0]*Math.PI/180)*111320;return Math.hypot((b[1]-a[1])*k,(b[0]-a[0])*111320)}
+function bearing(a,b){const k=Math.cos(a[0]*Math.PI/180);return (Math.atan2((b[1]-a[1])*k,b[0]-a[0])*180/Math.PI+360)%360}
+function init(){
+ map=L.map('map',{preferCanvas:true}).setView([48.86,10.2],10);
+ map.attributionControl.setPrefix(false);map.attributionControl.addAttribution('Daten © OpenStreetMap-Mitwirkende (ODbL)');
+ const R=L.canvas({padding:.5,tolerance:8}), ctx=L.layerGroup().addTo(map);
+ for(const p of D.ctx.forest) L.polygon(dec(p),{renderer:R,stroke:false,fillColor:"#cfe0c4",fillOpacity:.8,interactive:false}).addTo(ctx);
+ for(const p of D.ctx.built) L.polygon(dec(p),{renderer:R,stroke:false,fillColor:"#e2dbd0",fillOpacity:.9,interactive:false}).addTo(ctx);
+ for(const p of D.ctx.water||[]) L.polygon(dec(p),{renderer:R,stroke:false,fillColor:"#a9d1ee",fillOpacity:1,interactive:false}).addTo(ctx);
+ for(const r of D.ctx.streams||[]) L.polyline(dec(r),{renderer:R,color:"#9fc9e8",weight:1,interactive:false}).addTo(ctx);
+ for(const r of D.ctx.rivers||[]) L.polyline(dec(r),{renderer:R,color:"#7fb6df",weight:2.4,interactive:false}).addTo(ctx);
+ for(const r of D.ctx.conn) L.polyline(dec(r[1]),{renderer:R,color:"#c4c4c4",weight:1.6}).on('click',ev=>L.popup().setLatLng(ev.latlng).setContent('<b>Straße'+(r[2]?' – '+r[2]:'')+'</b><br>Laut OSM für Autos freigegeben. Wird deshalb nicht als Wingstrecke gezählt.<br>Falls dort in echt ein Verbotsschild steht: bitte melden bzw. in OSM eintragen.<br><a href="https://www.openstreetmap.org/way/'+r[0]+'" target="_blank" rel="noopener">OSM</a>').openOn(map)).addTo(ctx);
+ for(const r of D.ctx.rail) L.polyline(dec(r),{renderer:R,color:"#777",weight:1.5,dashArray:"6 4",interactive:false}).addTo(ctx);
+ for(const r of D.ctx.roads) L.polyline(dec(r[1]),{renderer:R,color:r[0]==1?"#5f5f5f":r[0]==2?"#808080":"#a3a3a3",weight:r[0]==1?3.2:r[0]==2?2.4:1.8,interactive:false}).addTo(ctx);
+ W=D.ways;
+ for(const p of D.pieces){const pts=dec(p[3]);const k=deck(p[4]);const segs=new Float32Array(k.length);for(let i=0;i<k.length;i++)segs[i]=dist(pts[i],pts[i+1]);
+  const gr=new Int8Array(k.length);const gs=p[5]||'';for(let i=0;i<k.length;i++){const ch=gs.charCodeAt(i);gr[i]=(!ch||gs[i]==='~')?-128:ch-79}
+  P.push({w:p[0],a:p[1],b:p[2],pts,k,segs,gr,base:segCount,br:bearing(pts[0],pts[pts.length-1])});segCount+=k.length;}
+ segW=new Float32Array(segCount);for(const p of P)segW.set(p.segs,p.base);
+ comp=new Int32Array(segCount);compLen=new Float32Array(segCount);
+ reveal=L.layerGroup().addTo(map);halo=L.layerGroup().addTo(map);layer=L.layerGroup().addTo(map);
+ ctxLabels=L.layerGroup().addTo(map);villageLayer=L.layerGroup();
+ for(const p of D.ctx.places){L.tooltip({permanent:true,direction:'center',className:'lbl'}).setLatLng([p[1],p[2]]).setContent(p[0]).addTo(p[3]==='village'?villageLayer:ctxLabels)}
+ for(const s of D.ctx.stations){const reg=s[3]===1;L.circleMarker([s[1],s[2]],{radius:reg?5:4,color:reg?"#fff":"#7a1f8a",weight:2,fillColor:reg?"#7a1f8a":"#fff",fillOpacity:1}).bindPopup('<b>'+s[0]+'</b><br>'+(reg?'Bahnhalt mit Regelverkehr (Fahrplan prüfen)':'Kein Regelverkehr (Museumsbahn, stillgelegt oder nur saisonal)')).bindTooltip(s[0],{direction:'right',offset:[6,0],className:'lbl st'}).addTo(map)}
+ map.on('zoomend',()=>{if(map.getZoom()>=12)villageLayer.addTo(map);else villageLayer.remove()});
+ const wb=document.getElementById('wind');
+ for(const d of [7,0,1,6,-1,2,5,4,3]){const b=document.createElement('button');b.dataset.d=d;if(d<0){b.className='mid';b.textContent='alle'}else b.textContent=DIRS[d];b.onclick=()=>{wind=d;draw()};wb.appendChild(b)}
+ for(const id of ['hideSh','minRun','unk','fog'])document.getElementById(id).onchange=draw;
+ document.querySelectorAll('input[name=cm]').forEach(r=>r.onchange=()=>{document.getElementById('gleg').style.display=cmode()==='grade'?'grid':'none';document.querySelectorAll('.carleg').forEach(e=>e.style.display=cmode()==='grade'?'none':'');draw()});
+ document.getElementById('toggle').onclick=()=>document.getElementById('panel').classList.toggle('hide');
+ if(window.innerWidth<600)document.getElementById('panel').classList.add('hide');
+ document.getElementById('dstand').textContent=D.date;
+ document.getElementById('busy').remove();
+ draw();
+}
+function cmode(){const r=document.querySelector('input[name=cm]:checked');return r?r.value:'car'}
+function gcol(g){if(g===-128)return '#9a9a9a';g=Math.abs(g);return g<=2?'#2e9e44':g<=4?'#9ccc3c':g<=6?'#f0c419':g<=9?'#f08c19':'#d6301f'}
+function gcls(g){if(g===-128)return 9;g=Math.abs(g);return g<=2?0:g<=4?1:g<=6?2:g<=9?3:4}
+function rideable(p){const s=W[p.w][2];return s!==6||document.getElementById('unk').checked}
+function openSeg(c){return wind<0?!(c&256):(!((c>>wind)&1)&&!(c&256))}
+function computeComps(){
+ const par=new Int32Array(segCount);for(let i=0;i<segCount;i++)par[i]=i;
+ const find=x=>{while(par[x]!==x){par[x]=par[par[x]];x=par[x]}return x};
+ const uni=(a,b)=>{a=find(a);b=find(b);if(a!==b)par[a]=b};
+ const op=new Uint8Array(segCount);const nodeSegs=new Map();
+ for(const p of P){if(!rideable(p))continue;const n=p.k.length;
+  for(let i=0;i<n;i++)if(openSeg(p.k[i]))op[p.base+i]=1;
+  for(let i=1;i<n;i++)if(op[p.base+i]&&op[p.base+i-1])uni(p.base+i,p.base+i-1);
+  if(op[p.base]){(nodeSegs.get(p.a)||nodeSegs.set(p.a,[]).get(p.a)).push(p.base)}
+  if(op[p.base+n-1]){(nodeSegs.get(p.b)||nodeSegs.set(p.b,[]).get(p.b)).push(p.base+n-1)}}
+ for(const arr of nodeSegs.values())for(let i=1;i<arr.length;i++)uni(arr[0],arr[i]);
+ const tot=new Float32Array(segCount);
+ for(let i=0;i<segCount;i++)if(op[i]){comp[i]=find(i);tot[comp[i]]+=segW[i]}else comp[i]=-1;
+ for(let i=0;i<segCount;i++)compLen[i]=op[i]?tot[comp[i]]:0;
+}
+function draw(){
+ document.querySelectorAll('#wind button').forEach(b=>b.classList.toggle('on',+b.dataset.d===wind));
+ document.getElementById('wlabel').textContent=wind<0?'– (kein Windfilter, nur Straßennähe)':DIRS[wind];
+ computeComps();
+ layer.clearLayers();halo.clearLayers();reveal.clearLayers();const R=L.canvas({padding:.5,tolerance:8});
+ const hide=document.getElementById('hideSh').checked,minRun=+document.getElementById('minRun').value,fog=document.getElementById('fog').checked;
+ let shown=0;
+ for(const p of P){if(!rideable(p))continue;const w=W[p.w];const n=p.k.length;
+  const st=new Uint8Array(n);for(let i=0;i<n;i++){const g=p.base+i;st[i]=comp[g]<0?0:(compLen[g]>=minRun?2:1)}
+  const rt=RAT['w'+w[0]];const known=!!rt;
+  if(rt&&rt.wind&&wind>=0&&rt.windDir===wind){if(rt.wind==='windschatten')st.fill(0);else if(rt.wind==='frei')st.fill(2)}
+  if(known)L.polyline(p.pts,{renderer:R,color:"#1d1f1a",weight:9,opacity:.85,interactive:false}).addTo(reveal);
+  const fogOp=((fog&&!known)?.25:1)*(RD?.2:1);
+  const dash=w[2]===4?"7 5":w[2]===6?"2 5":null;
+  let s=0;while(s<n){const v=st[s];let e=s;while(e<n&&st[e]===v)e++;const pts=p.pts.slice(s,e+1);
+   if(v===2){let L0=0;for(let q=s;q<e;q++)L0+=p.segs[q];shown+=L0;
+    L.polyline(pts,{renderer:R,color:"#ff3fd2",weight:11,opacity:.33*fogOp,interactive:false}).addTo(halo)}
+   if(v===2||!hide){const wt=(w[3]==1||w[3]==2)?5:3.4,op=(v===2?1:.85)*fogOp;
+    if(cmode()==='grade'){let a=s;while(a<e){const c=gcls(p.gr[a]);let z=a;while(z<e&&gcls(p.gr[z])===c)z++;
+      L.polyline(p.pts.slice(a,z+1),{renderer:R,color:gcol(p.gr[a]),weight:wt,opacity:op,dashArray:dash,lineCap:dash?"butt":"round"}).on('click',ev=>pop(p,ev.latlng)).addTo(layer);a=z}}
+    else L.polyline(pts,{renderer:R,color:COL[w[1]],weight:wt,opacity:op,dashArray:dash,lineCap:dash?"butt":"round"}).on('click',ev=>pop(p,ev.latlng)).addTo(layer)}
+   s=e}}
+ document.getElementById('stat').textContent=(shown/1000).toFixed(0)+' km rosa (wing-taugliche) Wegstücke';
+}
+function reasonAt(p,ll){let bi=0,bd=1e9;for(let i=0;i<p.k.length;i++){const a=p.pts[i],b=p.pts[i+1];const m=[(a[0]+b[0])/2,(a[1]+b[1])/2];const d=dist(m,[ll.lat,ll.lng]);if(d<bd){bd=d;bi=i}}
+ const c=p.k[bi],r=[];if(!rideable(p))return 'ausgeblendet';
+ if(c&256)r.push('näher als 75 m an einer Haupt-/Kreisstraße oder Autobahn');
+ if(wind>=0&&((c>>wind)&1))r.push('Windschatten: Wald, Hecke/Baumreihe oder Bebauung bis 80 m auf der Seite, aus der der Wind kommt ('+DIRS[wind]+'), oder der Weg liegt selbst im Wald/Ort');
+ if(!r.length){const cl=compLen[p.base+bi];const mr=+document.getElementById('minRun').value;return cl<mr?'offen, aber das zusammenhängende offene Netz ist nur '+(cl/1000).toFixed(1)+' km lang (Filter: ab '+(mr/1000)+' km)':'offen'}
+ return r.join('; ')}
+function gradeHtml(p){let up=0,dn=0,mx=0,ok=true;for(let i=0;i<p.gr.length;i++){const g=p.gr[i];if(g===-128){ok=false;break}const dz=g*p.segs[i]/100;if(dz>0)up+=dz;else dn-=dz;if(p.segs[i]>=20)mx=Math.max(mx,Math.abs(g))}
+ if(!ok)return '<br>Steigung: keine Höhendaten';return '<br>Höhe auf diesem Stück: ↑ '+Math.round(up)+' m / ↓ '+Math.round(dn)+' m, steilste Stelle ca. '+mx+' %'}
+function pop(p,ll){
+ const w=W[p.w];let ol=0,len=0,cl=0;for(let i=0;i<p.k.length;i++){len+=p.segs[i];if(openSeg(p.k[i]))ol+=p.segs[i];cl=Math.max(cl,compLen[p.base+i])}
+ let dirTxt='';
+ if(wind>=0){const from=wind*45;let off=Math.abs(((p.br-from)%180+180)%180);off=Math.min(off,180-off);
+  dirTxt=off<45?'<br><b>Achtung:</b> liegt fast in Windrichtung – nur Richtung '+DIRS[Math.round(((from+180)%360)/45)%8]+' fahrbar (mit dem Wind).':'<br>Liegt quer genug zum Wind – in beide Richtungen fahrbar.'}
+ const la=ll.lat.toFixed(5),lo=ll.lng.toFixed(5);
+ L.popup().setLatLng(ll).setContent('<b>'+CNAME[w[1]]+'</b>'+(w[4]?'<br>'+w[4]:'')+
+  '<br><i>An dieser Stelle: '+reasonAt(p,ll)+'</i>'+
+  '<br>Belag: '+SNAME[w[2]]+'<br>Glätte: '+MNAME[w[3]]+
+  gradeHtml(p)+
+  '<br>Dieses Stück: '+(len/1000).toFixed(2)+' km, davon offen: '+Math.round(100*ol/len)+' %'+
+  (cl>0?'<br>Zusammenhängend offen (mit Nachbarwegen): <b>'+(cl/1000).toFixed(1)+' km</b>':'')+dirTxt+
+  rtHtml(w[0])+
+  '<br><a href="https://www.google.com/maps/@'+la+','+lo+',400m/data=!3m1!1e3" target="_blank" rel="noopener">Satellit</a> · <a href="https://www.mapillary.com/app/?lat='+la+'&lng='+lo+'&z=17" target="_blank" rel="noopener">Fotos (Mapillary)</a> · <a href="https://www.openstreetmap.org/way/'+w[0]+'" target="_blank" rel="noopener">OSM</a>'+(DB?'<br><button class="pbtn" onclick="openSheet('+w[0]+')">'+(RAT['w'+w[0]]?'Bewertung ändern':'Bewerten')+'</button>':'')).openOn(map);
+}
+
+const OPT={belag:[[1,'spiegelglatt'],[2,'gut'],[3,'rau'],[4,'grob/Flickwerk'],[5,'unfahrbar']],
+ autos:[['schild','Kfz-Verbot (Schild)'],['keine','keine gesehen'],['vereinzelt','vereinzelt'],['oft','oft']],
+ wind:[['frei','frei angeströmt'],['teilweise','teilweise'],['windschatten','Windschatten']],
+ leute:[['leer','leer'],['wenig','wenig los'],['viel','viel los']]};
+const QN={belag:'Belag',autos:'Autos / Traktoren',wind:'Wind',leute:'Fußgänger / Radler'};
+function lbl(k,v){const o=OPT[k].find(x=>x[0]===v);return o?o[1]:v}
+function rtHtml(id){const r=RAT['w'+id];if(!r)return DB?'<br><span style="color:#777">Noch nicht von dir aufgedeckt.</span>':'';
+ const parts=[];for(const k of ['belag','autos','wind','leute'])if(r[k]!=null)parts.push(QN[k]+': '+lbl(k,r[k])+(k==='wind'&&r.windDir!=null?' (bei Wind aus '+DIRS[r.windDir]+')':''));
+ return '<br><b>Deine Einträge</b>'+(r.ridden?' · '+((r.rides&&r.rides.length)||1)+'× befahren'+(r.rides&&r.rides.length?' (zuletzt '+r.rides[r.rides.length-1].split('-').reverse().join('.')+')':''):'')+(parts.length?'<br>'+parts.join('<br>'):'')+(r.notiz?'<br>„'+r.notiz.replace(/[<>&]/g,'')+'“':'')}
+let cur=null;
+function openSheet(id){map.closePopup();const r=Object.assign({},RAT['w'+id]||{});cur={id,r};
+ const s=document.getElementById('sheet');let html='<h2>Weg bewerten</h2><div class="small">OSM-Weg '+id+'. Alles optional – nur ausfüllen, was du weißt.</div>';
+ for(const k of ['belag','autos','wind','leute']){html+='<div class="q">'+QN[k]+(k==='wind'?' <span class="small">(bei Wind aus '+(wind>=0?DIRS[wind]:'–')+')</span>':'')+'</div><div class="chips" data-k="'+k+'">';
+  for(const [v,t] of OPT[k])html+='<button data-v="'+v+'" class="'+(r[k]==v?'on':'')+'">'+t+'</button>';html+='</div>'}
+ html+='<div class="q">Notiz</div><textarea id="notiz" maxlength="500">'+(r.notiz||'').replace(/[<>&]/g,'')+'</textarea>';
+ html+='<div class="row"><label><input type="checkbox" id="ridden" '+(r.ridden?'checked':'')+'> selbst befahren</label></div>';
+ html+='<div class="acts"><button class="btns" id="cancel">Abbrechen</button><button class="btnp" id="save">Speichern</button></div><div class="small" id="saveMsg"></div>';
+ s.innerHTML=html;s.style.display='block';
+ s.querySelectorAll('.chips').forEach(c=>c.querySelectorAll('button').forEach(b=>b.onclick=()=>{const k=c.dataset.k;let v=b.dataset.v;if(k==='belag')v=+v;if(cur.r[k]===v){delete cur.r[k];b.classList.remove('on')}else{cur.r[k]=v;c.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b))}}));
+ document.getElementById('cancel').onclick=()=>{s.style.display='none'};
+ document.getElementById('save').onclick=saveSheet;}
+async function saveSheet(){const r=cur.r;r.notiz=document.getElementById('notiz').value.trim();r.ridden=document.getElementById('ridden').checked;
+ if(r.wind){if(wind<0){document.getElementById('saveMsg').textContent='Für die Wind-Bewertung bitte oben eine Windrichtung wählen.';return}r.windDir=wind}else delete r.windDir;
+ r.way=cur.id;r.updated=new Date().toISOString().slice(0,10);
+ const btn=document.getElementById('save');btn.disabled=true;btn.textContent='Speichere …';
+ try{await DB.collection('ratings').doc('w'+cur.id).set(r);document.getElementById('sheet').style.display='none'}
+ catch(e){btn.disabled=false;btn.textContent='Speichern';document.getElementById('saveMsg').textContent=e&&e.code==='quota_exceeded'?'Speicher voll.':'Speichern fehlgeschlagen ('+(e&&e.code||'Fehler')+'). Bitte nochmal versuchen.'}}
+let drawTimer=null;function redrawSoon(){clearTimeout(drawTimer);drawTimer=setTimeout(()=>{if(P.length)draw()},300)}
+function updDbStat(){const n=Object.keys(RAT).length;let km=0;const ids=new Set(Object.values(RAT).map(r=>r.way));for(const p of P)if(ids.has(W[p.w][0]))km+=p.segs.reduce((a,b)=>a+b,0);
+ document.getElementById('dbstat').textContent='Aufgedeckt: '+n+' Wege, '+(km/1000).toFixed(1)+' km'}
+(async()=>{try{const db=await window.claude.use('db');if(!db){document.getElementById('dbstat').textContent='Bewertungen hier nicht verfügbar (nicht angemeldet?).';document.getElementById('gpxlbl').style.display='none';return}
+ DB=db;const t=setTimeout(()=>{document.getElementById('dbstat').textContent='Bewertungen gerade nicht erreichbar …'},10000);
+ db.collection('ratings').onSnapshot(snap=>{clearTimeout(t);const o={};for(const d of snap.docs)o[d.id]=d.data();RAT=o;updDbStat();redrawSoon()},
+  e=>{clearTimeout(t);document.getElementById('dbstat').textContent='Bewertungen nicht verfügbar ('+e.code+').'})}
+ catch(e){document.getElementById('dbstat').textContent='Bewertungen nicht verfügbar.'}})();
+// GPX import
+// ---------- Track-Parser: GPX, TCX, FIT ----------
+function parseXmlTrack(txt){
+ const doc=new DOMParser().parseFromString(txt,'application/xml');const out=[];
+ const tp=doc.getElementsByTagNameNS('*','trkpt');
+ if(tp.length){for(const e of tp){const lat=+e.getAttribute('lat'),lon=+e.getAttribute('lon');if(!isFinite(lat)||!isFinite(lon))continue;
+   const g=n=>{const x=e.getElementsByTagNameNS('*',n)[0];return x?x.textContent:null};
+   const t=g('time'),el=g('ele'),hr=g('hr'),sp=g('speed');out.push({lat,lon,t:t?Date.parse(t)/1000:null,ele:el!=null?+el:null,hr:hr!=null?+hr:null,spd:sp!=null?+sp:null})}
+  return {pts:out,fmt:'GPX'}}
+ const tk=doc.getElementsByTagNameNS('*','Trackpoint');
+ for(const e of tk){const g=n=>{const x=e.getElementsByTagNameNS('*',n)[0];return x?x.textContent:null};
+  const la=g('LatitudeDegrees'),lo=g('LongitudeDegrees');if(la==null||lo==null)continue;
+  const t=g('Time'),el=g('AltitudeMeters'),hrE=e.getElementsByTagNameNS('*','HeartRateBpm')[0],sp=g('Speed');
+  out.push({lat:+la,lon:+lo,t:t?Date.parse(t)/1000:null,ele:el!=null?+el:null,hr:hrE?+hrE.textContent.trim():null,spd:sp!=null?+sp:null})}
+ return {pts:out,fmt:'TCX'}}
+function parseFit(buf){
+ const dv=new DataView(buf),hs=dv.getUint8(0);
+ if(buf.byteLength<12||String.fromCharCode(dv.getUint8(8),dv.getUint8(9),dv.getUint8(10),dv.getUint8(11))!=='.FIT')throw new Error('keine FIT-Datei');
+ const end=Math.min(buf.byteLength,hs+dv.getUint32(4,true));let o=hs;const defs={};const pts=[];let lastTs=0,session=null;
+ const SZ={0:1,1:1,2:1,3:2,4:2,5:4,6:4,7:1,8:4,9:8,10:1,11:2,12:4,13:1,14:8,15:8,16:8};
+ const rd=(bt,pos,le,size)=>{const b=bt&0x1F;try{switch(b){
+  case 0:case 2:case 10:case 13:{const v=dv.getUint8(pos);return v===0xFF?null:v}
+  case 1:{const v=dv.getInt8(pos);return v===0x7F?null:v}
+  case 3:{const v=dv.getInt16(pos,le);return v===0x7FFF?null:v}
+  case 4:case 11:{const v=dv.getUint16(pos,le);return v===0xFFFF?null:v}
+  case 5:{const v=dv.getInt32(pos,le);return v===0x7FFFFFFF?null:v}
+  case 6:case 12:{const v=dv.getUint32(pos,le);return v===0xFFFFFFFF?null:v}
+  case 8:return dv.getFloat32(pos,le);case 9:return dv.getFloat64(pos,le);default:return null}}catch(e){return null}};
+ while(o<end){const h=dv.getUint8(o++);
+  if(h&0x80){const lt=(h>>5)&3,off=h&0x1F;const d=defs[lt];if(!d)break;lastTs=lastTs+((off-(lastTs&0x1F))&0x1F);
+   const f=readData(d,o);o+=d.len;handle(d.g,f,lastTs);continue}
+  const lt=h&0x0F;
+  if(h&0x40){const le=dv.getUint8(o+1)===0;const g=dv.getUint16(o+2,le);const n=dv.getUint8(o+4);o+=5;const fl=[];let len=0;
+   for(let i=0;i<n;i++){const fn=dv.getUint8(o),sz=dv.getUint8(o+1),bt=dv.getUint8(o+2);fl.push([fn,sz,bt]);len+=sz;o+=3}
+   if(h&0x20){const nd=dv.getUint8(o);o++;for(let i=0;i<nd;i++){len+=dv.getUint8(o+1);o+=3}}
+   defs[lt]={g,le,fl,len};continue}
+  const d=defs[lt];if(!d)break;const f=readData(d,o);o+=d.len;if(f[253]!=null)lastTs=f[253];handle(d.g,f,f[253]!=null?f[253]:lastTs)}
+ function readData(d,pos){const f={};let p=pos;for(const [fn,sz,bt] of d.fl){const bs=SZ[bt&0x1F]||1;f[fn]=sz>=bs&&(bt&0x1F)!==7?rd(bt,p,d.le,sz):null;p+=sz}return f}
+ function handle(g,f,ts){
+  if(g===20){if(f[0]==null||f[1]==null)return;const lat=f[0]*180/2147483648,lon=f[1]*180/2147483648;if(Math.abs(lat)>90||Math.abs(lon)>180)return;
+   const alt=f[78]!=null?f[78]/5-500:(f[2]!=null?f[2]/5-500:null);const spd=f[73]!=null?f[73]/1000:(f[6]!=null?f[6]/1000:null);
+   pts.push({lat,lon,t:ts?ts+631065600:null,ele:alt,hr:f[3],spd})}
+  else if(g===18){const sp=(a,b)=>f[a]!=null?f[a]/1000:(f[b]!=null?f[b]/1000:null);session={dist:f[9]!=null?f[9]/100:null,elapsed:f[7]!=null?f[7]/1000:null,dur:f[8]!=null?f[8]/1000:(f[7]!=null?f[7]/1000:null),avg:sp(124,14),max:sp(125,15),hrAvg:f[16],hrMax:f[17],up:f[22],down:f[23],kcal:f[11],sport:f[5]}}}
+ return {pts,fmt:'FIT',session}}
+function detectAndParse(data,name){
+ if(data instanceof ArrayBuffer){const u=new Uint8Array(data);if(u.length>12&&String.fromCharCode(u[8],u[9],u[10],u[11])==='.FIT')return parseFit(data);
+  return parseXmlTrack(new TextDecoder().decode(u))}
+ return parseXmlTrack(data)}
+// ---------- Import einer Fahrt ----------
+const enc2=n=>{n=Math.max(0,Math.min(4095,n|0));return A64[n>>6]+A64[n&63]};
+const dec2=(s,i)=>s[2*i]==='~'?null:AI[s[2*i]]*64+AI[s[2*i+1]];
+const vchar=v=>String.fromCharCode(48+Math.max(0,Math.min(70,Math.round(v))));
+function encPl(pts){let o='',pl=0,pn=0;for(const [la,lo] of pts){const a=Math.round(la*1e5),b=Math.round(lo*1e5);for(let v of [a-pl,b-pn]){v=v<0?~(v<<1):(v<<1);while(v>=0x20){o+=String.fromCharCode((0x20|(v&0x1f))+63);v>>=5}o+=String.fromCharCode(v+63)}pl=a;pn=b}return o}
+async function importTrack(tr,label){
+ const st=document.getElementById('dbstat');const raw=tr.pts.filter(p=>isFinite(p.lat)&&isFinite(p.lon)&&!(p.lat===0&&p.lon===0));
+ if(raw.length<2){st.textContent='Keine GPS-Punkte in '+(label||'der Datei')+' gefunden.';return 0}
+ const t0=raw.find(p=>p.t)?.t;const day=t0?new Date(t0*1000).toISOString().slice(0,10):new Date().toISOString().slice(0,10);
+ // Geschwindigkeit (km/h): aus Datei, sonst aus Positionen (±2 Punkte)
+ const sp=raw.map((p,i)=>{if(p.spd!=null)return p.spd*3.6;const a=raw[Math.max(0,i-2)],b=raw[Math.min(raw.length-1,i+2)];if(a.t==null||b.t==null||b.t<=a.t)return null;let d=0;for(let k=Math.max(0,i-2);k<Math.min(raw.length-1,i+2);k++)d+=dist([raw[k].lat,raw[k].lon],[raw[k+1].lat,raw[k+1].lon]);return d/(b.t-a.t)*3.6});
+ let total=0;for(let i=1;i<raw.length;i++)total+=dist([raw[i-1].lat,raw[i-1].lon],[raw[i].lat,raw[i].lon]);
+ const t1=[...raw].reverse().find(p=>p.t)?.t;const elapsed=(tr.session&&tr.session.elapsed)||(t0&&t1?t1-t0:null);
+ const km=((tr.session&&tr.session.dist)||total)/1000;
+ const S=tr.session||{};const vs=sp.filter(v=>v!=null&&isFinite(v)&&v<120);let vmax=S.max!=null?S.max*3.6:(vs.length?Math.max(...vs):null);
+ // Bewegungszeit ohne Session: Summe der Abschnitte mit >1 km/h
+ let moving=0;for(let i=1;i<raw.length;i++){if(raw[i].t&&raw[i-1].t){const dt=raw[i].t-raw[i-1].t;if(dt>0&&dt<30&&(sp[i]==null||sp[i]>1))moving+=dt}}
+ let up=S.up,down=S.down;if(up==null){up=0;down=0;let le=null;for(const p of raw){if(p.ele==null)continue;if(le!=null){const d=p.ele-le;if(Math.abs(d)>=2){if(d>0)up+=d;else down-=d;le=p.ele}}else le=p.ele}}
+ const hrs=raw.map(p=>p.hr).filter(v=>v);const hrAvg=S.hrAvg||(hrs.length?Math.round(hrs.reduce((a,b)=>a+b,0)/hrs.length):null);const hrMax=S.hrMax||(hrs.length?Math.max(...hrs):null);
+ // Wege aufdecken
+ const pts=raw.map(p=>[p.lat,p.lon]);
+ const G={},cell=0.0004;for(let i=1;i<pts.length;i++){const a=pts[i-1],b=pts[i];const n=Math.max(1,Math.ceil(dist(a,b)/10));for(let k=0;k<n;k++){const q=[a[0]+(b[0]-a[0])*k/n,a[1]+(b[1]-a[1])*k/n];const key=Math.floor(q[0]/cell)+','+Math.floor(q[1]/cell);(G[key]||(G[key]=[])).push(q)}}
+ const near=(m)=>{const x=Math.floor(m[0]/cell),y=Math.floor(m[1]/cell);for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++)for(const q of G[(x+a)+','+(y+b)]||[])if(dist(m,q)<25)return true;return false};
+ const hit=new Set();
+ for(const p of P){let L0=0,Lh=0;for(let i=0;i<p.k.length;i++){const a=p.pts[i],b=p.pts[i+1];L0+=p.segs[i];if(near([(a[0]+b[0])/2,(a[1]+b[1])/2]))Lh+=p.segs[i]}if(L0>0&&Lh/L0>=0.6)hit.add(W[p.w][0])}
+ // Fahrt speichern (ausgedünnt: alle >=2 s bzw. >=4 m)
+ let keep=[0];for(let i=1;i<raw.length;i++){const l=raw[keep[keep.length-1]];if((raw[i].t&&l.t&&raw[i].t-l.t>=2)||dist([l.lat,l.lon],[raw[i].lat,raw[i].lon])>=4)keep.push(i)}
+ while(keep.length>6000)keep=keep.filter((_,j)=>j%2===0);
+ const rid='r'+(t0?Math.round(t0):Date.now());
+ const ride={date:day,start:t0?new Date(t0*1000).toISOString():null,name:label||'',fmt:tr.fmt,km:+km.toFixed(2),dur:Math.round(S.dur||moving||elapsed||0)||null,elapsed:elapsed?Math.round(elapsed):null,
+  avg:S.avg!=null?+(S.avg*3.6).toFixed(1):((S.dur||moving)?+(km/((S.dur||moving)/3600)).toFixed(1):null),vmax:vmax!=null?+vmax.toFixed(1):null,hrAvg,hrMax,up:up!=null?Math.round(up):null,down:down!=null?Math.round(down):null,kcal:S.kcal||null,ways:hit.size,
+  p:encPl(keep.map(i=>pts[i])),v:keep.map(i=>sp[i]!=null?vchar(sp[i]):'~').join(''),
+  e:(()=>{let last=null;return keep.map(i=>{let x=raw[i].ele;if(x==null)x=last;last=x;return x==null?'~~':enc2(Math.round(x)+500)}).join('')})(),
+  h:keep.map(i=>raw[i].hr?enc2(raw[i].hr):'~~').join(''),
+  tt:raw[keep[0]].t?keep.map((i,j)=>j===0?'AA':enc2(raw[i].t&&raw[keep[j-1]].t?Math.round(raw[i].t-raw[keep[j-1]].t):0)).join(''):''};
+ try{const old=await DB.collection('rides').doc(rid).get();if(old.exists){const od=old.data();if(od.wx)ride.wx=od.wx;if(od.note)ride.note=od.note}}catch(e){}
+ try{await DB.collection('rides').doc(rid).set(ride)}catch(e){st.textContent='Fahrt konnte nicht gespeichert werden ('+(e&&e.code||'Fehler')+').';throw e}
+ let n=0;for(const id of hit){const r=Object.assign({},RAT['w'+id]||{way:id});r.ridden=true;r.way=id;const rides=(r.rides||[]).slice();if(!rides.includes(day))rides.push(day);r.rides=rides.slice(-50);r.updated=day;
+  try{await DB.collection('ratings').doc('w'+id).set(r);n++;st.textContent='Importiere … '+n+'/'+hit.size}catch(e){st.textContent='Import abgebrochen ('+(e&&e.code||'Fehler')+') nach '+n+' Wegen.';throw e}}
+ st.textContent='Fahrt vom '+day+' importiert ('+km.toFixed(1)+' km): '+n+' Wege aufgedeckt.';return n}
+async function importFile(f){const st=document.getElementById('dbstat');
+ if(!DB){st.textContent='Speichern hier nicht verfügbar.';return}
+ try{const isFit=/\.fit$/i.test(f.name);const tr=detectAndParse(isFit?await f.arrayBuffer():await f.text(),f.name);await importTrack(tr,f.name)}
+ catch(e){if(!e||!e.code)st.textContent=f.name+': konnte nicht gelesen werden ('+(e&&e.message||'Fehler')+').'}}
+document.addEventListener('change',async ev=>{if(ev.target.id!=='gpx'||!ev.target.files.length)return;const fs=[...ev.target.files];ev.target.value='';for(const f of fs)await importFile(f)});
+// ---------- Google Drive ----------
+const DRIVE='Google Drive',FOLDER_ID='1K438zp4SIF_SsEgWx00GPC0mO9ioAjj5';let MCP=null;
+function b64bytes(s){try{const bin=atob(s.replace(/\s/g,''));const u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}catch(e){return null}}
+function findTrackData(x,depth){depth=depth||0;if(depth>6||x==null)return null;
+ if(typeof x==='string'){if(/<trkpt|<Trackpoint/.test(x))return x;if(x.length>16&&/^[A-Za-z0-9+/=\s]+$/.test(x.slice(0,200))){const u=b64bytes(x);if(u){if(u.length>12&&String.fromCharCode(u[8],u[9],u[10],u[11])==='.FIT')return u.buffer;const t=new TextDecoder().decode(u);if(/<trkpt|<Trackpoint/.test(t))return t}}return null}
+ if(Array.isArray(x)){for(const y of x){const r=findTrackData(y,depth+1);if(r)return r}return null}
+ if(typeof x==='object'){for(const k of Object.keys(x)){const r=findTrackData(x[k],depth+1);if(r)return r}}return null}
+function mcpMsg(e){const c=e&&e.code;if(c==='server_not_connected')return 'Google Drive ist nicht verbunden – in claude.ai unter Einstellungen → Connectors hinzufügen.';
+ if(c==='needs_reauth')return 'Google Drive neu verbinden (claude.ai → Einstellungen → Connectors).';
+ if(c==='not_in_manifest'||c==='approval_required'||c==='consent_required')return 'Zugriff auf Google Drive wurde für diese Seite nicht erlaubt – nochmal auf den Knopf tippen und erlauben.';
+ if(c==='server_unavailable'||c==='upstream_error')return 'Google Drive gerade nicht erreichbar – später nochmal versuchen.';
+ return 'Fehler beim Abrufen ('+(c||'unbekannt')+').'}
+async function pullDrive(){const st=document.getElementById('dbstat'),btn=document.getElementById('drivebtn');
+ if(!MCP||!DB){st.textContent='Drive-Abruf hier nicht verfügbar.';return}
+ btn.disabled=true;btn.textContent='Suche neue Fahrten …';
+ try{
+  const meta=await DB.doc('meta/drive').get();const done=new Set((meta.exists&&meta.data().imported)||[]);
+  const r=await MCP.callTool(DRIVE,'search_files',{query:"parentId = '"+FOLDER_ID+"' and trashed = false",excludeContentSnippets:true,pageSize:100});
+  const files=((r.payload&&r.payload.files)||[]).filter(f=>/\.(gpx|fit|tcx)$/i.test(f.title||'')||/(gpx|fit|tcx)/i.test(f.fileExtension||''));
+  const todo=files.filter(f=>!done.has(f.id));
+  if(!todo.length){st.textContent=files.length?'Keine neuen Fahrten im Drive-Ordner ('+files.length+' schon importiert).':'Im Drive-Ordner „Parawing-Fahrten“ liegen noch keine Fahrten (GPX/FIT/TCX).';return}
+  let ok=0;
+  for(const f of todo){btn.textContent='Lade '+(ok+1)+'/'+todo.length+' …';
+   const d=await MCP.callTool(DRIVE,'download_file_content',{fileId:f.id});
+   const data=findTrackData(d);
+   if(!data){st.textContent=f.title+': Inhalt nicht lesbar.';continue}
+   let tr;try{tr=detectAndParse(data,f.title)}catch(e){st.textContent=f.title+': konnte nicht gelesen werden.';continue}
+   await importTrack(tr,f.title);done.add(f.id);ok++;
+   await DB.doc('meta/drive').set({imported:[...done].slice(-2000),updated:new Date().toISOString().slice(0,10)})}
+  st.textContent=ok+' neue Fahrt'+(ok===1?'':'en')+' aus Drive importiert. '+st.textContent;
+ }catch(e){st.textContent=e&&e.code?mcpMsg(e):'Abruf abgebrochen.'}
+ finally{btn.disabled=false;btn.textContent='Neue Fahrten aus Drive holen'}}
+// ---------- Fahrtenliste / Training ----------
+let RIDES=[],rideLayer=null,curRide=null;
+const VCOL=v=>v==null?'#9a9a9a':v<10?'#3b6fd8':v<20?'#2e9e44':v<30?'#e0b400':v<40?'#f08c19':'#d6301f';
+const VCLS=v=>v==null?9:v<10?0:v<20?1:v<30?2:v<40?3:4;
+function fmtDur(s){if(!s)return '–';s=Math.round(s);const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),x=s%60;return h+':'+String(m).padStart(2,'0')+':'+String(x).padStart(2,'0')}
+function renderRides(){const el=document.getElementById('rides');if(!el)return;
+ if(!RIDES.length){el.innerHTML='<span style="color:#777">Noch keine Fahrten importiert.</span>';return}
+ el.innerHTML=RIDES.filter(r=>r.p&&r.date).slice(0,30).map(r=>'<div class="ride'+(curRide===r.id?' on':'')+'" data-id="'+r.id+'"><b>'+(r.date||'').split('-').reverse().join('.')+'</b> · '+r.km.toFixed(1)+' km · '+fmtDur(r.dur)+(r.avg?' · Ø '+r.avg+' km/h':'')+'</div>').join('')+
+  (curRide?'<div class="ride" data-id="">✕ Fahrt ausblenden</div>':'');
+ el.querySelectorAll('.ride').forEach(d=>d.onclick=()=>showRide(d.dataset.id))}
+let RD=null,rMetric='v',rMarker=null;
+function ridePane(){if(!map.getPane('ridePane')){map.createPane('ridePane');map.getPane('ridePane').style.zIndex=450}return 'ridePane'}
+function rideColor(m,x){if(x==null)return '#9a9a9a';
+ if(m==='v')return VCOL(x);
+ if(m==='w')return x<45?'#d6301f':x<90?'#f08c19':x<135?'#9ccc3c':'#2e9e44';
+ if(m==='h')return x<120?'#3b6fd8':x<140?'#2e9e44':x<160?'#e0b400':x<175?'#f08c19':'#d6301f';
+ const t=Math.max(0,Math.min(1,(x-RD.emin)/Math.max(1,RD.emax-RD.emin)));const c=[[59,111,216],[46,158,68],[224,180,0],[240,140,25],[214,48,31]];const k=Math.min(3,Math.floor(t*4)),f=t*4-k;
+ return 'rgb('+c[k].map((v,j)=>Math.round(v+(c[k+1][j]-v)*f)).join(',')+')'}
+function rideCls(m,x){if(x==null)return -1;if(m==='v')return VCLS(x);if(m==='w')return x<45?0:x<90?1:x<135?2:3;if(m==='h')return x<120?0:x<140?1:x<160?2:x<175?3:4;return Math.round((x-RD.emin)/Math.max(1,RD.emax-RD.emin)*12)}
+function drawRideTrack(){if(!RD)return;rideLayer.clearLayers();const R=L.canvas({padding:.5,tolerance:6,pane:ridePane()});const arr=rMetric==='v'?RD.v:rMetric==='h'?RD.h:rMetric==='w'?RD.wind.map(x=>x.twa):RD.e;
+ let a=0;const n=RD.pts.length;while(a<n-1){const c=rideCls(rMetric,arr[a]);let z=a+1;while(z<n-1&&rideCls(rMetric,arr[z])===c)z++;
+  L.polyline(RD.pts.slice(a,z+1),{renderer:R,color:'#fff',weight:9,opacity:1,interactive:false}).addTo(rideLayer);a=a;
+  L.polyline(RD.pts.slice(a,z+1),{renderer:R,color:rideColor(rMetric,arr[a]),weight:5,opacity:1}).on('click',ev=>{const i=nearestIdx(ev.latlng);setCursor(i)}).addTo(rideLayer);a=z}
+ for(const [a,b] of RD.pauses||[])L.circleMarker(RD.pts[a],{renderer:R,radius:5,color:'#555',weight:2,fillColor:'#fff',fillOpacity:1}).bindTooltip('Pause '+new Date(RD.T[a]*1000).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+', '+Math.round((RD.T[b]-RD.T[a])/60)+' min').addTo(rideLayer);
+ rMarker=L.circleMarker(RD.pts[0],{renderer:R,radius:7,color:'#fff',weight:3,fillColor:'#1d1f1a',fillOpacity:1,interactive:false}).addTo(rideLayer);
+ document.querySelectorAll('#chartbox .mb').forEach(b=>b.classList.toggle('on',b.dataset.m===rMetric));
+ document.getElementById('vleg').style.display=rMetric==='v'?'grid':'none';document.getElementById('wleg').style.display=rMetric==='w'?'block':'none'}
+function nearestIdx(ll){let bi=0,bd=1e18;for(let i=0;i<RD.pts.length;i++){const d=(RD.pts[i][0]-ll.lat)**2+(RD.pts[i][1]-ll.lng)**2;if(d<bd){bd=d;bi=i}}return bi}
+function showRide(id){if(!rideLayer)rideLayer=L.layerGroup().addTo(map);rideLayer.clearLayers();curRide=id||null;renderRides();
+ const box=document.getElementById('chartbox');
+ if(!curRide){const had=!!RD;RD=null;box.style.display='none';document.getElementById('vleg').style.display='none';if(had)draw();return}
+ const r=RIDES.find(x=>x.id===id);if(!r)return;const pts=dec(r.p);const n=pts.length;
+ const v=[...r.v].slice(0,n).map(c=>c==='~'?null:c.charCodeAt(0)-48);
+ const e=r.e?Array.from({length:n},(_,i)=>{const x=dec2(r.e,i);return x==null?null:x-500}):new Array(n).fill(null);
+ const hr=r.h?Array.from({length:n},(_,i)=>dec2(r.h,i)):new Array(n).fill(null);
+ const d=[0];for(let i=1;i<n;i++)d.push(d[i-1]+dist(pts[i-1],pts[i]));
+ const ev=e.filter(x=>x!=null);RD={r,pts,v,e,h:hr,d,emin:ev.length?Math.min(...ev):0,emax:ev.length?Math.max(...ev):1};
+ RD.T=null;if(r.tt&&r.start){const s0=Date.parse(r.start)/1000;RD.T=[];let acc=s0;for(let i=0;i<n;i++){const dt=dec2(r.tt,i)||0;acc+=i?dt:0;RD.T.push(acc)}}
+ RD.pauses=[];if(RD.T){let i=0;while(i<n){if((v[i]!=null&&v[i]<2)||(i>0&&RD.T[i]-RD.T[i-1]>60)){let j=i;while(j+1<n&&((v[j+1]!=null&&v[j+1]<2)||RD.T[j+1]-RD.T[j]>60))j++;const a=i>0&&RD.T[i]-RD.T[i-1]>60?i-1:i;if(RD.T[j]-RD.T[a]>=45){const L_=RD.pauses[RD.pauses.length-1];if(L_&&RD.T[a]-RD.T[L_[1]]<120)L_[1]=j;else RD.pauses.push([a,j])}i=j+1}else i++}
+ RD.pauses=RD.pauses.filter(([a,b])=>RD.T[b]-RD.T[a]>=60)}
+ RD.wind=null;if(r.wx&&r.wx.h&&RD.T){const H=r.wx.h.map(x=>({t:Date.parse(x[0])/1000,ws:x[1],g:x[2],dir:x[3]}));
+  const at=t=>{let k=0;while(k<H.length-1&&H[k+1].t<=t)k++;const a=H[k],b=H[Math.min(k+1,H.length-1)];const f=b.t>a.t?Math.max(0,Math.min(1,(t-a.t)/(b.t-a.t))):0;
+   let dd=((b.dir-a.dir+540)%360)-180;return {ws:a.ws+(b.ws-a.ws)*f,g:a.g+(b.g-a.g)*f,dir:(a.dir+dd*f+360)%360}};
+  RD.wind=RD.T.map((t,i)=>{const w=at(t);const p0=pts[Math.max(0,i-3)],p1=pts[Math.min(n-1,i+3)];const hd=bearing(p0,p1);let off=Math.abs(hd-w.dir)%360;if(off>180)off=360-off;
+   return {ws:w.ws,g:w.g,dir:w.dir,twa:(v[i]!=null&&v[i]<3)?null:Math.round(off)}})}
+ box.style.display='block';
+ const hm=t=>new Date(t*1000).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+ document.getElementById('chtitle').innerHTML='<b>Fahrt '+r.date.split('-').reverse().join('.')+'</b>'+(RD.T?' '+hm(RD.T[0])+'–'+hm(RD.T[n-1]):'')+' · '+r.km.toFixed(1)+' km · '+fmtDur(r.dur)+(r.avg?' · Ø '+r.avg+' km/h':'')+(r.vmax?' · max '+r.vmax:'')+(r.up!=null?' · ↑'+r.up+' m':'')+(r.hrAvg?' · ♥ Ø '+r.hrAvg:'');
+ const DIR=d=>['N','NNO','NO','ONO','O','OSO','SO','SSO','S','SSW','SW','WSW','W','WNW','NW','NNW'][Math.round(d/22.5)%16];
+ document.getElementById('chwx').innerHTML=r.wx?'<b>Wind</b> ('+r.wx.station+', '+r.wx.km+' km entfernt): '+r.wx.h.filter(x=>{const t=Date.parse(x[0])/1000;return !RD.T||(t>=RD.T[0]-3600&&t<=RD.T[n-1]+3600)}).map(x=>x[0].slice(11,16)+' <b>'+Math.round(x[1])+' kt</b> (Böen '+Math.round(x[2])+') aus '+DIR(x[3])+(x[4]!=null?', '+Math.round(x[4])+' °C':'')+(x[5]?', '+x[5]+' mm':'')).join(' · '):'<span style="color:#777">Noch keine Wetterdaten zu dieser Fahrt – frag Claude im Chat danach.</span>';
+ document.getElementById('chpause').innerHTML=RD.pauses.length?'<b>Pausen</b>: '+RD.pauses.map(([a,b])=>hm(RD.T[a])+' ('+Math.round((RD.T[b]-RD.T[a])/60)+' min, km '+(RD.d[a]/1000).toFixed(1)+')').join(' · '):'';
+ document.querySelector('#chartbox .mb[data-m=w]').style.display=RD.wind?'':'none';
+ if(rMetric==='w'&&!RD.wind)rMetric='v';
+ draw();drawRideTrack();drawCharts();setCursor(0);
+ map.fitBounds(L.latLngBounds(pts),{padding:[30,30],paddingBottomRight:[30,Math.min(260,window.innerHeight*0.4)]})}
+function drawCharts(){if(!RD)return;const cv=document.getElementById('chart');const dpr=window.devicePixelRatio||1;const W0=cv.clientWidth,H0=cv.clientHeight;cv.width=W0*dpr;cv.height=H0*dpr;
+ const c=cv.getContext('2d');c.scale(dpr,dpr);c.clearRect(0,0,W0,H0);
+ const rows=[['Höhe (m)',RD.e,'#6b8e23'],['Tempo (km/h)',RD.v,'#1f6fd1'],['Puls (bpm)',RD.h,'#d6301f']].filter(r=>r[1].some(x=>x!=null));
+ const L0=38,R0=8,T0=4,gap=6,rh=(H0-T0-gap*(rows.length-1)-14)/rows.length;const D=RD.d[RD.d.length-1]||1;const X=dd=>L0+(W0-L0-R0)*dd/D;
+ RD.rows=rows.map((r,k)=>{const vals=r[1].filter(x=>x!=null);let lo=Math.min(...vals),hi=Math.max(...vals);if(r[0].startsWith('Tempo'))lo=0;if(hi-lo<1)hi=lo+1;const y0=T0+k*(rh+gap);
+  const Y=x=>y0+rh-(x-lo)/(hi-lo)*rh;
+  c.fillStyle='#f4f5f0';c.fillRect(L0,y0,W0-L0-R0,rh);
+  c.beginPath();let st=false;for(let i=0;i<RD.pts.length;i++){const x=r[1][i];if(x==null){st=false;continue}const px=X(RD.d[i]),py=Y(x);if(!st){c.moveTo(px,py);st=true}else c.lineTo(px,py)}
+  c.strokeStyle=r[2];c.lineWidth=1.5;c.stroke();
+  if(r[0].startsWith('Höhe')){c.lineTo(X(D),y0+rh);c.lineTo(X(0),y0+rh);c.closePath();c.globalAlpha=.18;c.fillStyle=r[2];c.fill();c.globalAlpha=1}
+  c.fillStyle='#555';c.font='10px system-ui';c.textAlign='right';c.fillText(Math.round(hi),L0-4,y0+9);c.fillText(Math.round(lo),L0-4,y0+rh);
+  c.save();c.translate(10,y0+rh/2);c.rotate(-Math.PI/2);c.textAlign='center';c.fillStyle=r[2];c.fillText(r[0].split(' ')[0],0,0);c.restore();
+  return {Y,y0,rh,arr:r[1],name:r[0]}});
+ if(RD.pauses)for(const [a,b] of RD.pauses){c.fillStyle='rgba(120,120,120,.18)';c.fillRect(X(RD.d[a])-1,T0,Math.max(2,X(RD.d[b])-X(RD.d[a])+2),H0-T0-14)}
+ c.fillStyle='#555';c.textAlign='center';const step=D>20000?5000:D>8000?2000:D>3000?1000:500;for(let x=0;x<=D;x+=step)c.fillText((x/1000)+' km',X(x),H0-2);
+ RD.X=X;RD.L0=L0;RD.R0=R0;RD.D=D;RD.img=c.getImageData(0,0,cv.width,cv.height)}
+function setCursor(i){if(!RD)return;i=Math.max(0,Math.min(RD.pts.length-1,i));RD.ci=i;if(rMarker)rMarker.setLatLng(RD.pts[i]);
+ const cv=document.getElementById('chart');const c=cv.getContext('2d');const dpr=window.devicePixelRatio||1;if(RD.img)c.putImageData(RD.img,0,0);
+ c.save();c.setTransform(dpr,0,0,dpr,0,0);const x=RD.X(RD.d[i]);c.strokeStyle='#1d1f1a';c.lineWidth=1;c.beginPath();c.moveTo(x,0);c.lineTo(x,cv.clientHeight-12);c.stroke();
+ for(const r of RD.rows||[]){const v=r.arr[i];if(v==null)continue;c.fillStyle='#1d1f1a';c.beginPath();c.arc(x,r.Y(v),3,0,7);c.fill()}c.restore();
+ const t=RD.r.start?new Date(Date.parse(RD.r.start)):null;
+ const W_=RD.wind&&RD.wind[i];const twaTxt=W_&&W_.twa!=null?(W_.twa<45?'gegen den Wind':W_.twa<90?'am Wind':W_.twa<135?'halber Wind/raum':'Rückenwind'):'';
+ document.getElementById('chval').textContent=(RD.T?new Date(RD.T[i]*1000).toLocaleTimeString('de-DE')+' · ':'')+(RD.d[i]/1000).toFixed(2)+' km'+(RD.e[i]!=null?' · '+Math.round(RD.e[i])+' m':'')+(RD.v[i]!=null?' · '+RD.v[i]+' km/h':'')+(RD.h[i]!=null?' · ♥ '+RD.h[i]:'')+(W_?' · Wind '+Math.round(W_.ws)+' kt'+(twaTxt?' ('+twaTxt+')':''):'')}
+function chartPos(ev){const cv=document.getElementById('chart');const rc=cv.getBoundingClientRect();const cx=(ev.touches?ev.touches[0].clientX:ev.clientX)-rc.left;
+ const dd=(cx-RD.L0)/(rc.width-RD.L0-RD.R0)*RD.D;let lo=0,hi=RD.d.length-1;while(lo<hi){const m=(lo+hi)>>1;if(RD.d[m]<dd)lo=m+1;else hi=m}setCursor(lo)}
+window.addEventListener('resize',()=>{if(RD){drawCharts();setCursor(RD.ci||0)}});
+document.addEventListener('DOMContentLoaded',()=>{});
+setTimeout(()=>{const cv=document.getElementById('chart');if(!cv)return;['mousemove','touchstart','touchmove'].forEach(t=>cv.addEventListener(t,ev=>{if(RD){chartPos(ev);if(t!=='mousemove')ev.preventDefault()}},{passive:false}));
+ document.querySelectorAll('#chartbox .mb').forEach(b=>b.onclick=()=>{rMetric=b.dataset.m;drawRideTrack();setCursor(RD.ci||0)})},0);
+(async()=>{for(let i=0;i<40&&!DB;i++)await new Promise(s=>setTimeout(s,250));if(!DB)return;
+ DB.collection('rides').orderBy('date','desc').limit(200).onSnapshot(s=>{RIDES=s.docs.map(d=>Object.assign({id:d.id},d.data()));renderRides()},e=>{const el=document.getElementById('rides');if(el)el.textContent='Fahrten nicht verfügbar ('+e.code+').'})})();
+
+(async()=>{try{const m=await window.claude.use('mcp');if(m){MCP=m;document.getElementById('drivebtn').style.display='inline-block'}}catch(e){}})();
+
+
+fetch('data.json').then(r=>r.json()).then(j=>{D=j;setTimeout(init,10)}).catch(e=>{document.getElementById('busy').textContent='Daten konnten nicht geladen werden.'});
+</script></body></html>

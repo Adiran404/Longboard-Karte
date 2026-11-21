@@ -72,11 +72,11 @@ const MASTWURF={name:'Mastwurf',vb:'0 0 300 300',
  loesen:[{upto:23,nonew:1,mark:[21,22],arrows:[[[60,200],[10,200]]]},{upto:16,nonew:1}]};
 
 const RUNDTOERN={name:'Rundtörn',vb:'0 0 300 345',
- pts:[[182,335],[182,300],[182,265],[182,230],[182,190],[182,150],[183,128],[184,108],[181,78],[168,58],[150,52],[130,56],[116,72],[112,92],[118,112],[132,124],[150,128],[168,124],[184,116],[196,100],[196,74],[182,50],[150,38],[116,44],[98,66],[96,96],[104,122],[118,140],[146,160],[164,192],[182,206],[200,212],[216,226],[204,241],[182,246],[160,242],[150,215],[132,160],[124,185],[132,260],[158,276],[182,282],[200,288],[216,302],[204,317],[182,322],[160,318],[146,290],[116,246]],
- z:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1,1,2,2,0,0,1,1,2,2,1,0,1,2,2,0,0,1,1,2,2,1,0],
+ pts:[[182,335],[182,300],[182,265],[182,230],[182,190],[182,150],[183,128],[184,108],[181,78],[168,58],[150,52],[130,56],[116,72],[112,92],[118,112],[132,124],[150,128],[168,124],[184,116],[196,100],[196,74],[182,50],[150,38],[116,44],[98,66],[96,96],[104,122],[118,140],[124,165],[125,200],[126,232],[138,246],[160,250],[182,251],[204,256],[214,270],[202,283],[182,285],[160,283],[152,270],[153,240],[154,218],[162,210],[172,206],[182,203],[204,206],[212,218],[200,229],[182,230],[168,226],[165,210],[165,190],[166,172]],
+ z:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2,1,1,1,1,1,1,1,1,2,2,2,2,2,0,0,1,1,2,2,1,0,0,2,2,0,0,1,1,2,2,0,0,1],
  props:[{z:0,svg:'<circle cx="150" cy="90" r="32" fill="#7a5232" stroke="#5a3a20" stroke-width="3"/><circle cx="150" cy="90" r="20" fill="none" stroke="#5a3a20" stroke-width="2"/><circle cx="150" cy="90" r="9" fill="none" stroke="#5a3a20" stroke-width="2"/>'}],
- steps:[{upto:18},{upto:27},{upto:37},{upto:48},{upto:48}],
- loesen:[{upto:48,nonew:1,mark:[44,45,46,47],arrows:[[[80,320],[80,270]]]},{upto:37,nonew:1,mark:[32,33,34,35]},{upto:27,nonew:1}]};
+ steps:[{upto:18},{upto:27},{upto:41},{upto:52},{upto:52}],
+ loesen:[{upto:52,nonew:1,mark:[42,43,44,45,46,47,48,49,50,51],arrows:[[[245,215],[245,170]]]},{upto:41,nonew:1,mark:[33,34,35,36,37,38,39,40],arrows:[[[245,285],[245,240]]]},{upto:27,nonew:1}]};
 
 const KNOTS=[
  {id:'palstek',K:PALSTEK,name:'Palstek',kurz:'Feste Schlaufe, zieht sich nicht zu, geht nach Last wieder auf',
@@ -110,12 +110,12 @@ const KNOTS=[
   texte:[
    ['Einmal um den Ast.','Seil über den Ast und einmal ganz herum.'],
    ['Noch einmal herum: Rundtörn.','Eine zweite volle Runde direkt daneben. Ab jetzt hält die Reibung die Last – du kannst den stehenden Teil loslassen.'],
-   ['Erster halber Schlag.','Ende <b>hinter</b> dem stehenden Teil herum, vorne zurück und <b>unter sich selbst</b> durch.'],
-   ['Zweiter halber Schlag.','Genau gleich, etwas darunter und in <b>dieselbe</b> Richtung. Zusammen sind die beiden Schläge ein Mastwurf um den stehenden Teil.'],
-   ['Festziehen.','Die Schläge zusammenschieben und nach oben gegen die Runden schieben.']],
+   ['Erster halber Schlag.','Ende <b>hinter</b> dem stehenden Teil durch, außen herum, <b>vorne</b> zurück – und dann von unten <b>unter dem eigenen Seil</b> durch. Das Ende zeigt danach wieder zum Ast.'],
+   ['Zweiter halber Schlag.','Genau gleich und in <b>dieselbe</b> Richtung: hinter dem stehenden Teil durch, vorne zurück, unter dem eigenen Seil durch. Zusammen sind die beiden Schläge ein Mastwurf um den stehenden Teil.'],
+   ['Festziehen.','Beide Schläge zusammenziehen und am stehenden Teil hoch zum Ast schieben.']],
   loesen:[
-   ['Unteren Schlag aufmachen.','Den <b>blauen</b> Schlag aufziehen. Das geht auch, wenn Last dran ist – die Runden halten.'],
-   ['Oberen Schlag aufmachen.','Genauso den zweiten Schlag lösen.'],
+   ['Oberen Schlag aufmachen.','Den <b>blauen</b> Schlag (der zuletzt gemachte) aufziehen. Das geht auch, wenn Last dran ist – die Runden halten.'],
+   ['Unteren Schlag aufmachen.','Genauso den ersten Schlag lösen.'],
    ['Runden abwickeln.','Last mit der Hand halten und die zwei Runden vom Ast abwickeln.']]},
  {id:'spannstek',name:'Spannstek',kurz:'Verstellbare Schlaufe zum Abspannen von Zelt oder Plane',soon:true},
  {id:'fuhrmann',name:'Fuhrmannsknoten',kurz:'Richtig stramm festzurren: Board an Rucksack, Kiste',soon:true},

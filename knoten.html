@@ -1,0 +1,93 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Knoten – Longboard-Karte</title><meta name="theme-color" content="#1d1f1a">
+<style>
+:root{--bg:#f6f6f2;--card:#fff;--tx:#1d1f1a;--mu:#666;--bd:#ddd;--ac:#ff9a3c}
+html.dark{--bg:#121416;--card:#1c1f22;--tx:#eceee8;--mu:#9aa0a6;--bd:#33373b}
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;position:sticky;top:0;background:var(--bg);z-index:2}
+header a{color:var(--tx);text-decoration:none;font-size:22px;padding:2px 8px}header h1{font-size:19px;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding:0 12px 24px}
+.list{display:grid;gap:10px}.kn{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.kn svg{width:64px;height:72px;flex:none}.kn b{font-size:17px}.kn .mu{color:var(--mu);font-size:14px}.kn.dis{opacity:.5;cursor:default}
+.ok{color:#2e9e5b;font-size:13px;font-weight:600}
+.view{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
+.pic{background:#fbf8ef;border-radius:10px;display:flex;justify-content:center}html.dark .pic{background:#e9e4d6}
+.pic svg{width:100%;max-width:340px;height:auto;max-height:52vh}
+.dots{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}.dots span{width:9px;height:9px;border-radius:50%;background:var(--bd)}.dots span.on{background:var(--ac)}
+.st{font-size:17px;min-height:4.4em;margin:6px 2px}.st small{display:block;color:var(--mu);font-size:14px;margin-top:4px}
+.nav{display:flex;gap:10px}.nav button{flex:1;padding:12px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:16px}
+.nav button.p{background:var(--ac);border-color:var(--ac);color:#1d1f1a;font-weight:600}.nav button:disabled{opacity:.4}
+.info{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-top:12px}.info h3{margin:0 0 6px;font-size:15px}.info p{margin:4px 0}
+.leg{display:flex;gap:14px;flex-wrap:wrap;color:var(--mu);font-size:13px;margin-top:8px}.leg i{display:inline-block;width:18px;height:7px;border-radius:4px;vertical-align:middle;margin-right:4px;border:1.5px solid #2a2522}
+label.chk{display:flex;gap:8px;align-items:center;margin-top:10px}
+</style></head><body>
+<header><a href="./#mehr" aria-label="Zurück">‹</a><h1 id="ttl">Knoten</h1></header>
+<div class="wrap" id="app"></div>
+<script>
+try{const c=JSON.parse(localStorage.getItem('lbk_cfg')||'{}');const t=c.theme||'auto';if(t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}
+// Seil-Zeichner: Punktliste + z-Ebene je Segment -> SVG mit Über/Unter an Kreuzungen
+function ropeSVG(K,step,opt){opt=opt||{};const P=K.pts,Z=K.z,S=K.steps[step];const upto=S.upto,from=step>0?K.steps[step-1].upto:0;
+ const W=opt.w||13,F=opt.f||9;let el=[];
+ const cr=(i)=>P[Math.max(0,Math.min(upto,i))];
+ function seg(i){const p0=cr(i-1),p1=P[i],p2=P[i+1],p3=cr(i+2);const t=0.5/3;
+  const c1=[p1[0]+(p2[0]-p0[0])*t,p1[1]+(p2[1]-p0[1])*t],c2=[p2[0]-(p3[0]-p1[0])*t,p2[1]-(p3[1]-p1[1])*t];return [p1,c1,c2,p2]}
+ const levels=[...new Set(Z.slice(0,upto).concat((K.props||[]).map(p=>p.z)))].sort((a,b)=>a-b);
+ const props=(K.props||[]).map(p=>Object.assign({},p));
+ for(const lv of levels.concat([99])){
+  for(const pr of props)if(pr.z===lv)el.push(pr.svg);
+  if(lv===99)break;
+  const ids=[];for(let i=0;i<upto;i++)if(Z[i]===lv)ids.push(i);
+  // zusammenhängende Läufe
+  const runs=[];let cur=null;for(const i of ids){if(cur&&i===cur[1]+1)cur[1]=i;else{cur=[i,i];runs.push(cur)}}
+  for(const [a,b] of runs){let d='';for(let i=a;i<=b;i++){const s=seg(i);if(i===a)d+='M'+s[0].join(',');d+=' C'+s[1].map(v=>v.toFixed(1)).join(',')+' '+s[2].map(v=>v.toFixed(1)).join(',')+' '+s[3].join(',')}
+   const capA=a===0,capB=b===upto-1;
+   el.push('<path d="'+d+'" fill="none" stroke="#2a2522" stroke-width="'+W+'" stroke-linecap="butt"/>');
+   if(capA||capB){for(const [c,yes] of [[P[a],capA],[P[b+1],capB]])if(yes)el.push('<circle cx="'+c[0]+'" cy="'+c[1]+'" r="'+W/2+'" fill="#2a2522"/>')}
+   // Füllung: neu dazugekommen = orange
+   for(let i=a;i<=b;i++){const s=seg(i);const nw=i>=from&&step>0||S.hl&&S.hl.includes(i);
+    el.push('<path d="M'+s[0].join(',')+' C'+s[1].map(v=>v.toFixed(1)).join(',')+' '+s[2].map(v=>v.toFixed(1)).join(',')+' '+s[3].join(',')+'" fill="none" stroke="'+(nw?'#ff9a3c':'#e6c88a')+'" stroke-width="'+F+'" stroke-linecap="round"/>')}
+   for(const [c,yes] of [[P[a],capA],[P[b+1],capB]])if(yes){const nw=(c===P[b+1])&&b>=from&&step>0;el.push('<circle cx="'+c[0]+'" cy="'+c[1]+'" r="'+F/2+'" fill="'+(nw?'#ff9a3c':'#e6c88a')+'"/>')}
+  }
+  for(const pr of props)if(pr.z===lv+0.5)el.push(pr.svg);
+ }
+ // Seilende markieren
+ const e=P[upto];el.push('<circle cx="'+e[0]+'" cy="'+e[1]+'" r="3" fill="#2a2522"/>');
+ if(S.arrow){const [a,b]=S.arrow;el.push('<path d="M'+a.join(',')+' L'+b.join(',')+'" stroke="#3a86ff" stroke-width="3" marker-end="url(#ah)" fill="none"/>')}
+ return '<svg viewBox="'+(K.vb||'0 0 300 300')+'" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#3a86ff"/></marker></defs>'+(K.bg||'')+el.join('')+'</svg>'}
+
+const PALSTEK={name:'Palstek',vb:'0 0 300 340',
+ pts:[[150,0],[150,45],[150,85],[150,118],[150,145],[147,178],[128,200],[98,202],[78,180],[80,148],[100,128],[126,124],[156,134],[188,150],[214,195],[224,250],[205,295],[150,316],[95,295],[72,250],[78,218],[100,214],[110,200],[112,172],[112,140],[112,118],[116,92],[130,66],[150,58],[172,62],[182,82],[166,100],[150,106],[134,116],[130,130],[130,160],[132,190],[134,205],[135,232]],
+ z:[2,2,0,0, 1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1, 1, 0,0,1,2,2,1,0,0,1,1,3,3,3,1,0,0,0],
+ props:[{z:-1,svg:'<circle cx="150" cy="262" r="30" fill="#7a5232" stroke="#5a3a20" stroke-width="3"/>'}],
+ steps:[{upto:15},{upto:26},{upto:31},{upto:38},{upto:38}]};
+
+const KNOTS=[
+ {id:'palstek',K:PALSTEK,name:'Palstek',kurz:'Feste Schlaufe, zieht sich nicht zu, geht nach Last wieder auf',
+  wofuer:'Seil um einen Ast oder Baum legen, Board oder Müllbeutel daran hängen. Schlaufe am Seilende fürs Tragen über der Schulter.',
+  merk:'„Der Hase kommt aus dem Loch, läuft um den Baum und springt zurück ins Loch.“ Loch = kleines Auge, Baum = stehender Teil, Hase = Seilende.',
+  texte:[
+   ['Kleines Auge legen.','Im Seil, mit genug Rest für die große Schlaufe. Wichtig: Der Teil Richtung Ende liegt <b>oben</b> auf dem stehenden Teil.'],
+   ['Um den Ast, dann von hinten durchs Auge hoch.','Das Ende geht um den Ast (große Schlaufe) und kommt <b>von unten/hinten</b> durch das kleine Auge.'],
+   ['Hinter dem stehenden Teil herum.','Der Hase läuft um den Baum: Ende <b>hinter</b> dem stehenden Teil auf die andere Seite.'],
+   ['Vorne zurück ins Auge.','Ende <b>vorne</b> über den stehenden Teil und wieder runter durchs kleine Auge, direkt neben sich selbst.'],
+   ['Festziehen.','Ende und Schlaufen-Bein zusammen fassen und gegen den stehenden Teil ziehen. Ende etwa eine Handbreit lang lassen.<small>Lösen: Den „Kragen“ um den stehenden Teil nach vorn umklappen, dann geht er auch nach Last auf.</small>']]},
+ {id:'spannstek',name:'Spannstek',kurz:'Verstellbare Schlaufe zum Nachspannen, mit Slip morgens mit einem Zug auf',soon:true},
+ {id:'mastwurf',name:'Mastwurf',kurz:'Schnell um Ast oder Pfosten, hält Querzug',soon:true}];
+const DONE=(()=>{try{return JSON.parse(localStorage.getItem('lbk_knoten')||'{}')}catch(e){return {}}})();
+function save(){try{localStorage.setItem('lbk_knoten',JSON.stringify(DONE))}catch(e){}}
+const app=document.getElementById('app');
+function list(){document.getElementById('ttl').textContent='Knoten';
+ app.innerHTML='<p style="color:var(--mu);margin:4px 2px 12px">Schritt für Schritt, auch ohne Netz. Orange ist der Schritt, der gerade dazukommt.</p><div class="list">'+KNOTS.map(k=>'<div class="kn'+(k.soon?' dis':'')+'" data-id="'+k.id+'">'+(k.K?ropeSVG(k.K,k.K.steps.length-1,{}).replace('<svg','<svg preserveAspectRatio="xMidYMid meet"'):'<svg viewBox="0 0 64 72"></svg>')+'<div><b>'+k.name+'</b> '+(DONE[k.id]?'<span class="ok">✓ kann ich</span>':'')+'<div class="mu">'+k.kurz+(k.soon?' · kommt bald':'')+'</div></div></div>').join('')+'</div>';
+ app.querySelectorAll('.kn').forEach(d=>d.onclick=()=>{const k=KNOTS.find(x=>x.id===d.dataset.id);if(!k.soon)location.hash=k.id})}
+function show(k,s){document.getElementById('ttl').textContent=k.name;const K=k.K,n=K.steps.length;s=Math.max(0,Math.min(n-1,s));
+ app.innerHTML='<div class="view"><div class="pic">'+ropeSVG(K,s)+'</div><div class="dots">'+K.steps.map((x,i)=>'<span class="'+(i===s?'on':'')+'"></span>').join('')+'</div>'
+  +'<div class="st"><b>'+(s+1)+'. '+k.texte[s][0]+'</b><br>'+k.texte[s][1]+'</div><div class="nav"><button id="bz"'+(s?'':' disabled')+'>‹ Zurück</button><button class="p" id="bw">'+(s<n-1?'Weiter ›':'Nochmal')+'</button></div>'
+  +'<div class="leg"><span><i style="background:#ff9a3c"></i>neu in diesem Schritt</span><span>● Seilende</span><span>Wo ein Seil unterbricht, läuft es <b>darunter</b>.</span></div></div>'
+  +'<div class="info"><h3>Merksatz</h3><p>'+k.merk+'</p><h3 style="margin-top:10px">Wofür</h3><p>'+k.wofuer+'</p><label class="chk"><input type="checkbox" id="kc"'+(DONE[k.id]?' checked':'')+'> Kann ich auswendig</label></div>';
+ document.getElementById('bz').onclick=()=>show(k,s-1);document.getElementById('bw').onclick=()=>show(k,s<n-1?s+1:0);
+ document.getElementById('kc').onchange=e=>{DONE[k.id]=e.target.checked;save()};
+ let x0=null;const pic=app.querySelector('.pic');pic.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});pic.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)show(k,dx<0?s+1:s-1);x0=null})}
+function route(){const id=location.hash.slice(1);const k=KNOTS.find(x=>x.id===id&&!x.soon);if(k)show(k,0);else list();scrollTo(0,0)}
+addEventListener('hashchange',route);route();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>

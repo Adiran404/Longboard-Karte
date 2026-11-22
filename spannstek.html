@@ -1,0 +1,88 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Spannstek – Knoten</title><meta name="theme-color" content="#1d1f1a">
+<style>
+:root{--bg:#f6f6f2;--card:#fff;--tx:#1d1f1a;--mu:#666;--bd:#ddd;--ac:#ff9a3c}
+html.dark{--bg:#121416;--card:#1c1f22;--tx:#eceee8;--mu:#9aa0a6;--bd:#33373b}
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;position:sticky;top:0;background:var(--bg);z-index:2}
+header a{color:var(--tx);text-decoration:none;font-size:22px;padding:2px 8px}header h1{font-size:19px;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding:0 12px 24px}
+.view{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
+#cv{width:100%;height:300px;border-radius:10px;background:#fbf8ef;touch-action:none;cursor:grab;overflow:hidden}html.dark #cv{background:#e9e4d6}
+.hint{color:var(--mu);font-size:13px;margin:4px 2px 0}
+.dots{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}.dots span{width:9px;height:9px;border-radius:50%;background:var(--bd)}.dots span.on{background:var(--ac)}
+.st{font-size:17px;min-height:5.6em;margin:6px 2px}
+.nav{display:flex;gap:8px}.nav button{flex:1;padding:12px 6px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:16px}
+.nav button.p{background:var(--ac);border-color:var(--ac);color:#1d1f1a;font-weight:600}.nav button:disabled{opacity:.4}
+.info{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-top:12px}.info h3{margin:0 0 6px;font-size:15px}.info p{margin:4px 0}
+label.chk{display:flex;gap:8px;align-items:center;margin-top:10px}
+</style></head><body>
+<header><a href="knoten.html" aria-label="Zurück">‹</a><h1>Spannstek</h1></header>
+<div class="wrap">
+<div class="view">
+ <div id="cv"></div>
+ <div class="hint">Mit dem Finger drehen</div>
+ <div class="dots" id="dots"></div>
+ <div class="st" id="tx"></div>
+ <div class="nav"><button id="bz">‹ Zurück</button><button id="bp">↻ Schritt nochmal</button><button class="p" id="bw">Weiter ›</button></div>
+</div>
+<div class="info"><h3>Merksatz</h3><p>„Drei rein, einer raus – und unter sich selbst durch.“ Drei Windungen innerhalb der Schlaufe Richtung Hering, eine außerhalb, dann das Ende unterstecken.</p>
+<h3 style="margin-top:10px">Wofür</h3><p>Zeltleine, Plane oder Wäscheleine abspannen und nachspannen, ohne neu zu knoten. Knoten Richtung Zelt schieben spannt, Richtung Hering lockert.<br><span style="color:var(--mu)">Für richtig Last (Board festzurren) ist er nicht gedacht – dafür kommt der Fuhrmannsknoten. Bei dickem oder glattem Seil eher eine Windung mehr.</span></p>
+<label class="chk"><input type="checkbox" id="kc"> Kann ich auswendig</label></div>
+</div>
+<script>
+try{const c=JSON.parse(localStorage.getItem('lbk_cfg')||'{}');const t=c.theme||'auto';if(t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}
+</script>
+<script src="lib/three.min.js"></script>
+<script>
+const V=(x,y,z)=>new THREE.Vector3(x,y,z),L=(a,b,k)=>a+(b-a)*k,PI=Math.PI;
+function path(k,sx){const o=[],m=[];const R=L(.45,.27,k),p=L(.45,.25,k),cl=L(.32,.25,k),x0=2.9+sx,xo=x0+L(1.0,.38,k),tb=L(.5,.2,k);
+ const hp=(x,t,r)=>V(x,r*Math.sin(t),-r*Math.cos(t));
+ o.push(V(9,0,0),V(4,0,0),V(.5,0,0),V(-1.4,0,0));
+ for(let j=1;j<=7;j++){const a=j/8*PI;o.push(V(-1.5-.45*Math.sin(a),0,-.45+.45*Math.cos(a)))}
+ o.push(V(-1.4,0,-.9),V(0,0,-.9),V(x0-.8,0,-.85),V(x0-.15,0,-.62));m.push(o.length-1);
+ const n=16;for(let w=0;w<3;w++){for(let j=1;j<=n;j++){const t=w*2*PI+j/n*2*PI;o.push(hp(x0-p*(w+j/n),t,R))}m.push(o.length-1)}
+ const xs=x0-3*p;for(let j=1;j<=8;j++){const u=j/8,t=6*PI+u*PI/2;o.push(hp(L(xs,xo,u),t,R+cl*Math.sin(Math.min(1,u*1.6)*PI/2)))}
+ for(let j=1;j<=20;j++){const u=j/20,t=6.5*PI+u*1.85*PI;const r=L(R+cl,R,Math.min(1,u*4));o.push(hp(xo+.28*Math.sin(u*PI)-tb*u,t,r))}m.push(o.length-1);
+ o.push(hp(xo-tb,8.5*PI,R),hp(xo-tb+.02,8.75*PI,R),hp(xo-tb+.1,9*PI,R+.03),V(xo+.3,0,R+.3),V(xo+1.3,0,R+.45));m.push(o.length-1);
+ return {o,m}}
+const ST=[
+ ['Um den Hering','Leine vom Zelt um den Hering und das Ende neben der Leine zurück Richtung Zelt führen.'],
+ ['Windung 1 innen','Ende um die Leine wickeln, innerhalb der Schlaufe, Richtung Hering wandern.'],
+ ['Windung 2 innen','Gleich weiter, direkt daneben, Richtung Hering.'],
+ ['Windung 3 innen','Noch eine. Bei dickem Baumwollseil hält es mit drei Windungen besser als mit zwei.'],
+ ['Über die Windungen und außen herum','Ende oben über alle Windungen zurück auf die Zeltseite und dort einmal um die Leine, gleiche Drehrichtung.'],
+ ['Unter sich selbst durch','Das Ende unter dem Stück durch, das gerade über die Windungen lief. Das ist der halbe Schlag, er klemmt alles.'],
+ ['Festziehen','Windungen dicht zusammenschieben, am Ende ziehen, dann die Schlaufe belasten.'],
+ ['Spannen','Knoten Richtung Zelt schieben spannt, Richtung Hering lockert. Unter Zug hält er von selbst.']];
+const NS=ST.length;
+const el=document.getElementById('cv'),W=()=>el.clientWidth,H=()=>el.clientHeight;
+const rd=new THREE.WebGLRenderer({antialias:true,alpha:true});rd.setPixelRatio(Math.min(2,devicePixelRatio||1));rd.setSize(W(),H());el.appendChild(rd.domElement);
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(44,W()/H(),.1,100);cam.position.set(1.4,4.4,5.0);cam.lookAt(1.4,0,-.2);
+sc.add(new THREE.AmbientLight(0xffffff,.55));const dl=new THREE.DirectionalLight(0xffffff,.75);dl.position.set(3,6,5);sc.add(dl);
+const grp=new THREE.Group();sc.add(grp);grp.rotation.x=.15;
+const peg=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,2.2,16),new THREE.MeshLambertMaterial({color:0x8a8f96}));peg.position.set(-1.5,-.5,-.45);grp.add(peg);
+const gr=new THREE.Mesh(new THREE.CircleGeometry(.9,32),new THREE.MeshLambertMaterial({color:0x9bb27a}));gr.rotation.x=-Math.PI/2;gr.position.set(-1.5,-1.2,-.45);grp.add(gr);
+let meshes=[];const arrow=new THREE.ArrowHelper(V(1,0,0),V(0,0,0),1.2,0x3f7fd6,.35,.25);arrow.visible=false;grp.add(arrow);
+function build(s,u){meshes.forEach(m=>{grp.remove(m);m.geometry.dispose()});meshes=[];const e=u<1?u*u*(3-2*u):1;
+ const k=s>=6?(s===6?e:1):0,sx=s===7?Math.sin(e*Math.PI)*.9:0;const g=path(k,sx),N=g.o.length-1;
+ const idx=s===0?L(0,g.m[0],e):s<=5?L(g.m[s-1],g.m[s],e):N;
+ const cv=new THREE.CatmullRomCurve3(g.o,false,'centripetal');const pts=[],M=Math.round(idx*5)+8;for(let j=0;j<=M;j++)pts.push(cv.getPoint(idx/N*j/M));
+ const cut=s>=1&&s<=5?Math.round(g.m[s-1]/idx*M):pts.length-1;const tb=(a,c)=>{if(a.length<2)return;const m=new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(a),a.length*3,.12,10,false),new THREE.MeshLambertMaterial({color:c}));grp.add(m);meshes.push(m)};
+ tb(pts.slice(0,cut+1),0xe2ad2c);if(cut<pts.length-1)tb(pts.slice(cut),0xd9473f);
+ const cap=new THREE.Mesh(new THREE.SphereGeometry(.12,12,8),new THREE.MeshLambertMaterial({color:s>=1&&s<=5?0xd9473f:0xe2ad2c}));cap.position.copy(pts[pts.length-1]);grp.add(cap);meshes.push(cap);
+ arrow.visible=s===7;arrow.position.set(2.2,.9,0);rd.render(sc,cam)}
+let S=0,t0=0,raf=0,drag=null;
+function play(){cancelAnimationFrame(raf);t0=0;const dur=S===7?2600:2000;const tick=ts=>{if(!t0)t0=ts;const u=Math.min(1,(ts-t0)/dur);build(S,u);if(u<1)raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)}
+function go(s){S=Math.max(0,Math.min(NS-1,s));const near=S>=1&&S<=6;if(near){cam.position.set(2.5,3.0,3.3);cam.lookAt(2.3,0,-.15)}else{cam.position.set(1.4,4.4,5.0);cam.lookAt(1.4,0,-.2)};document.getElementById('tx').innerHTML='<b>'+(S+1)+'. '+ST[S][0]+'.</b><br>'+ST[S][1];document.getElementById('dots').innerHTML=ST.map((x,i)=>'<span class="'+(i===S?'on':'')+'"></span>').join('');document.getElementById('bz').disabled=!S;document.getElementById('bw').textContent=S<NS-1?'Weiter ›':'Nochmal';play()}
+document.getElementById('bz').onclick=()=>go(S-1);document.getElementById('bw').onclick=()=>go(S<NS-1?S+1:0);document.getElementById('bp').onclick=()=>play();
+el.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,grp.rotation.y,grp.rotation.x];el.setPointerCapture(e.pointerId)});
+el.addEventListener('pointermove',e=>{if(!drag)return;grp.rotation.y=drag[2]+(e.clientX-drag[0])*.012;grp.rotation.x=Math.max(-1.2,Math.min(1.4,drag[3]+(e.clientY-drag[1])*.01));rd.render(sc,cam)});
+el.addEventListener('pointerup',()=>{drag=null});
+new ResizeObserver(()=>{rd.setSize(W(),H());cam.aspect=W()/H();cam.updateProjectionMatrix();rd.render(sc,cam)}).observe(el);
+go(0);
+
+const DONE=(()=>{try{return JSON.parse(localStorage.getItem('lbk_knoten')||'{}')}catch(e){return {}}})();
+const kc=document.getElementById('kc');kc.checked=!!DONE.spannstek;kc.onchange=()=>{DONE.spannstek=kc.checked;try{localStorage.setItem('lbk_knoten',JSON.stringify(DONE))}catch(e){}};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>

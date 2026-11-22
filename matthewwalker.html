@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Matthew Walker – Knoten</title><meta name="theme-color" content="#1d1f1a">
+<style>
+:root{--bg:#f6f6f2;--card:#fff;--tx:#1d1f1a;--mu:#666;--bd:#ddd;--ac:#ff9a3c}
+html.dark{--bg:#121416;--card:#1c1f22;--tx:#eceee8;--mu:#9aa0a6;--bd:#33373b}
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;position:sticky;top:0;background:var(--bg);z-index:2}
+header a{color:var(--tx);text-decoration:none;font-size:22px;padding:2px 8px}header h1{font-size:19px;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding:0 12px 24px}
+.view{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
+#cv{width:100%;height:340px;border-radius:10px;background:#fbf8ef;touch-action:none;cursor:grab;overflow:hidden}html.dark #cv{background:#e9e4d6}
+.hint{color:var(--mu);font-size:13px;margin:4px 2px 0}
+.dots{display:flex;gap:6px;justify-content:center;margin:10px 0 4px}.dots span{width:9px;height:9px;border-radius:50%;background:var(--bd)}.dots span.on{background:var(--ac)}
+.st{font-size:17px;min-height:5.6em;margin:6px 2px}
+.nav{display:flex;gap:8px}.nav button{flex:1;padding:12px 6px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:16px}
+.nav button.p{background:var(--ac);border-color:var(--ac);color:#1d1f1a;font-weight:600}.nav button:disabled{opacity:.4}
+.info{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-top:12px}.info h3{margin:0 0 6px;font-size:15px}.info p{margin:4px 0}
+label.chk{display:flex;gap:8px;align-items:center;margin-top:10px}
+</style></head><body>
+<header><a href="knoten.html" aria-label="Zurück">‹</a><h1>Matthew Walker</h1></header>
+<div class="wrap">
+<div class="view">
+ <div id="cv"></div>
+ <div class="hint">Mit dem Finger drehen</div>
+ <div class="dots" id="dots"></div>
+ <div class="st" id="tx"></div>
+ <div class="nav"><button id="bz">‹ Zurück</button><button id="bp">↻ Schritt nochmal</button><button class="p" id="bw">Weiter ›</button></div>
+</div>
+<div class="info"><h3>Merksatz</h3><p>„Wie ein Wandknoten – aber jede Kardeele ganz herum, unter beiden anderen durch und hoch durch alle Buchten.“</p>
+<h3 style="margin-top:10px">Wofür</h3><p>Sichert das Seilende gegen Aufdrehen, nur mit den eigenen Kardeelen. Kleiner und schneller als der Rückspleiß. Das Ende wird etwas dicker, passt also nicht mehr durch enge Ösen – dafür den Takling nehmen.<br><span style="color:var(--mu)">Bleibt dauerhaft drin. Zum Entfernen abschneiden.</span></p>
+<label class="chk"><input type="checkbox" id="kc"> Kann ich auswendig</label></div>
+</div>
+<script>
+try{const c=JSON.parse(localStorage.getItem('lbk_cfg')||'{}');const t=c.theme||'auto';if(t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}
+</script>
+<script src="lib/three.min.js"></script>
+<script>
+const D=Math.PI/180,TH=i=>i*120*D,COL=[0xd9473f,0x3f7fd6,0xe2ad2c];
+const P=(r,a,y)=>new THREE.Vector3(r*Math.cos(a),y,r*Math.sin(a));
+const L=(a,b,k)=>a+(b-a)*k;
+function arc(o,a,span,r0,r1,y0,y1,n){for(let j=1;j<=n;j++){const t=j/n;o.push(P(L(r0,r1,t),a+span*t,L(y0,y1,t)))}}
+function mw(i,k){const a=TH(i),o=[P(.45,a,-1.6),P(.45,a,-.3),P(.6,a,.2)],m=[];
+ const R=L(1.9,1.05,k),yr=L(.25,.15,k);o.push(P(L(1.2,.95,k),a,yr),P(R,a,yr));m.push(o.length-1);
+ arc(o,a,290*D,R,L(1.2,.98,k),yr,L(-.3,-.05,k),14);
+ const b=a+290*D;o.push(P(L(.95,.8,k),b+12*D,L(-.3,-.05,k)),P(L(.82,.62,k),b+22*D,L(.35,.3,k)),P(L(.72,.5,k),b+26*D,L(1.0,.6,k)),P(L(.66,.45,k),b+28*D,L(1.7,1.1,k)));
+ m.push(o.length-1);return {o,m}}
+function fr(i,k){const a=TH(i),o=[P(.45,a,-1.6),P(.45,a,-.3),P(.45,a,L(1.1,.55,k))],m=[o.length-1];
+ const yc=L(1.45,.8,k),Rc=L(1.6,.9,k);o.push(P(L(.8,.7,k),a,yc),P(Rc,a,yc));
+ arc(o,a,170*D,Rc,L(1.25,.85,k),yc,L(1.95,1.05,k),9);const c=a+170*D;
+ o.push(P(L(1.0,.82,k),c+12*D,L(1.9,1.0,k)));m.push(o.length-1);
+ const Rw=L(1.85,1.0,k),yw=L(.8,.45,k);o.push(P(L(1.35,.95,k),c+16*D,L(1.3,.75,k)),P(Rw,c+20*D,yw));
+ arc(o,c+20*D,160*D,Rw,L(1.25,.9,k),yw,L(.3,.15,k),9);const e=c+180*D;
+ let g=Math.round((e/D-60)/120)*120+60;g*=D;
+ m.push(o.length-1);
+ o.push(P(L(.8,.6,k),e+8*D,L(.35,.2,k)),P(.27,g,L(.75,.5,k)),P(.26,g,L(1.4,.9,k)),P(.26,g,L(2.2,1.35,k)),P(.26,g,L(2.7,1.55,k)));
+ m.push(o.length-1);return {o,m}}
+const K=[{f:mw,cut:2,st:[
+ ['Aufdrehen','Ende etwa 4 Schläge weit aufdrehen. Die drei Kardeelen zeigen nach außen. Seil senkrecht halten, Ende oben.',[1,1,1],[0,0,0]],
+ ['Rot herum','Rot einmal ganz um das Seil, dabei unter Blau und Gold durch, und von unten innen hoch durch die eigene Bucht.',[2,1,1],[0,0,0]],
+ ['Blau herum','Blau genauso ganz herum, unter Gold und Rot durch, und hoch durch die Bucht von Rot und die eigene.',[2,2,1],[0,0,0]],
+ ['Gold herum','Gold genauso, und hoch durch alle drei Buchten. Jetzt steckt jedes Ende in den Buchten der beiden anderen.',[2,2,2],[0,0,0]],
+ ['Festziehen','Knoten auf das Seil schieben und jede Kardeele der Reihe nach ein Stück nachziehen, bis alles gleichmäßig sitzt.',[2,2,2],[0,1,1]],
+ ['Kürzen','Enden knapp über dem Knoten abschneiden. Traditionell dreht man sie vorher noch ein Stück wieder zusammen.',[2,2,2],[1,1,1]]]},
+ {f:fr,cut:3,st:[
+ ['Aufdrehen','Ende etwa 4 bis 5 Schläge weit aufdrehen, die drei Kardeelen zeigen nach oben.',[1,1,1],[0,0,0]],
+ ['Krone','Oben eine Krone: jede Kardeele über die nächste legen, die letzte durch die Bucht der ersten. Die Enden hängen nach unten.',[2,2,2],[0,0,0]],
+ ['Wandknoten darunter','Unter der Krone ein Wandknoten: jedes Ende unter dem nächsten durch und hoch durch dessen Bucht.',[3,3,3],[0,0,0]],
+ ['Durch die Mitte','Jetzt jedes Ende von unten mittig durch die Krone nach oben stecken. Alle drei kommen oben aus der Mitte.',[4,4,4],[0,0,0]],
+ ['Festziehen','Erst die Krone, dann den Wandknoten Kardeele für Kardeele nachziehen, bis eine feste Kugel entsteht.',[4,4,4],[0,1,1]],
+ ['Kürzen','Enden oben knapp abschneiden. Sie kommen aus der Mitte, deshalb ziehen sie sich nicht so leicht heraus.',[4,4,4],[1,1,1]]]}];
+const el=document.getElementById('cv'),W=()=>el.clientWidth,H=()=>el.clientHeight;
+const rd=new THREE.WebGLRenderer({antialias:true,alpha:true});rd.setPixelRatio(Math.min(2,devicePixelRatio||1));rd.setSize(W(),H());el.appendChild(rd.domElement);
+const sc=new THREE.Scene(),cam=new THREE.PerspectiveCamera(36,W()/H(),.1,100);cam.position.set(0,5.6,7.4);cam.lookAt(0,.45,0);
+sc.add(new THREE.AmbientLight(0xffffff,.55));const dl=new THREE.DirectionalLight(0xffffff,.75);dl.position.set(3,6,5);sc.add(dl);
+const grp=new THREE.Group();sc.add(grp);grp.rotation.y=-.5;rd.domElement.style.display='block';
+const rope=new THREE.Mesh(new THREE.CylinderGeometry(.92,.92,3.2,32),new THREE.MeshLambertMaterial({color:0xc9b48c}));rope.position.y=-1.85;grp.add(rope);
+for(let j=0;j<10;j++){const s=new THREE.Mesh(new THREE.TorusGeometry(.93,.025,6,40),new THREE.MeshLambertMaterial({color:0x9c8762}));s.rotation.x=Math.PI/2;s.position.y=-3.3+j*.34;grp.add(s)}
+let meshes=[];
+class Part extends THREE.Curve{constructor(c,f){super();this.c=c;this.f=f}getPoint(t,o){return this.c.getPoint(t*this.f,o)}}
+function build(kn,s,u){meshes.forEach(m=>{grp.remove(m);m.geometry.dispose()});meshes=[];
+ const S=K[kn].st[s],Sp=s?K[kn].st[s-1]:null,e=u<1?u*u*(3-2*u):1;
+ for(let i=0;i<3;i++){  const tight=s>=4?(s===4?e:1):0;const g=K[kn].f(i,tight),N=g.o.length-1;
+  let idx;if(kn===0){if(s===0)idx=g.m[0];else if(s<=3){const w=s-1;idx=i<w?g.m[1]:i>w?g.m[0]:L(g.m[0],g.m[1],e)}else idx=g.m[1]}
+  else{if(s===0)idx=g.m[0];else if(s<=3){const st=Math.max(0,Math.min(1,e*1.8-i*.4));idx=L(g.m[s-1],g.m[s],st)}else idx=g.m[3]}
+  const curve=new THREE.CatmullRomCurve3(g.o,false,'centripetal');
+  let f=idx/N;const cutF=K[kn].f(i,1).m;
+  const pts=[];const M=Math.max(8,Math.round(idx*6));for(let j=0;j<=M;j++)pts.push(curve.getPoint(f*j/M));
+  if(s===5){const cutEnd=pts.length-1-Math.round(M*0.16*e);pts.length=Math.max(4,cutEnd+1)}
+  const last=pts[pts.length-1],prev=pts[pts.length-2];
+  if(idx<N-.01&&s<4){const d=last.clone().sub(prev).normalize();for(let j=1;j<=4;j++)pts.push(last.clone().add(d.clone().multiplyScalar(.28*j)))}
+  const c2=new THREE.CatmullRomCurve3(pts);
+  const ms=new THREE.Mesh(new THREE.TubeGeometry(c2,Math.max(16,pts.length*3),.2,10,false),new THREE.MeshLambertMaterial({color:COL[i]}));grp.add(ms);meshes.push(ms);
+  const cap=new THREE.Mesh(new THREE.SphereGeometry(.2,12,8),new THREE.MeshLambertMaterial({color:COL[i]}));cap.position.copy(pts[pts.length-1]);grp.add(cap);meshes.push(cap)}
+ rd.render(sc,cam)}
+let KN=0,ST=0,t0=0,raf=0,drag=null;
+function play(){cancelAnimationFrame(raf);t0=0;const dur=ST===0?600:2200;const tick=ts=>{if(!t0)t0=ts;const u=Math.min(1,(ts-t0)/dur);build(KN,ST,u);if(u<1)raf=requestAnimationFrame(tick)};raf=requestAnimationFrame(tick)}
+function go(k,s){KN=k;ST=Math.max(0,Math.min(5,s));const S=K[KN].st[ST];
+ document.getElementById('tx').innerHTML='<b>'+(ST+1)+'. '+S[0]+'.</b><br>'+S[1];document.getElementById('dots').innerHTML=[0,1,2,3,4,5].map(i=>'<span class="'+(i===ST?'on':'')+'"></span>').join('');document.getElementById('bz').disabled=!ST;document.getElementById('bw').textContent=ST<5?'Weiter ›':'Nochmal';
+  play()}
+
+document.getElementById('bz').onclick=()=>go(KN,ST-1);document.getElementById('bw').onclick=()=>go(KN,ST<5?ST+1:0);document.getElementById('bp').onclick=()=>play();
+el.addEventListener('pointerdown',e=>{drag=[e.clientX,e.clientY,grp.rotation.y,grp.rotation.x];el.setPointerCapture(e.pointerId)});
+el.addEventListener('pointermove',e=>{if(!drag)return;grp.rotation.y=drag[2]+(e.clientX-drag[0])*.012;grp.rotation.x=Math.max(-1.2,Math.min(1.2,drag[3]+(e.clientY-drag[1])*.01));rd.render(sc,cam)});
+el.addEventListener('pointerup',()=>{drag=null});
+new ResizeObserver(()=>{rd.setSize(W(),H());cam.aspect=W()/H();cam.updateProjectionMatrix();rd.render(sc,cam)}).observe(el);
+go(0,0);
+
+const DONE=(()=>{try{return JSON.parse(localStorage.getItem('lbk_knoten')||'{}')}catch(e){return {}}})();
+const kc=document.getElementById('kc');kc.checked=!!DONE.matthewwalker;kc.onchange=()=>{DONE.matthewwalker=kc.checked;try{localStorage.setItem('lbk_knoten',JSON.stringify(DONE))}catch(e){}};
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>

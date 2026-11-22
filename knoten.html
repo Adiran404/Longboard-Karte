@@ -124,6 +124,7 @@ const KNOTS=[
  {id:'fuhrmann',name:'Fuhrmannsknoten',kurz:'Richtig stramm festzurren: Board an Rucksack, Kiste',soon:true},
  {id:'zimmermann',name:'Zimmermannsstek',kurz:'Um Unförmiges: Board hinterherziehen, Kiste an Stein',soon:true},
  {id:'schotstek',name:'Schotstek',kurz:'Seil an Seil, auch verschieden dicke',soon:true},
+ {id:'eigenkardeele',href:'eigenkardeele.html',group:'Seilenden sichern',name:'Takling aus eigener Kardeele',kurz:'Ein Teil einer Kardeele wird zur Schnur – ohne Zusatzmaterial, als Animation'},
  {id:'takling',K:TAKLING,group:'Seilenden sichern',name:'Takling',kurz:'Ende umwickeln – baut praktisch nicht auf, passt durch Ösen',
   wofuer:'Gegen das Aufdrehen der Seilenden. Als Schnur reicht (gewachste) Zahnseide oder dünnes Garn. Bei Baumwolle geht kein Abschmelzen – ein Tropfen Sekundenkleber auf die fertige Wicklung hält zusätzlich.',
   merk:'„Schlaufe zum Ende, wickeln zur Schlaufe, Ende rein, hinten ziehen.“',
@@ -151,7 +152,7 @@ function save(){try{localStorage.setItem('lbk_knoten',JSON.stringify(DONE))}catc
 const app=document.getElementById('app');
 function list(){document.getElementById('ttl').textContent='Knoten';
  let G0='';app.innerHTML='<p style="color:var(--mu);margin:4px 2px 12px">Schritt für Schritt, auch ohne Netz. Orange ist der Schritt, der gerade dazukommt.</p><div class="list">'+KNOTS.map(k=>((k.group||'')!==G0?(G0=k.group||'','<h3 style="margin:14px 2px 2px;font-size:15px;color:var(--mu)">'+G0+'</h3>'):'')+'<div class="kn'+(k.soon?' dis':'')+'" data-id="'+k.id+'">'+(k.K?ropeSVG(k.K,k.K.steps.length-1,{}).replace('<svg','<svg preserveAspectRatio="xMidYMid meet"'):'<svg viewBox="0 0 64 72"></svg>')+'<div><b>'+k.name+'</b> '+(DONE[k.id]?'<span class="ok">✓ kann ich</span>':'')+'<div class="mu">'+k.kurz+(k.soon?' · kommt bald':'')+'</div></div></div>').join('')+'</div>';
- app.querySelectorAll('.kn').forEach(d=>d.onclick=()=>{const k=KNOTS.find(x=>x.id===d.dataset.id);if(!k.soon)location.hash=k.id})}
+ app.querySelectorAll('.kn').forEach(d=>d.onclick=()=>{const k=KNOTS.find(x=>x.id===d.dataset.id);if(k.href)location.href=k.href;else if(!k.soon)location.hash=k.id})}
 let MODE='binden';
 function show(k,s){document.getElementById('ttl').textContent=k.name;const K=k.K,lo=MODE==='loesen'&&K.loesen,ST=lo?K.loesen:K.steps,TX=lo?k.loesen:k.texte,n=ST.length;s=Math.max(0,Math.min(n-1,s));
  app.innerHTML=(K.loesen?'<div class="seg"><button data-m="binden" class="'+(lo?'':'on')+'">Binden</button><button data-m="loesen" class="'+(lo?'on':'')+'">Lösen</button></div>':'')+'<div class="view"><div class="pic">'+ropeSVG(K,s,{steps:ST})+'</div><div class="dots">'+ST.map((x,i)=>'<span class="'+(i===s?'on':'')+'"></span>').join('')+'</div>'

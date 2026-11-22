@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Takling aus eigener Kardeele – Knoten</title><meta name="theme-color" content="#1d1f1a">
+<style>
+:root{--bg:#f6f6f2;--card:#fff;--tx:#1d1f1a;--mu:#666;--bd:#ddd;--ac:#ff9a3c}
+html.dark{--bg:#121416;--card:#1c1f22;--tx:#eceee8;--mu:#9aa0a6;--bd:#33373b}
+*{box-sizing:border-box}body{margin:0;font:16px/1.4 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--tx)}
+header{display:flex;align-items:center;gap:10px;padding:10px 14px;position:sticky;top:0;background:var(--bg);z-index:2}
+header a{color:var(--tx);text-decoration:none;font-size:22px;padding:2px 8px}header h1{font-size:19px;margin:0}
+.wrap{max-width:560px;margin:0 auto;padding:0 12px 24px}
+.view{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px}
+.pic{background:#fbf8ef;border-radius:10px}html.dark .pic{background:#e9e4d6}
+.pic svg{width:100%;height:auto;display:block}
+.bar{height:6px;background:var(--bd);border-radius:3px;margin:10px 2px 4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ac);width:0}
+.dots{display:flex;gap:6px;justify-content:center;margin:8px 0 4px}.dots span{width:9px;height:9px;border-radius:50%;background:var(--bd);cursor:pointer}.dots span.on{background:var(--ac)}
+.st{font-size:17px;min-height:5.6em;margin:6px 2px}
+.nav{display:flex;gap:8px}.nav button{flex:1;padding:12px 6px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-size:16px}
+.nav button.p{background:var(--ac);border-color:var(--ac);color:#1d1f1a;font-weight:600}.nav button:disabled{opacity:.4}
+.leg{display:flex;gap:14px;flex-wrap:wrap;color:var(--mu);font-size:13px;margin-top:8px}.leg i{display:inline-block;width:18px;height:7px;border-radius:4px;vertical-align:middle;margin-right:4px;border:1.5px solid #2a2522}
+.info{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px 14px;margin-top:12px}.info h3{margin:0 0 6px;font-size:15px}.info p{margin:4px 0}
+label.chk{display:flex;gap:8px;align-items:center;margin-top:10px}
+</style></head><body>
+<header><a href="knoten.html" aria-label="Zurück">‹</a><h1>Takling aus eigener Kardeele</h1></header>
+<div class="wrap">
+<div class="view">
+ <div class="pic"><svg id="sv" viewBox="0 30 320 150"></svg></div>
+ <div class="bar"><i id="pb"></i></div>
+ <div class="dots" id="dots"></div>
+ <div class="st" id="st"></div>
+ <div class="nav"><button id="bz">‹</button><button id="bp">▶ Abspielen</button><button class="p" id="bw">Weiter ›</button></div>
+ <div class="leg"><span><i style="background:#e8452f"></i>Wickelfaden (Teil von A)</span><span><i style="background:#e6c88a"></i>B</span><span><i style="background:#c99f5a"></i>C</span><span>- - - verdeckt</span></div>
+</div>
+<div class="info"><h3>Merksatz</h3><p>„Ein Drittel von einer Kardeele ist die Schnur, der Rest wird umwickelt – und das Ende verschwindet unter den letzten Windungen.“</p>
+<h3 style="margin-top:10px">Wofür</h3><p>Seilende gegen Aufdrehen sichern, ganz ohne Zusatzmaterial. Weil nur ein dünner Teil einer Kardeele gewickelt wird, baut es kaum auf. Du hast immer nur einen Strang in der Hand – nach den ersten Windungen hält das Bündel von selbst.<br><span style="color:var(--mu)">Schwachstelle: Wird das Fadenende nicht sauber zurückgesteckt, rutscht die Wicklung vom Ende. Dann einfach neu machen.</span></p>
+<label class="chk"><input type="checkbox" id="kc"> Kann ich auswendig</label></div>
+</div>
+<script>
+try{const c=JSON.parse(localStorage.getItem('lbk_cfg')||'{}');const t=c.theme||'auto';if(t==='dark'||(t==='auto'&&matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.classList.add('dark')}catch(e){}
+const T=[
+ ['Aufdrehen.','Das Ende etwa <b>4–5 Seildicken</b> weit aufdrehen. Die drei Kardeelen A, B und C gehen auseinander.'],
+ ['Von A ein Drittel abtrennen.','Kardeele <b>A</b> besteht selbst aus drei Teilen. Einen davon abtrennen – das ist dein <b>Wickelfaden</b> (rot). Bis ganz zum Ansatz auftrennen.'],
+ ['Rest wieder anlegen.','Die beiden anderen Teile von A zurück zu <b>B</b> und <b>C</b> legen. Das Bündel mit Daumen und Zeigefinger zusammenhalten.'],
+ ['Straff wickeln.','Direkt <b>am Ansatz</b> anfangen und den Faden straff, <b>dicht an dicht</b> Richtung Ende wickeln. Nach 2–3 Windungen hält das Bündel von selbst – Finger frei. Insgesamt etwa 1 bis 1,5 Seildicken lang.'],
+ ['Ende zurückstecken.','Das Bündel vorne mit dem Fingernagel etwas öffnen und das Fadenende <b>mittig zwischen die Kardeelen</b> schieben – zurück Richtung Seil, <b>unter den letzten 2–3 Windungen</b> durch (gestrichelt). Es kommt zwischen den Windungen wieder raus.'],
+ ['Festziehen.','Am Fadenende ziehen, bis es fest unter den Windungen sitzt. Die Windungen dabei mit dem Daumen dicht zusammenschieben.'],
+ ['Abschneiden.','Das Bündel etwa eine <b>halbe Seildicke</b> hinter der Wicklung abschneiden, das Fadenende bündig. Fertig – kaum dicker als das Seil.']];
+const DUR=[1800,1600,1600,4200,2400,1400,1800];
+const sv=document.getElementById('sv');
+const CY=120,R=20,X0=150,XT=292,P=8,NW=6,XW0=X0+6,XWE=XW0+P*NW;
+const ease=u=>u<0?0:u>1?1:u<.5?2*u*u:1-2*(1-u)*(1-u);
+const lerp=(a,b,u)=>a+(b-a)*u;
+function tube(d,col,w,o){o=o||{};return '<path d="'+d+'" fill="none" stroke="#2a2522" stroke-width="'+(w+3)+'" stroke-linecap="round" stroke-linejoin="round"'+(o.op?' opacity="'+o.op+'"':'')+'/><path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"'+(o.op?' opacity="'+o.op+'"':'')+'/>'}
+function dash(d){return '<path d="'+d+'" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" opacity=".9"/><path d="'+d+'" fill="none" stroke="#2a2522" stroke-width="3" stroke-dasharray="5 4" stroke-linecap="round"/>'}
+function body(xe){let s='<clipPath id="cb"><rect x="-30" y="'+(CY-R)+'" width="'+(xe+30)+'" height="'+2*R+'" rx="0"/></clipPath><g clip-path="url(#cb)">';
+ const cols=['#e6c88a','#c99f5a','#d9776a'];for(let i=-6;i<22;i++){const x=i*18;s+='<polygon points="'+x+','+(CY+R)+' '+(x+18)+','+(CY+R)+' '+(x+40)+','+(CY-R)+' '+(x+22)+','+(CY-R)+'" fill="'+cols[(i%3+3)%3]+'"/><line x1="'+x+'" y1="'+(CY+R)+'" x2="'+(x+22)+'" y2="'+(CY-R)+'" stroke="#2a2522" stroke-opacity=".35" stroke-width="1.5"/>'}
+ return s+'</g><path d="M-30,'+(CY-R)+' H'+xe+' M-30,'+(CY+R)+' H'+xe+'" stroke="#2a2522" stroke-width="3"/>'}
+function q(x1,y1,x2,y2){const cx=lerp(x1,x2,.35);return 'M'+x1+','+y1+' Q'+cx+','+y1+' '+x2+','+y2}
+// Helix-Punkt: th in Radiant; vorn wenn sin>0
+const hx=th=>XW0+P*th/(2*Math.PI), hy=th=>CY-R*Math.cos(th);
+function helix(thMax,from){from=from||0;let back='',front='',cur=null,curF=null;const n=Math.ceil((thMax-from)/0.12)+1;
+ for(let i=0;i<=n;i++){const th=Math.min(thMax,from+i*0.12);const f=Math.sin(th)>0;const p=hx(th).toFixed(1)+','+hy(th).toFixed(1);
+  if(curF!==f){if(cur){if(curF)front+=cur;else back+=cur}cur=' M'+p;curF=f}else cur+=' L'+p}
+ if(cur){if(curF)front+=cur;else back+=cur}return {back,front}}
+function frame(s,u){let g='';const e=ease(u);
+ // Zustand der vier/drei Stränge rechts vom Ansatz
+ let xb=XT, tip=XT, cut=1;
+ if(s===6){tip=lerp(XT,XWE+12,e)}
+ const yB0=118,yC0=150,yA0=72;
+ // Zielpositionen im Bündel
+ const bun={A2:108,B:116,C:124,A3:132};
+ let st={};
+ if(s===0){st.A=lerp(CY-6,yA0,e);st.B=lerp(CY,yB0,e);st.C=lerp(CY+6,yC0,e)}
+ else if(s===1){st.A2=lerp(yA0,82,e);st.A3=lerp(yA0,94,e);st.A1=1;st.B=yB0;st.C=yC0}
+ else {const k=s===2?e:1;st.A2=lerp(82,bun.A2,k);st.A3=lerp(94,bun.A3,k);st.B=lerp(yB0,bun.B,k);st.C=lerp(yC0,bun.C,k);st.A1=1}
+ // Seilkörper links
+ const bodyEnd=s===0?lerp(XT,X0,e):X0;
+ g+=body(bodyEnd);
+ // Wickel-Fortschritt
+ let thMax=0;if(s===3)thMax=e*NW*2*Math.PI;if(s>3)thMax=NW*2*Math.PI;
+ const H=thMax>0?helix(thMax):null;
+ if(H)g+=tube(H.back,'#a8321f',6,{op:.55});
+ // Stränge
+ const yS={A2:CY-8,A3:CY+8,B:CY-3,C:CY+3};
+ const strand=(k,col,w)=>{if(st[k]==null)return;let y0={A:CY-8,B:CY,C:CY+8,A2:CY-12,A3:CY+12}[k];if(s>0&&k==='B')y0=CY-4;if(s>0&&k==='C')y0=CY+4;g+=tube(q(bodyEnd-2,y0,tip,st[k]),col,w)};
+ if(s===0){strand('C','#c99f5a',11);strand('B','#e6c88a',11);strand('A','#d9776a',11)}
+ else{strand('C','#c99f5a',9);strand('A3','#d9776a',7);strand('B','#e6c88a',9);strand('A2','#d9776a',7)}
+ // Wickelfaden A1 frei
+ if(s>=1){let path,hand;
+  if(s===1){const ex=lerp(X0+20,268,e),ey=lerp(CY-10,50,e);path=q(X0,CY-10,ex,ey);g+=tube(path,'#e8452f',5)}
+  else if(s===2){g+=tube(q(X0,CY-10,268,50),'#e8452f',5)}
+  else if(s===3){const th=thMax;const px=hx(th),py=hy(th);
+   if(thMax<0.01)g+=tube(q(X0,CY-10,268,50),'#e8452f',5);
+   else{g+=tube('M'+X0+','+(CY-10)+' Q'+(X0+4)+','+(CY-R)+' '+hx(0.05).toFixed(1)+','+hy(0.05).toFixed(1),'#e8452f',5);
+    // freies Ende von aktuellem Punkt zur Hand
+    const hxp=Math.min(300,px+40),hyp=Math.sin(th)>0?py+18:48;g+=tube('M'+px.toFixed(1)+','+py.toFixed(1)+' L'+hxp.toFixed(1)+','+(hyp<CY?Math.min(hyp,60):hyp).toFixed(1),'#e8452f',5)}}}
+ if(H){g+=tube('M'+X0+','+(CY-10)+' Q'+(X0+4)+','+(CY-R)+' '+hx(0.05).toFixed(1)+','+hy(0.05).toFixed(1),'#e8452f',6);g+=tube(H.front,'#e8452f',6)}
+ // Einstecken
+ const xe=hx(NW*2*Math.PI);// Ende oben (cos=1 -> oben)
+ const xin=xe+6, xout=XW0+P*3.2;
+ if(s===4){const k=e;
+  // Faden vom letzten Punkt ins Bündel und zurück unter den Windungen
+  const pts=[[xe,CY-R],[xin,CY-4],[lerp(xin,xout,1),CY-2],[xout-2,CY-R-2],[xout-14,52]];
+  const L=k*4;let d='M'+pts[0];for(let i=1;i<pts.length;i++){if(L<i-1)break;const t=Math.min(1,L-(i-1));const a=pts[i-1],b=pts[i];d+=' L'+lerp(a[0],b[0],t).toFixed(1)+','+lerp(a[1],b[1],t).toFixed(1)}
+  // sichtbarer Teil bis Eintritt, gestrichelt im Bündel, Austritt sichtbar
+  g+=tube('M'+pts[0]+' L'+(L>=1?pts[1]:[lerp(pts[0][0],pts[1][0],L).toFixed(1),lerp(pts[0][1],pts[1][1],L).toFixed(1)]),'#e8452f',5);
+  if(L>1)g+=dash('M'+pts[1]+' L'+(L>=2?pts[2]:[lerp(pts[1][0],pts[2][0],L-1).toFixed(1),pts[2][1]]));
+  if(L>2)g+=dash('M'+pts[2]+' L'+(L>=3?pts[3]:[lerp(pts[2][0],pts[3][0],L-2).toFixed(1),lerp(pts[2][1],pts[3][1],L-2).toFixed(1)]));
+  if(L>3)g+=tube('M'+pts[3]+' L'+lerp(pts[3][0],pts[4][0],L-3).toFixed(1)+','+lerp(pts[3][1],pts[4][1],L-3).toFixed(1),'#e8452f',5);
+  // Öffnung zeigen
+  g+='<path d="M'+(xin+2)+','+(CY-10)+' q6,0 10,-4" stroke="#2a2522" stroke-width="1.5" fill="none" opacity="'+(1-k)*.8+'"/>';
+  // Hilfspfeil
+  g+=arrow(xin+40,CY-40,xin+10,CY-12,.9*(1-k*.6))}
+ if(s>=5){const pull=s===5?e:1;const tail=[[xout-2,CY-R-2],[lerp(xout-14,xout-22,pull),lerp(52,46,pull)]];
+  g+=tube('M'+xe+','+(CY-R)+' L'+xin+','+(CY-4),'#e8452f',5);g+=dash('M'+xin+','+(CY-4)+' L'+xout+','+(CY-2)+' L'+tail[0]);
+  if(!(s===6&&e>.5))g+=tube('M'+tail[0]+' L'+tail[1],'#e8452f',5);
+  else g+=tube('M'+tail[0]+' l-2,-4','#e8452f',5);
+  if(s===5)g+=arrow(xout-10,58,xout-30,40,1-e*.3)}
+ // Schnitt
+ if(s===6){const sc=e<.5?e*2:1;g+='<g opacity="'+(1-Math.max(0,e-.6)*2.5)+'"><line x1="'+(XWE+12)+'" y1="'+(CY-R-14)+'" x2="'+(XWE+12)+'" y2="'+(CY+R+14)+'" stroke="#5aa0ff" stroke-width="2.5" stroke-dasharray="5 4"/><line x1="'+(xout-24)+'" y1="'+(CY-R-6)+'" x2="'+(xout+2)+'" y2="'+(CY-R-6)+'" stroke="#5aa0ff" stroke-width="2.5" stroke-dasharray="5 4"/></g>'}
+ // Beschriftung
+ const lab=(x,y,t,c)=>{g+='<text x="'+x+'" y="'+y+'" font-size="13" font-weight="700" fill="'+(c||'#2a2522')+'" font-family="system-ui,sans-serif">'+t+'</text>'};
+ if(s===0&&e>.6){lab(XT+6,yA0+4,'A','#b03a2e');lab(XT+6,yB0+4,'B');lab(XT+6,yC0+4,'C')}
+ if(s===1||s===2){lab(272,52,'Faden','#b03a2e')}
+ lab(20,CY+R+26,'Seil','#7a6a55');
+ if(s>=3)lab(XW0,CY+R+26,'← Ansatz','#7a6a55');
+ return g}
+function arrow(x1,y1,x2,y2,op){const a=Math.atan2(y2-y1,x2-x1),h=8;return '<g opacity="'+op+'"><line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="#5aa0ff" stroke-width="3" stroke-linecap="round"/><path d="M'+x2+','+y2+' L'+(x2-h*Math.cos(a-.5))+','+(y2-h*Math.sin(a-.5))+' M'+x2+','+y2+' L'+(x2-h*Math.cos(a+.5))+','+(y2-h*Math.sin(a+.5))+'" stroke="#5aa0ff" stroke-width="3" stroke-linecap="round"/></g>'}
+let S=0,t0=0,playAll=false,raf=0,u=0;
+const pb=document.getElementById('pb'),bp=document.getElementById('bp');
+function draw(){sv.innerHTML=frame(S,u);pb.style.width=(u*100)+'%'}
+function tick(ts){if(!t0)t0=ts;u=Math.min(1,(ts-t0)/DUR[S]);draw();
+ if(u<1)raf=requestAnimationFrame(tick);else if(playAll&&S<T.length-1){setTimeout(()=>{if(playAll)go(S+1,true)},700)}else{playAll=false;bp.textContent='▶ Abspielen'}}
+function go(s,keep){cancelAnimationFrame(raf);S=Math.max(0,Math.min(T.length-1,s));if(!keep){playAll=false;bp.textContent='▶ Abspielen'}
+ document.getElementById('st').innerHTML='<b>'+(S+1)+'. '+T[S][0]+'</b><br>'+T[S][1];
+ document.getElementById('dots').innerHTML=T.map((x,i)=>'<span data-i="'+i+'" class="'+(i===S?'on':'')+'"></span>').join('');
+ document.querySelectorAll('#dots span').forEach(d=>d.onclick=()=>go(+d.dataset.i));
+ document.getElementById('bz').disabled=!S;document.getElementById('bw').textContent=S<T.length-1?'Weiter ›':'Nochmal';
+ t0=0;u=0;raf=requestAnimationFrame(tick)}
+document.getElementById('bz').onclick=()=>go(S-1);
+document.getElementById('bw').onclick=()=>go(S<T.length-1?S+1:0);
+bp.onclick=()=>{if(playAll){playAll=false;bp.textContent='▶ Abspielen';return}playAll=true;bp.textContent='❚❚ Stopp';go(S===T.length-1?0:S,true)};
+document.querySelector('.pic').onclick=()=>{t0=0;u=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(tick)};
+let x0=null;const pic=document.querySelector('.pic');pic.addEventListener('touchstart',e=>{x0=e.touches[0].clientX},{passive:true});pic.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0;if(Math.abs(dx)>40)go(dx<0?S+1:S-1);x0=null});
+const DONE=(()=>{try{return JSON.parse(localStorage.getItem('lbk_knoten')||'{}')}catch(e){return {}}})();
+const kc=document.getElementById('kc');kc.checked=!!DONE.eigenkardeele;kc.onchange=()=>{DONE.eigenkardeele=kc.checked;try{localStorage.setItem('lbk_knoten',JSON.stringify(DONE))}catch(e){}};
+go(0);
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script></body></html>
